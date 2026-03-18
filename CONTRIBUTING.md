@@ -22,6 +22,7 @@ Read these files first:
 - [`<home>/gitfolio/lib/schemas.ts`](<home>/gitfolio/lib/schemas.ts)
 - [`<home>/gitfolio/lib/github.ts`](<home>/gitfolio/lib/github.ts)
 - [`<home>/gitfolio/lib/analyze.ts`](<home>/gitfolio/lib/analyze.ts)
+- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)
 
 ### Working Rules
 
@@ -49,6 +50,7 @@ If you change product behavior, update at least one of these:
 - [`<home>/gitfolio/.env.example`](<home>/gitfolio/.env.example)
 - [`<home>/gitfolio/CONTRIBUTING.md`](<home>/gitfolio/CONTRIBUTING.md)
 - [`<home>/gitfolio/data/`](<home>/gitfolio/data)
+- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)
 
 ## 한국어
 
@@ -95,3 +97,4 @@ npm run check
 - [`<home>/gitfolio/.env.example`](<home>/gitfolio/.env.example)
 - [`<home>/gitfolio/CONTRIBUTING.md`](<home>/gitfolio/CONTRIBUTING.md)
 - [`<home>/gitfolio/data/`](<home>/gitfolio/data)
+- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)

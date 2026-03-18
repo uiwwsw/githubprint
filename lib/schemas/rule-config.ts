@@ -87,6 +87,27 @@ export const narrativeTemplatesSchema = z.object({
   disclaimer: localizedTextSchema,
 });
 
+export const benchmarkDistributionSchema = z.object({
+  p10: z.number().min(0).max(100),
+  p25: z.number().min(0).max(100),
+  p50: z.number().min(0).max(100),
+  p75: z.number().min(0).max(100),
+  p90: z.number().min(0).max(100),
+});
+
+export const benchmarkMetricSchema = z.object({
+  id: z.string().min(1),
+  label: localizedTextSchema,
+  distribution: benchmarkDistributionSchema,
+});
+
+export const benchmarkCohortSchema = z.object({
+  id: z.string().min(1),
+  label: localizedTextSchema,
+  sampleSize: z.number().int().positive(),
+  metrics: z.array(benchmarkMetricSchema).min(1),
+});
+
 export const profileEngineConfigSchema = z.object({
   signals: z.object({
     languages: z.array(signalConfigSchema),
@@ -112,4 +133,7 @@ export type WorkingStyleCategory = z.infer<typeof workingStyleCategorySchema>;
 export type StrengthRule = z.infer<typeof strengthRuleSchema>;
 export type RoleRule = z.infer<typeof roleRuleSchema>;
 export type NarrativeTemplates = z.infer<typeof narrativeTemplatesSchema>;
+export type BenchmarkDistribution = z.infer<typeof benchmarkDistributionSchema>;
+export type BenchmarkMetricConfig = z.infer<typeof benchmarkMetricSchema>;
+export type BenchmarkCohort = z.infer<typeof benchmarkCohortSchema>;
 export type ProfileEngineConfig = z.infer<typeof profileEngineConfigSchema>;

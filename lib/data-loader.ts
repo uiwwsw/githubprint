@@ -1,5 +1,7 @@
 import "server-only";
 
+import { existsSync, readFileSync } from "fs";
+import benchmarkCohortsJson from "@/data/benchmarks/cohorts.json";
 import commitSignals from "@/data/signals/commits.json";
 import fileSignals from "@/data/signals/files.json";
 import keywordSignals from "@/data/signals/keywords.json";
@@ -13,6 +15,7 @@ import workingStyles from "@/data/rules/working-styles.json";
 import narratives from "@/data/templates/narratives.json";
 import type { Locale } from "@/lib/schemas";
 import {
+  benchmarkCohortSchema,
   profileEngineConfigSchema,
   type LocalizedText,
 } from "@/lib/schemas/rule-config";
@@ -34,6 +37,21 @@ export const profileEngineConfig = profileEngineConfigSchema.parse({
   },
   templates: narratives,
 });
+
+function loadBenchmarkCohorts() {
+  const overridePath = process.env.GITFOLIO_BENCHMARK_OVERRIDE_PATH?.trim();
+
+  if (overridePath && existsSync(overridePath)) {
+    const file = readFileSync(overridePath, "utf-8");
+    return JSON.parse(file) as unknown;
+  }
+
+  return benchmarkCohortsJson;
+}
+
+export const benchmarkCohorts = benchmarkCohortSchema.array().parse(
+  loadBenchmarkCohorts(),
+);
 
 export function localizeText(text: LocalizedText, locale: Locale) {
   return text[locale];

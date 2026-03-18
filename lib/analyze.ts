@@ -3,16 +3,26 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+import { buildBenchmarkSnapshot } from "@/lib/benchmark";
 import { profileEngineConfig } from "@/lib/data-loader";
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
+import {
+  buildLearningSnapshot,
+  captureLearningSnapshot,
+} from "@/lib/internal-insights";
 import { buildRuleBasedAnalysis } from "@/lib/narrative-writer";
 import { extractProfileFeatures } from "@/lib/profile-features";
 import { scoreProfile } from "@/lib/rule-engine";
 import type { Locale } from "@/lib/schemas";
-import { analysisSchema, type GitFolioAnalysis } from "@/lib/schemas";
+import {
+  analysisSchema,
+  type BenchmarkSnapshot,
+  type GitFolioAnalysis,
+} from "@/lib/schemas";
 
 export type AnalysisResult = {
   analysis: GitFolioAnalysis;
+  benchmark: BenchmarkSnapshot;
   mode: "openai" | "fallback";
 };
 
@@ -283,9 +293,16 @@ function buildSummary(source: GitHubSourceData, locale: Locale) {
   } Within the limits of public evidence, the profile reads more like someone who keeps shipping tangible work in different forms than someone optimizing for a single narrow technical specialty.`;
 }
 
-function buildFallbackAnalysis(source: GitHubSourceData, locale: Locale): GitFolioAnalysis {
-  const featureSet = extractProfileFeatures(source, profileEngineConfig);
-  const scoring = scoreProfile(source, featureSet, profileEngineConfig, locale);
+function buildFallbackAnalysis(
+  source: GitHubSourceData,
+  locale: Locale,
+  scoring = scoreProfile(
+    source,
+    extractProfileFeatures(source, profileEngineConfig),
+    profileEngineConfig,
+    locale,
+  ),
+): GitFolioAnalysis {
   return buildRuleBasedAnalysis(source, scoring, profileEngineConfig, locale);
 }
 
@@ -321,9 +338,17 @@ async function analyzeGitHubSourceInternal(
   source: GitHubSourceData,
   locale: Locale,
 ): Promise<AnalysisResult> {
+  const featureSet = extractProfileFeatures(source, profileEngineConfig);
+  const scoring = scoreProfile(source, featureSet, profileEngineConfig, locale);
+  const benchmark = buildBenchmarkSnapshot(source, scoring, locale);
+  await captureLearningSnapshot(
+    buildLearningSnapshot(source, scoring, benchmark, locale),
+  );
+
   if (!process.env.OPENAI_API_KEY) {
     return {
-      analysis: buildFallbackAnalysis(source, locale),
+      analysis: buildFallbackAnalysis(source, locale, scoring),
+      benchmark,
       mode: "fallback",
     };
   }
@@ -385,11 +410,13 @@ async function analyzeGitHubSourceInternal(
 
     return {
       analysis: parsed,
+      benchmark,
       mode: "openai",
     };
   } catch {
     return {
-      analysis: buildFallbackAnalysis(source, locale),
+      analysis: buildFallbackAnalysis(source, locale, scoring),
+      benchmark,
       mode: "fallback",
     };
   }

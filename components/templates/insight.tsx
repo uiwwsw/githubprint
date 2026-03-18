@@ -1,17 +1,19 @@
 import { getDictionary } from "@/lib/i18n";
-import { ChipList, DocumentFooter, EvidenceList, FactGrid, ProjectList, SectionBlock } from "@/components/result/common";
+import { BenchmarkSnapshotBlock, ChipList, DocumentFooter, EvidenceList, FactGrid, ProjectList, PublicDataScope, SectionBlock } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
-import { type GitFolioAnalysis, type Locale } from "@/lib/schemas";
+import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 
 export function InsightTemplate({
   analysis,
+  benchmark,
   generatedAt,
   mode,
   profileUrl,
   locale,
 }: {
   analysis: GitFolioAnalysis;
+  benchmark: BenchmarkSnapshot;
   generatedAt: string;
   mode: "openai" | "fallback";
   profileUrl: string;
@@ -87,6 +89,12 @@ export function InsightTemplate({
         <div className="document-grid-insight-bottom">
           <SectionBlock title={dict.templates.insight.sections.evidence} eyebrow={dict.templates.insight.sections.evidence}>
             <EvidenceList analysis={analysis} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.insight.sections.benchmark} eyebrow={dict.templates.insight.sections.benchmark}>
+            <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.insight.sections.dataScope} eyebrow={dict.templates.insight.sections.dataScope}>
+            <PublicDataScope locale={locale} />
           </SectionBlock>
           <SectionBlock title={dict.templates.insight.sections.tech} eyebrow={dict.templates.insight.sections.tech}>
             <div className="space-y-4">

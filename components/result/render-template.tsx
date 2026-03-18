@@ -24,6 +24,7 @@ export function RenderTemplate({
     template === "brief" ? (
       <BriefTemplate
         analysis={analysisResult.analysis}
+        benchmark={analysisResult.benchmark}
         generatedAt={generatedAt}
         locale={locale}
         mode={analysisResult.mode}
@@ -32,6 +33,7 @@ export function RenderTemplate({
     ) : template === "insight" ? (
       <InsightTemplate
         analysis={analysisResult.analysis}
+        benchmark={analysisResult.benchmark}
         generatedAt={generatedAt}
         locale={locale}
         mode={analysisResult.mode}
@@ -40,6 +42,7 @@ export function RenderTemplate({
     ) : (
       <ProfileTemplate
         analysis={analysisResult.analysis}
+        benchmark={analysisResult.benchmark}
         generatedAt={generatedAt}
         locale={locale}
         mode={analysisResult.mode}
