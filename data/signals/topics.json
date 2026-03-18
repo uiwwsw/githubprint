@@ -1,0 +1,88 @@
+[
+  {
+    "id": "topic:react",
+    "matches": ["react"],
+    "contributions": {
+      "orientations": {
+        "frontend": 12
+      },
+      "workingStyles": {}
+    },
+    "evidence": {
+      "ko": "React 계열 topic이 대표 저장소에서 반복됩니다.",
+      "en": "React-related topics recur across representative repositories."
+    }
+  },
+  {
+    "id": "topic:nextjs",
+    "matches": ["nextjs", "next.js"],
+    "contributions": {
+      "orientations": {
+        "frontend": 12
+      },
+      "workingStyles": {
+        "shipping": 2
+      }
+    },
+    "evidence": {
+      "ko": "Next.js 계열 topic과 구조가 반복됩니다.",
+      "en": "Next.js-related topics and structure recur."
+    }
+  },
+  {
+    "id": "topic:frontend",
+    "matches": ["frontend", "ui", "design-system", "tailwind", "vue", "nuxt", "angular"],
+    "contributions": {
+      "orientations": {
+        "frontend": 9
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "topic:backend",
+    "matches": ["backend", "api", "auth", "postgres", "prisma", "redis", "graphql", "server"],
+    "contributions": {
+      "orientations": {
+        "backend": 8
+      },
+      "workingStyles": {
+        "shipping": 1
+      }
+    }
+  },
+  {
+    "id": "topic:mobile",
+    "matches": ["flutter", "react-native", "ios", "android", "mobile"],
+    "contributions": {
+      "orientations": {
+        "mobile": 11
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "topic:ai",
+    "matches": ["openai", "llm", "rag", "agent", "ai", "ml", "machine-learning"],
+    "contributions": {
+      "orientations": {
+        "ai": 11
+      },
+      "workingStyles": {
+        "prototyping": 2
+      }
+    }
+  },
+  {
+    "id": "topic:devtools",
+    "matches": ["cli", "tooling", "automation", "vscode-extension", "neovim", "plugin", "compiler"],
+    "contributions": {
+      "orientations": {
+        "devtools": 10
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  }
+]

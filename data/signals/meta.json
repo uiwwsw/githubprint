@@ -1,0 +1,99 @@
+[
+  {
+    "id": "meta:has-demo",
+    "contributions": {
+      "orientations": {
+        "frontend": 4,
+        "mobile": 2
+      },
+      "workingStyles": {
+        "prototyping": 7,
+        "shipping": 5
+      }
+    },
+    "evidence": {
+      "ko": "대표 저장소에서 demo 또는 homepage 링크가 확인됩니다.",
+      "en": "Representative repositories expose a demo or homepage link."
+    }
+  },
+  {
+    "id": "meta:rich-readme",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "documentation": 8,
+        "quality": 2
+      }
+    },
+    "evidence": {
+      "ko": "README가 비교적 충실한 저장소가 확인됩니다.",
+      "en": "At least one repository has a relatively detailed README."
+    }
+  },
+  {
+    "id": "meta:recent-update",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "iteration": 7
+      }
+    }
+  },
+  {
+    "id": "meta:pinned",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "shipping": 2
+      }
+    }
+  },
+  {
+    "id": "meta:multiple-demos",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "prototyping": 6,
+        "shipping": 5
+      }
+    }
+  },
+  {
+    "id": "meta:multiple-pinned",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "shipping": 4
+      }
+    }
+  },
+  {
+    "id": "meta:high-activity",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "iteration": 8,
+        "shipping": 2
+      }
+    }
+  },
+  {
+    "id": "meta:steady-activity",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "iteration": 6
+      }
+    }
+  },
+  {
+    "id": "meta:portfolio-depth",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "prototyping": 3,
+        "shipping": 2
+      }
+    }
+  }
+]

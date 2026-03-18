@@ -1,0 +1,62 @@
+{
+  "generalist": {
+    "headline": {
+      "ko": "구현 중심 결과물을 꾸준히 쌓아가는 범용 제품 개발자",
+      "en": "A generalist product builder with steady implementation output"
+    },
+    "developerType": {
+      "ko": "한 가지 좁은 전문 분야보다 여러 구현 신호가 함께 보이는 범용 성향에 가깝습니다.",
+      "en": "The profile reads more like a generalist builder with multiple implementation signals than a narrowly specialized one."
+    }
+  },
+  "summary": {
+    "high": {
+      "ko": "{name}의 공개 GitHub를 보면 {languages} 중심의 프로젝트가 반복되고, {projects} 같은 대표 저장소를 통해 {primaryOrientation} 신호가 비교적 선명하게 드러납니다. 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
+      "en": "Based on public GitHub signals, {name} repeatedly ships projects around {languages}, and repositories such as {projects} make the {primaryOrientation} orientation relatively clear. Overall, the profile leans toward {primaryStyle}."
+    },
+    "medium": {
+      "ko": "{name}의 공개 저장소를 기준으로 보면 {languages} 중심의 구현 흔적이 보이고, {projects} 같은 저장소를 통해 {primaryOrientation} 신호가 읽힙니다. 공개 정보 범위 안에서는 {primaryStyle} 성향도 함께 관찰됩니다.",
+      "en": "Across public repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} suggest a {primaryOrientation} tilt. Within the limits of public evidence, there are also visible signals of {primaryStyle}."
+    },
+    "low": {
+      "ko": "{name}의 공개 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 신호가 상대적으로 더 강한 편으로 해석하는 것이 적절합니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 읽힙니다.",
+      "en": "Public GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} signals are only relatively stronger than the rest. The working style currently reads as somewhat {primaryStyle}."
+    }
+  },
+  "caution": {
+    "high": {
+      "ko": "공개 저장소, 문서, 최근 활동 신호가 비교적 충분하지만, 실제 협업 방식과 경력 정보까지 확인되는 것은 아닙니다.",
+      "en": "Public repositories, documentation, and recent activity provide relatively solid evidence, but they still do not verify collaboration style or career history."
+    },
+    "medium": {
+      "ko": "판단은 공개 저장소와 README, 최근 활동을 바탕으로 한 해석이며, 실제 업무 맥락은 더 보수적으로 보는 편이 적절합니다.",
+      "en": "These conclusions are interpretive and based on public repositories, READMEs, and recency signals. Actual working context should still be read conservatively."
+    },
+    "low": {
+      "ko": "공개 신호가 제한적이어서 개발자 유형과 작업 방식은 추정 수준으로 해석하는 편이 적절합니다.",
+      "en": "Public signals are limited, so developer type and working style should be treated as tentative rather than definitive."
+    }
+  },
+  "evidenceLabels": {
+    "activity": {
+      "ko": "활동 신호",
+      "en": "Activity signal"
+    },
+    "orientation": {
+      "ko": "유형 판단 근거",
+      "en": "Orientation evidence"
+    },
+    "workingStyle": {
+      "ko": "작업 방식 근거",
+      "en": "Working-style evidence"
+    },
+    "projects": {
+      "ko": "대표 프로젝트 선정",
+      "en": "Representative project selection"
+    }
+  },
+  "disclaimer": {
+    "ko": "이 문서는 공개 GitHub 기준에서 관찰되는 정보만 바탕으로 작성되었습니다. 경력 연차, 협업 방식, 비즈니스 임팩트 등은 확인되지 않는 한 단정하지 않았습니다.",
+    "en": "This document is based only on information observable from public GitHub data. Career tenure, collaboration style, and business impact are not asserted unless clearly evidenced."
+  }
+}

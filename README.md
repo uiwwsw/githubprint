@@ -48,7 +48,7 @@ These constraints are intentional and should stay true unless the product direct
 - Fetches public GitHub profile and repository signals
 - Selects representative projects from multiple weighted signals
 - Generates a structured JSON analysis validated with Zod
-- Falls back to deterministic copy when the AI step fails
+- Falls back to a deterministic, data-driven profiling engine when the AI step fails
 - Renders a print-optimized result page in Korean or English
 
 ### Localized Routing
@@ -86,8 +86,13 @@ Result pages are intentionally not indexed:
 | [`/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx) | Shared home page UI |
 | [`/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx) | Shared result page flow |
 | [`/Users/uiwwsw/gitfolio/lib/github.ts`](/Users/uiwwsw/gitfolio/lib/github.ts) | GitHub fetching, scoring, caching |
-| [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts) | OpenAI analysis and fallback generation |
+| [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts) | OpenAI analysis and deterministic fallback entry point |
+| [`/Users/uiwwsw/gitfolio/lib/data-loader.ts`](/Users/uiwwsw/gitfolio/lib/data-loader.ts) | Loads and validates the profiling rule config |
+| [`/Users/uiwwsw/gitfolio/lib/profile-features.ts`](/Users/uiwwsw/gitfolio/lib/profile-features.ts) | Extracts normalized features from raw GitHub data |
+| [`/Users/uiwwsw/gitfolio/lib/rule-engine.ts`](/Users/uiwwsw/gitfolio/lib/rule-engine.ts) | Scores orientations, working styles, strengths, and roles |
+| [`/Users/uiwwsw/gitfolio/lib/narrative-writer.ts`](/Users/uiwwsw/gitfolio/lib/narrative-writer.ts) | Turns scored signals into the final analysis JSON |
 | [`/Users/uiwwsw/gitfolio/lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts) | Zod schemas for search params and analysis output |
+| [`/Users/uiwwsw/gitfolio/data/`](/Users/uiwwsw/gitfolio/data) | Collaborator-editable profiling signals, rules, and narrative copy |
 | [`/Users/uiwwsw/gitfolio/lib/i18n.ts`](/Users/uiwwsw/gitfolio/lib/i18n.ts) | Dictionaries, locale helpers, localized path logic |
 | [`/Users/uiwwsw/gitfolio/lib/seo.ts`](/Users/uiwwsw/gitfolio/lib/seo.ts) | Metadata builders |
 | [`/Users/uiwwsw/gitfolio/proxy.ts`](/Users/uiwwsw/gitfolio/proxy.ts) | Locale query redirect and request locale header |
@@ -164,6 +169,22 @@ GITFOLIO_USE_FIXTURE=1 npm run dev
 
 Fixture mode is a development convenience only. Production paths must not use fake data.
 
+In local development without a `GITHUB_TOKEN`, GitFolio automatically switches to a lighter GitHub fetch mode and will reuse the last successful local source snapshot from `.cache/` if GitHub rate limits are hit later.
+
+### Data-Driven Profiling Engine
+
+The deterministic fallback is not hardcoded in one file anymore.
+
+It now follows this pipeline:
+
+1. `lib/github.ts` collects public GitHub profile, repo, README, root-file, and recent-commit signals
+2. `lib/profile-features.ts` normalizes those signals into comparable feature matches
+3. `data/signals/*.json` defines which languages, topics, files, keywords, and commit patterns matter
+4. `data/rules/*.json` defines how those signals map to orientations, working styles, strengths, and role fit
+5. `data/templates/narratives.json` defines the shareable copy bands used in the final document
+
+If you want to tune the interpretation logic, prefer editing `data/*.json` first before changing TypeScript code.
+
 ### Verification
 
 Before shipping or opening a PR:
@@ -220,7 +241,7 @@ GitFolio는 분석 대시보드가 아니라, 공개 GitHub를 읽기 쉬운 문
 - 서버에서 GitHub username 추출 및 검증
 - 공개 GitHub 데이터 서버 수집
 - OpenAI 구조화 분석 JSON 생성
-- Zod 검증 실패 시 deterministic fallback 생성
+- AI 실패 시 `data/*.json` 규칙 기반 deterministic fallback 생성
 - 한국어/영어 UI 및 결과 문서 지원
 - 홈 페이지 다국어 SEO 지원
 - 결과 페이지 `noindex` 처리
@@ -237,6 +258,8 @@ npm run dev
 
 배포 주소는 `https://gitfolio-seven.vercel.app` 입니다.
 
+로컬에서 `GITHUB_TOKEN` 없이 실행하면 GitHub 호출 수를 자동으로 줄이고, 한 번 성공한 결과는 `.cache/`에 저장해 rate limit 시 재사용합니다. 그래도 실제 데이터 품질을 위해서는 `GITHUB_TOKEN` 설정을 권장합니다.
+
 ### 환경 변수
 
 | 변수 | 필수 여부 | 설명 |
@@ -246,6 +269,18 @@ npm run dev
 | `OPENAI_MODEL` | 선택 | 기본값은 `gpt-5-mini` |
 | `NEXT_PUBLIC_SITE_URL` | 선택 | canonical / OG 메타데이터 기준 주소. 기본값은 `https://gitfolio-seven.vercel.app` |
 | `GITFOLIO_USE_FIXTURE` | 선택 | 개발 전용 fixture 모드 |
+
+### 데이터 기반 판단 엔진
+
+현재 fallback 분석은 한 파일의 하드코딩 문장이 아니라, 아래 구조로 동작합니다.
+
+1. `lib/github.ts`가 공개 GitHub profile, repo, README, root file, 최근 commit 신호를 수집
+2. `lib/profile-features.ts`가 이를 정규화된 feature로 변환
+3. `data/signals/*.json`이 어떤 언어, topic, 파일, 키워드, commit 패턴을 읽을지 정의
+4. `data/rules/*.json`이 orientation, working style, strength, role 판단 규칙을 정의
+5. `data/templates/narratives.json`이 최종 문서 문장 밴드를 정의
+
+해석 기준을 조정하고 싶다면 TypeScript보다 먼저 `data/*.json`을 수정하는 것이 기본 원칙입니다.
 
 ### 협업 가이드
 
@@ -258,6 +293,8 @@ npm run dev
 - AI 응답은 반드시 스키마 검증을 거칩니다.
 - AI 실패 시에도 결과 페이지는 fallback으로 깨지지 않아야 합니다.
 - GitHub 공개 정보 이상을 단정적으로 만들어내지 않습니다.
+- 판단 기준을 바꿀 때는 가능하면 `data/*.json`을 먼저 수정합니다.
+- 해석 기준을 바꿀 때는 가능하면 `data/*.json`을 먼저 수정하고, 엔진 코드는 신호 추출과 점수 계산에만 집중합니다.
 
 자세한 협업 규칙은 [CONTRIBUTING.md](./CONTRIBUTING.md)를 참고하면 됩니다.
 

@@ -1,0 +1,108 @@
+[
+  {
+    "id": "role:frontend-product",
+    "priority": 10,
+    "text": {
+      "ko": "제품 중심 프론트엔드 개발",
+      "en": "Product-focused frontend development"
+    },
+    "minOrientationScores": {
+      "frontend": 60
+    }
+  },
+  {
+    "id": "role:frontend-prototype",
+    "priority": 9,
+    "text": {
+      "ko": "프로토타입 제작이 잦은 제품팀의 프론트엔드 역할",
+      "en": "Frontend work inside product teams that prototype frequently"
+    },
+    "minOrientationScores": {
+      "frontend": 45
+    },
+    "minWorkingStyleScores": {
+      "prototyping": 45
+    }
+  },
+  {
+    "id": "role:backend-product",
+    "priority": 10,
+    "text": {
+      "ko": "API 및 서비스 구조 설계 역할",
+      "en": "API and service architecture roles"
+    },
+    "minOrientationScores": {
+      "backend": 60
+    }
+  },
+  {
+    "id": "role:backend-platform",
+    "priority": 8,
+    "text": {
+      "ko": "데이터 흐름과 운영 구성이 중요한 백엔드 역할",
+      "en": "Backend work where data flow and operational structure matter"
+    },
+    "minOrientationScores": {
+      "backend": 45
+    },
+    "minWorkingStyleScores": {
+      "structure": 40
+    }
+  },
+  {
+    "id": "role:mobile-product",
+    "priority": 10,
+    "text": {
+      "ko": "모바일 제품 MVP 개발",
+      "en": "Mobile MVP product development"
+    },
+    "minOrientationScores": {
+      "mobile": 55
+    }
+  },
+  {
+    "id": "role:ai-product",
+    "priority": 10,
+    "text": {
+      "ko": "AI 기능 제품화 실험",
+      "en": "AI feature productization experiments"
+    },
+    "minOrientationScores": {
+      "ai": 55
+    }
+  },
+  {
+    "id": "role:devtools",
+    "priority": 10,
+    "text": {
+      "ko": "개발 워크플로우와 툴링 개선 역할",
+      "en": "Developer workflow and tooling improvement work"
+    },
+    "minOrientationScores": {
+      "devtools": 55
+    }
+  },
+  {
+    "id": "role:generalist-mvp",
+    "priority": 7,
+    "text": {
+      "ko": "초기 제품 MVP 구현",
+      "en": "Early-stage MVP implementation"
+    },
+    "minWorkingStyleScores": {
+      "prototyping": 40,
+      "shipping": 30
+    }
+  },
+  {
+    "id": "role:quality-minded",
+    "priority": 6,
+    "text": {
+      "ko": "검증과 품질 관리가 중요한 제품 개발 역할",
+      "en": "Product development work that values testing and quality verification"
+    },
+    "minWorkingStyleScores": {
+      "quality": 45
+    }
+  }
+]

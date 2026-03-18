@@ -1,0 +1,187 @@
+[
+  {
+    "id": "file:package-json",
+    "matches": ["package.json"],
+    "contributions": {
+      "orientations": {
+        "frontend": 3,
+        "backend": 3,
+        "devtools": 3
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "file:next-config",
+    "matches": ["next.config.js", "next.config.ts", "next.config.mjs"],
+    "contributions": {
+      "orientations": {
+        "frontend": 10
+      },
+      "workingStyles": {
+        "shipping": 2
+      }
+    }
+  },
+  {
+    "id": "file:tailwind-config",
+    "matches": ["tailwind.config.js", "tailwind.config.ts"],
+    "contributions": {
+      "orientations": {
+        "frontend": 8
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "file:vite-config",
+    "matches": ["vite.config.js", "vite.config.ts"],
+    "contributions": {
+      "orientations": {
+        "frontend": 6
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "file:playwright",
+    "matches": ["playwright.config.ts", "playwright.config.js"],
+    "contributions": {
+      "orientations": {
+        "frontend": 2
+      },
+      "workingStyles": {
+        "quality": 9
+      }
+    }
+  },
+  {
+    "id": "file:jest",
+    "matches": ["jest.config.js", "jest.config.ts", "vitest.config.js", "vitest.config.ts", "cypress.config.js", "cypress.config.ts"],
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "quality": 8
+      }
+    }
+  },
+  {
+    "id": "file:storybook",
+    "matches": ["storybook", ".storybook"],
+    "contributions": {
+      "orientations": {
+        "frontend": 6
+      },
+      "workingStyles": {
+        "documentation": 2,
+        "quality": 2
+      }
+    }
+  },
+  {
+    "id": "file:docker",
+    "matches": ["dockerfile", "docker-compose.yml", "docker-compose.yaml"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "backend": 6
+      },
+      "workingStyles": {
+        "structure": 4,
+        "shipping": 3
+      }
+    }
+  },
+  {
+    "id": "file:python-manifest",
+    "matches": ["requirements.txt", "pyproject.toml"],
+    "contributions": {
+      "orientations": {
+        "backend": 5,
+        "ai": 4
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "file:go-mod",
+    "matches": ["go.mod"],
+    "contributions": {
+      "orientations": {
+        "backend": 8
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "file:cargo",
+    "matches": ["cargo.toml"],
+    "contributions": {
+      "orientations": {
+        "devtools": 8,
+        "backend": 4
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "file:monorepo",
+    "matches": ["pnpm-workspace.yaml", "turbo.json", "apps", "packages"],
+    "contributions": {
+      "orientations": {
+        "devtools": 2
+      },
+      "workingStyles": {
+        "structure": 10
+      }
+    }
+  },
+  {
+    "id": "file:docs-dir",
+    "matches": ["docs"],
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "documentation": 6
+      }
+    }
+  },
+  {
+    "id": "file:github-workflows",
+    "matches": [".github"],
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "shipping": 5,
+        "quality": 4,
+        "structure": 3
+      }
+    }
+  },
+  {
+    "id": "file:app-dir",
+    "matches": ["app", "components"],
+    "contributions": {
+      "orientations": {
+        "frontend": 4
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "file:mobile-dir",
+    "matches": ["ios", "android"],
+    "contributions": {
+      "orientations": {
+        "mobile": 9
+      },
+      "workingStyles": {}
+    }
+  }
+]

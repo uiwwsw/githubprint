@@ -31,6 +31,7 @@ Read these files first:
 - Do not move GitHub or OpenAI secrets into client code
 - Keep Korean and English flows aligned when changing UI copy or navigation
 - Prefer server-side fetching and analysis
+- Prefer adjusting `data/*.json` rules before hardcoding new interpretation logic in TypeScript
 
 ### Verification
 
@@ -47,6 +48,7 @@ If you change product behavior, update at least one of these:
 - [`/Users/uiwwsw/gitfolio/README.md`](/Users/uiwwsw/gitfolio/README.md)
 - [`/Users/uiwwsw/gitfolio/.env.example`](/Users/uiwwsw/gitfolio/.env.example)
 - [`/Users/uiwwsw/gitfolio/CONTRIBUTING.md`](/Users/uiwwsw/gitfolio/CONTRIBUTING.md)
+- [`/Users/uiwwsw/gitfolio/data/`](/Users/uiwwsw/gitfolio/data)
 
 ## 한국어
 
@@ -75,6 +77,7 @@ GitFolio는 의도적으로 작은 제품입니다. 기여 시 아래 계약을 
 - GitHub/OpenAI 비밀키를 클라이언트 코드로 옮기지 않기
 - UI 문구나 라우팅을 바꾸면 한국어/영어 흐름을 같이 맞추기
 - 가능하면 서버에서 fetch와 analyze를 유지하기
+- 새로운 판단 기준이 필요하면 TypeScript 하드코딩보다 `data/*.json` 수정부터 우선하기
 
 ### 검증
 
@@ -91,3 +94,4 @@ npm run check
 - [`/Users/uiwwsw/gitfolio/README.md`](/Users/uiwwsw/gitfolio/README.md)
 - [`/Users/uiwwsw/gitfolio/.env.example`](/Users/uiwwsw/gitfolio/.env.example)
 - [`/Users/uiwwsw/gitfolio/CONTRIBUTING.md`](/Users/uiwwsw/gitfolio/CONTRIBUTING.md)
+- [`/Users/uiwwsw/gitfolio/data/`](/Users/uiwwsw/gitfolio/data)
