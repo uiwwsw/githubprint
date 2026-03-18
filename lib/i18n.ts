@@ -34,6 +34,12 @@ type Dictionary = {
     submit: string;
     submitting: string;
     submitHint: string;
+    dataScopeTitle: string;
+    dataScopeItems: {
+      profile: string;
+      repositories: string;
+      limits: string;
+    };
   };
   result: {
     templateLabel: string;
@@ -68,8 +74,12 @@ type Dictionary = {
     factTech: string;
     factRepos: string;
     factFollowers: string;
+    benchmarkOverall: string;
+    confidenceLabel: string;
+    cohortLabel: string;
     repoUnit: string;
     followerUnit: string;
+    sampleSizeLabel: string;
     noProjects: string;
     repoLink: string;
     liveLink: string;
@@ -94,15 +104,17 @@ type Dictionary = {
       ribbonFallback: string;
       eyebrow: string;
       sections: {
-        summary: string;
-        strengths: string;
-        projects: string;
-        type: string;
-        workingStyle: string;
-        bestFit: string;
-        evidence: string;
-        source: string;
-      };
+          summary: string;
+          strengths: string;
+          projects: string;
+          type: string;
+          workingStyle: string;
+          benchmark: string;
+          bestFit: string;
+          evidence: string;
+          dataScope: string;
+          source: string;
+        };
     };
     profile: {
       ribbonTemplate: string;
@@ -111,16 +123,18 @@ type Dictionary = {
       ribbonOpenAi: string;
       ribbonFallback: string;
       eyebrow: string;
-      sections: {
-        type: string;
-        workingStyle: string;
-        projects: string;
-        tech: string;
-        strengths: string;
-        bestFit: string;
-        evidence: string;
-        caution: string;
-      };
+        sections: {
+          type: string;
+          workingStyle: string;
+          projects: string;
+          tech: string;
+          benchmark: string;
+          strengths: string;
+          bestFit: string;
+          evidence: string;
+          dataScope: string;
+          caution: string;
+        };
     };
     insight: {
       ribbonTemplate: string;
@@ -130,17 +144,19 @@ type Dictionary = {
       ribbonOpenAi: string;
       ribbonFallback: string;
       eyebrow: string;
-      sections: {
-        type: string;
-        workingStyle: string;
-        fit: string;
-        strengths: string;
-        roles: string;
-        projectReading: string;
-        evidence: string;
-        tech: string;
+        sections: {
+          type: string;
+          workingStyle: string;
+          fit: string;
+          strengths: string;
+          roles: string;
+          projectReading: string;
+          evidence: string;
+          benchmark: string;
+          dataScope: string;
+          tech: string;
+        };
       };
-    };
   };
 };
 
@@ -186,6 +202,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       submitting: "컨버팅 중...",
       submitHint:
         "기본 템플릿은 미리 선택되어 있으며, 유효한 URL 또는 아이디가 입력되면 바로 컨버팅할 수 있습니다.",
+      dataScopeTitle: "읽는 공개 데이터 범위",
+      dataScopeItems: {
+        profile:
+          "프로필 이름, bio, followers, 공개 저장소 수 같은 공개 계정 정보",
+        repositories:
+          "공개 저장소의 description, README, topics, stars, 최근 업데이트, homepage, 일부 root file, 최근 commit 메시지",
+        limits:
+          "비공개 저장소나 GitHub 밖 정보는 읽지 않으며, 경력·협업 능력·비즈니스 성과는 단정하지 않습니다.",
+      },
     },
     result: {
       templateLabel: "템플릿",
@@ -223,8 +248,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       factTech: "주요 기술",
       factRepos: "공개 저장소",
       factFollowers: "팔로워",
+      benchmarkOverall: "동일 집단 비교",
+      confidenceLabel: "분석 신뢰도",
+      cohortLabel: "비교 집단",
       repoUnit: "개",
       followerUnit: "명",
+      sampleSizeLabel: "표본 수",
       noProjects: "대표 프로젝트로 해석할 만한 공개 저장소 신호가 충분하지 않습니다.",
       repoLink: "GitHub repo",
       liveLink: "Live link",
@@ -265,8 +294,10 @@ const dictionaries: Record<Locale, Dictionary> = {
           projects: "대표 프로젝트",
           type: "개발자 유형",
           workingStyle: "작업 방식",
+          benchmark: "동일 집단 기준",
           bestFit: "어울리는 역할",
           evidence: "판단 근거",
+          dataScope: "읽은 공개 데이터",
           source: "참고 링크",
         },
       },
@@ -282,9 +313,11 @@ const dictionaries: Record<Locale, Dictionary> = {
           workingStyle: "작업 방식",
           projects: "대표 프로젝트",
           tech: "핵심 기술",
+          benchmark: "동일 집단 기준",
           strengths: "대표 강점",
           bestFit: "어울리는 역할",
           evidence: "판단 근거",
+          dataScope: "읽은 공개 데이터",
           caution: "주의해서 읽을 점",
         },
       },
@@ -304,6 +337,8 @@ const dictionaries: Record<Locale, Dictionary> = {
           roles: "어울리는 역할",
           projectReading: "프로젝트 해석",
           evidence: "판단 근거",
+          benchmark: "동일 집단 비교",
+          dataScope: "읽은 공개 데이터 범위",
           tech: "핵심 기술 분포",
         },
       },
@@ -350,6 +385,15 @@ const dictionaries: Record<Locale, Dictionary> = {
       submitting: "Converting...",
       submitHint:
         "The default template is preselected. Convert becomes available as soon as the URL or username is valid.",
+      dataScopeTitle: "Public data used",
+      dataScopeItems: {
+        profile:
+          "Public account fields such as name, bio, followers, and public repository count",
+        repositories:
+          "Public repository description, README, topics, stars, update recency, homepage, some root files, and recent commit messages",
+        limits:
+          "Private repositories and off-GitHub data are not read, and tenure, collaboration quality, or business impact are not asserted.",
+      },
     },
     result: {
       templateLabel: "Template",
@@ -387,8 +431,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       factTech: "Top stack",
       factRepos: "Public repos",
       factFollowers: "Followers",
+      benchmarkOverall: "Peer benchmark",
+      confidenceLabel: "Confidence",
+      cohortLabel: "Cohort",
       repoUnit: "",
       followerUnit: "",
+      sampleSizeLabel: "Sample size",
       noProjects: "There are not enough public repository signals to interpret standout projects.",
       repoLink: "GitHub repo",
       liveLink: "Live link",
@@ -429,8 +477,10 @@ const dictionaries: Record<Locale, Dictionary> = {
           projects: "Selected projects",
           type: "Developer type",
           workingStyle: "Working style",
+          benchmark: "Peer benchmark",
           bestFit: "Best-fit roles",
           evidence: "Evidence",
+          dataScope: "Public data used",
           source: "Reference link",
         },
       },
@@ -446,9 +496,11 @@ const dictionaries: Record<Locale, Dictionary> = {
           workingStyle: "Working style",
           projects: "Selected projects",
           tech: "Core stack",
+          benchmark: "Peer benchmark",
           strengths: "Key strengths",
           bestFit: "Best-fit roles",
           evidence: "Evidence",
+          dataScope: "Public data used",
           caution: "Read with caution",
         },
       },
@@ -468,6 +520,8 @@ const dictionaries: Record<Locale, Dictionary> = {
           roles: "Best-fit roles",
           projectReading: "Project interpretation",
           evidence: "Evidence",
+          benchmark: "Peer benchmark",
+          dataScope: "Public data used",
           tech: "Core technology distribution",
         },
       },

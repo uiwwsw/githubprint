@@ -14,6 +14,24 @@ export const resultSearchParamsSchema = z.object({
 
 const optionalUrlSchema = z.union([z.url(), z.literal("")]);
 
+export const benchmarkMetricSnapshotSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  note: z.string().min(1),
+  percentile: z.number().int().min(1).max(99),
+  value: z.number().min(0).max(100),
+});
+
+export const benchmarkSnapshotSchema = z.object({
+  cohortId: z.string().min(1),
+  cohortLabel: z.string().min(1),
+  confidenceScore: z.number().int().min(0).max(100),
+  insight: z.string().min(1),
+  metrics: z.array(benchmarkMetricSnapshotSchema).min(3).max(6),
+  overallPercentile: z.number().int().min(1).max(99),
+  sampleSize: z.number().int().positive(),
+});
+
 export const analysisSchema = z.object({
   profile: z.object({
     name: z.string().min(1),
@@ -63,3 +81,4 @@ export const analysisSchema = z.object({
 });
 
 export type GitFolioAnalysis = z.infer<typeof analysisSchema>;
+export type BenchmarkSnapshot = z.infer<typeof benchmarkSnapshotSchema>;

@@ -4,6 +4,7 @@ import { startTransition, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PublicDataScope } from "@/components/result/common";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { normalizeGitHubUrlInput, GitHubUrlError } from "@/lib/github-url";
 import { getTemplateMeta } from "@/lib/templates";
@@ -130,69 +131,81 @@ export function UrlForm({ locale }: { locale: Locale }) {
       </div>
 
       <div className="mt-8 space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium text-neutral-700">{dict.home.templateHeading}</p>
-          <p className="text-sm text-neutral-500">{dict.home.templateHint}</p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {templateCards.map((template) => {
-            const isSelected = template.id === selectedTemplate;
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-neutral-700">{dict.home.templateHeading}</p>
+            <p className="text-sm text-neutral-500">{dict.home.templateHint}</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {templateCards.map((template) => {
+              const isSelected = template.id === selectedTemplate;
 
-            return (
-              <button
-                className={cn(
-                  "rounded-[1.6rem] border p-5 text-left transition",
-                  isSelected
-                    ? "border-neutral-950 bg-neutral-950 text-white"
-                    : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
-                )}
-                key={template.id}
-                onClick={() => setSelectedTemplate(template.id)}
-                type="button"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-serif text-2xl">{template.label}</p>
-                    <p
+              return (
+                <button
+                  className={cn(
+                    "rounded-[1.6rem] border p-5 text-left transition",
+                    isSelected
+                      ? "border-neutral-950 bg-neutral-950 text-white"
+                      : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
+                  )}
+                  key={template.id}
+                  onClick={() => setSelectedTemplate(template.id)}
+                  type="button"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-serif text-2xl">{template.label}</p>
+                      <p
+                        className={cn(
+                          "mt-1 text-sm",
+                          isSelected ? "text-white/70" : "text-neutral-500",
+                        )}
+                      >
+                        {template.shortLabel}
+                      </p>
+                    </div>
+                    <span
                       className={cn(
-                        "mt-1 text-sm",
-                        isSelected ? "text-white/70" : "text-neutral-500",
+                        "rounded-full border px-3 py-1 text-xs",
+                        isSelected
+                          ? "border-white/[0.15] bg-white/10 text-white/80"
+                          : "border-black/[0.08] bg-neutral-100 text-neutral-600",
                       )}
                     >
-                      {template.shortLabel}
-                    </p>
+                      {isSelected ? dict.home.selected : dict.home.select}
+                    </span>
                   </div>
-                  <span
+                  <p
                     className={cn(
-                      "rounded-full border px-3 py-1 text-xs",
-                      isSelected
-                        ? "border-white/[0.15] bg-white/10 text-white/80"
-                        : "border-black/[0.08] bg-neutral-100 text-neutral-600",
+                      "mt-6 text-sm leading-6",
+                      isSelected ? "text-white/[0.88]" : "text-neutral-700",
                     )}
                   >
-                    {isSelected ? dict.home.selected : dict.home.select}
-                  </span>
-                </div>
-                <p
-                  className={cn(
-                    "mt-6 text-sm leading-6",
-                    isSelected ? "text-white/[0.88]" : "text-neutral-700",
-                  )}
-                >
-                  {template.description}
-                </p>
-                <p
-                  className={cn(
-                    "mt-4 text-sm leading-6",
-                    isSelected ? "text-white/[0.62]" : "text-neutral-500",
-                  )}
-                >
-                  {template.emphasis}
-                </p>
-              </button>
-            );
-          })}
+                    {template.description}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-4 text-sm leading-6",
+                      isSelected ? "text-white/[0.62]" : "text-neutral-500",
+                    )}
+                  >
+                    {template.emphasis}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <details className="rounded-[1.4rem] border border-black/[0.08] bg-black/[0.025] open:bg-white/70">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-neutral-700 marker:hidden">
+            <span>{dict.home.dataScopeTitle}</span>
+            <span className="text-xs text-neutral-500">+</span>
+          </summary>
+          <div className="border-t border-black/[0.08] px-5 py-4">
+            <PublicDataScope locale={locale} />
+          </div>
+        </details>
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

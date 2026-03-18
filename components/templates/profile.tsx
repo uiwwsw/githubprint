@@ -1,17 +1,19 @@
 import { getDictionary } from "@/lib/i18n";
-import { ChipList, DocumentFooter, EvidenceList, FactGrid, ProjectList, SectionBlock } from "@/components/result/common";
+import { BenchmarkSnapshotBlock, ChipList, DocumentFooter, EvidenceList, FactGrid, ProjectList, PublicDataScope, SectionBlock } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
-import { type GitFolioAnalysis, type Locale } from "@/lib/schemas";
+import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 
 export function ProfileTemplate({
   analysis,
+  benchmark,
   generatedAt,
   mode,
   profileUrl,
   locale,
 }: {
   analysis: GitFolioAnalysis;
+  benchmark: BenchmarkSnapshot;
   generatedAt: string;
   mode: "openai" | "fallback";
   profileUrl: string;
@@ -83,6 +85,9 @@ export function ProfileTemplate({
           <SectionBlock title={dict.templates.profile.sections.tech} eyebrow={dict.templates.profile.sections.tech}>
             <ChipList items={analysis.facts.topLanguages} />
           </SectionBlock>
+          <SectionBlock title={dict.templates.profile.sections.benchmark} eyebrow={dict.templates.profile.sections.benchmark}>
+            <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} />
+          </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.strengths} eyebrow={dict.templates.profile.sections.strengths}>
             <ChipList items={analysis.inferred.strengths} />
           </SectionBlock>
@@ -91,6 +96,9 @@ export function ProfileTemplate({
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.evidence} eyebrow={dict.templates.profile.sections.evidence}>
             <EvidenceList analysis={analysis} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.profile.sections.dataScope} eyebrow={dict.templates.profile.sections.dataScope}>
+            <PublicDataScope locale={locale} />
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.caution} eyebrow={dict.templates.profile.sections.caution}>
             <p>{analysis.inferred.cautionNote}</p>

@@ -22,6 +22,7 @@ Read these files first:
 - [`/Users/uiwwsw/gitfolio/lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts)
 - [`/Users/uiwwsw/gitfolio/lib/github.ts`](/Users/uiwwsw/gitfolio/lib/github.ts)
 - [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts)
+- [`/Users/uiwwsw/gitfolio/docs/learning-loop.md`](/Users/uiwwsw/gitfolio/docs/learning-loop.md)
 
 ### Working Rules
 
@@ -49,6 +50,7 @@ If you change product behavior, update at least one of these:
 - [`/Users/uiwwsw/gitfolio/.env.example`](/Users/uiwwsw/gitfolio/.env.example)
 - [`/Users/uiwwsw/gitfolio/CONTRIBUTING.md`](/Users/uiwwsw/gitfolio/CONTRIBUTING.md)
 - [`/Users/uiwwsw/gitfolio/data/`](/Users/uiwwsw/gitfolio/data)
+- [`/Users/uiwwsw/gitfolio/docs/learning-loop.md`](/Users/uiwwsw/gitfolio/docs/learning-loop.md)
 
 ## 한국어
 
@@ -95,3 +97,4 @@ npm run check
 - [`/Users/uiwwsw/gitfolio/.env.example`](/Users/uiwwsw/gitfolio/.env.example)
 - [`/Users/uiwwsw/gitfolio/CONTRIBUTING.md`](/Users/uiwwsw/gitfolio/CONTRIBUTING.md)
 - [`/Users/uiwwsw/gitfolio/data/`](/Users/uiwwsw/gitfolio/data)
+- [`/Users/uiwwsw/gitfolio/docs/learning-loop.md`](/Users/uiwwsw/gitfolio/docs/learning-loop.md)

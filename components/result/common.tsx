@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { getDictionary } from "@/lib/i18n";
-import type { Locale } from "@/lib/schemas";
+import type { BenchmarkSnapshot, Locale } from "@/lib/schemas";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { type GitFolioAnalysis } from "@/lib/schemas";
@@ -61,6 +61,81 @@ export function FactGrid({
         label={dict.common.factFollowers}
         value={`${formatNumber(analysis.facts.followers, locale)}${dict.common.followerUnit}`}
       />
+    </div>
+  );
+}
+
+export function BenchmarkSnapshotBlock({
+  benchmark,
+  locale,
+}: {
+  benchmark: BenchmarkSnapshot;
+  locale: Locale;
+}) {
+  const dict = getDictionary(locale);
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FactCard
+          label={dict.common.benchmarkOverall}
+          value={
+            locale === "ko"
+              ? `상위 ${benchmark.overallPercentile}%`
+              : `Top ${benchmark.overallPercentile}%`
+          }
+        />
+        <FactCard
+          label={dict.common.confidenceLabel}
+          value={`${benchmark.confidenceScore}/100`}
+        />
+        <FactCard label={dict.common.cohortLabel} value={benchmark.cohortLabel} />
+        <FactCard
+          label={dict.common.sampleSizeLabel}
+          value={formatNumber(benchmark.sampleSize, locale)}
+        />
+      </div>
+      <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p>
+      <div className="space-y-3">
+        {benchmark.metrics.map((metric) => (
+          <div
+            className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+            key={metric.id}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-medium text-neutral-900">{metric.label}</p>
+              <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
+                {locale === "ko"
+                  ? `상위 ${metric.percentile}%`
+                  : `Top ${metric.percentile}%`}
+              </span>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">{metric.note}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PublicDataScope({
+  locale,
+}: {
+  locale: Locale;
+}) {
+  const dict = getDictionary(locale);
+  const items = dict.home.dataScopeItems;
+
+  return (
+    <div className="space-y-3">
+      {[items.profile, items.repositories, items.limits].map((item) => (
+        <div
+          className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+          key={item}
+        >
+          <p className="text-sm leading-6 text-neutral-600">{item}</p>
+        </div>
+      ))}
     </div>
   );
 }

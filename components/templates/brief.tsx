@@ -1,17 +1,19 @@
 import { getDictionary } from "@/lib/i18n";
-import { DocumentFooter, EvidenceList, FactGrid, ProjectList, SectionBlock, ChipList } from "@/components/result/common";
+import { BenchmarkSnapshotBlock, DocumentFooter, EvidenceList, FactGrid, ProjectList, PublicDataScope, SectionBlock, ChipList } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
-import { type GitFolioAnalysis, type Locale } from "@/lib/schemas";
+import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 
 export function BriefTemplate({
   analysis,
+  benchmark,
   generatedAt,
   mode,
   profileUrl,
   locale,
 }: {
   analysis: GitFolioAnalysis;
+  benchmark: BenchmarkSnapshot;
   generatedAt: string;
   mode: "openai" | "fallback";
   profileUrl: string;
@@ -74,11 +76,17 @@ export function BriefTemplate({
           <SectionBlock title={dict.templates.brief.sections.workingStyle} eyebrow={dict.templates.brief.sections.workingStyle}>
             <p>{analysis.inferred.workingStyle}</p>
           </SectionBlock>
+          <SectionBlock title={dict.templates.brief.sections.benchmark} eyebrow={dict.templates.brief.sections.benchmark}>
+            <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} />
+          </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.bestFit} eyebrow={dict.templates.brief.sections.bestFit}>
             <ChipList items={analysis.inferred.bestFitRoles} />
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.evidence} eyebrow={dict.templates.brief.sections.evidence}>
             <EvidenceList analysis={analysis} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.brief.sections.dataScope} eyebrow={dict.templates.brief.sections.dataScope}>
+            <PublicDataScope locale={locale} />
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.source} eyebrow={dict.templates.brief.sections.source}>
             <a className="break-all underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">

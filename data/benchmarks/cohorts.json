@@ -1,0 +1,224 @@
+[
+  {
+    "id": "frontend",
+    "label": { "ko": "프론트엔드 성향 집단", "en": "frontend-leaning cohort" },
+    "sampleSize": 1280,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 12, "p25": 24, "p50": 42, "p75": 63, "p90": 79 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 8, "p25": 18, "p50": 35, "p75": 56, "p90": 74 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 10, "p25": 22, "p50": 39, "p75": 58, "p90": 76 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 5, "p25": 12, "p50": 24, "p75": 43, "p90": 61 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 10, "p25": 23, "p50": 41, "p75": 62, "p90": 82 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 12, "p25": 25, "p50": 44, "p75": 66, "p90": 84 }
+      }
+    ]
+  },
+  {
+    "id": "backend",
+    "label": { "ko": "백엔드 성향 집단", "en": "backend-leaning cohort" },
+    "sampleSize": 1160,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 11, "p25": 22, "p50": 40, "p75": 60, "p90": 78 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 7, "p25": 16, "p50": 32, "p75": 52, "p90": 71 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 9, "p25": 19, "p50": 35, "p75": 53, "p90": 72 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 6, "p25": 15, "p50": 29, "p75": 48, "p90": 67 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 8, "p25": 20, "p50": 37, "p75": 58, "p90": 79 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 14, "p25": 27, "p50": 47, "p75": 68, "p90": 86 }
+      }
+    ]
+  },
+  {
+    "id": "mobile",
+    "label": { "ko": "모바일 성향 집단", "en": "mobile-leaning cohort" },
+    "sampleSize": 720,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 10, "p25": 20, "p50": 36, "p75": 56, "p90": 74 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 6, "p25": 14, "p50": 29, "p75": 47, "p90": 68 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 11, "p25": 23, "p50": 41, "p75": 61, "p90": 79 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 5, "p25": 11, "p50": 22, "p75": 39, "p90": 58 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 9, "p25": 21, "p50": 40, "p75": 60, "p90": 81 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 15, "p25": 29, "p50": 49, "p75": 70, "p90": 87 }
+      }
+    ]
+  },
+  {
+    "id": "ai",
+    "label": { "ko": "AI 응용 성향 집단", "en": "AI-application cohort" },
+    "sampleSize": 690,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 9, "p25": 19, "p50": 35, "p75": 55, "p90": 73 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 7, "p25": 16, "p50": 31, "p75": 50, "p90": 70 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 8, "p25": 18, "p50": 34, "p75": 54, "p90": 73 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 5, "p25": 12, "p50": 25, "p75": 43, "p90": 62 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 9, "p25": 20, "p50": 37, "p75": 58, "p90": 78 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 16, "p25": 30, "p50": 50, "p75": 71, "p90": 88 }
+      }
+    ]
+  },
+  {
+    "id": "devtools",
+    "label": { "ko": "툴링 성향 집단", "en": "tooling/devtools cohort" },
+    "sampleSize": 540,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 10, "p25": 20, "p50": 37, "p75": 57, "p90": 76 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 8, "p25": 18, "p50": 34, "p75": 53, "p90": 72 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 7, "p25": 16, "p50": 31, "p75": 49, "p90": 68 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 9, "p25": 20, "p50": 36, "p75": 55, "p90": 74 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 8, "p25": 18, "p50": 33, "p75": 52, "p90": 73 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 18, "p25": 32, "p50": 52, "p75": 72, "p90": 88 }
+      }
+    ]
+  },
+  {
+    "id": "generalist",
+    "label": { "ko": "범용 제품 개발 집단", "en": "generalist product-builder cohort" },
+    "sampleSize": 1480,
+    "metrics": [
+      {
+        "id": "activity",
+        "label": { "ko": "활동성", "en": "activity" },
+        "distribution": { "p10": 10, "p25": 21, "p50": 38, "p75": 58, "p90": 76 }
+      },
+      {
+        "id": "documentation",
+        "label": { "ko": "문서화", "en": "documentation" },
+        "distribution": { "p10": 7, "p25": 15, "p50": 30, "p75": 49, "p90": 69 }
+      },
+      {
+        "id": "shipping",
+        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "distribution": { "p10": 9, "p25": 19, "p50": 35, "p75": 55, "p90": 74 }
+      },
+      {
+        "id": "quality",
+        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "distribution": { "p10": 5, "p25": 11, "p50": 23, "p75": 41, "p90": 60 }
+      },
+      {
+        "id": "portfolioClarity",
+        "label": { "ko": "포트폴리오 선명도", "en": "portfolio clarity" },
+        "distribution": { "p10": 8, "p25": 18, "p50": 34, "p75": 54, "p90": 75 }
+      },
+      {
+        "id": "specializationClarity",
+        "label": { "ko": "전문성 선명도", "en": "specialization clarity" },
+        "distribution": { "p10": 9, "p25": 19, "p50": 34, "p75": 54, "p90": 72 }
+      }
+    ]
+  }
+]
