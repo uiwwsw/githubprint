@@ -35,25 +35,27 @@ export function ProfileTemplate({
       }
     >
       <header className="border-b border-black/[0.08] pb-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
+        <div className="flex flex-col gap-8">
+          <div className="min-w-0 max-w-none">
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.profile.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-5xl leading-tight text-neutral-950">
+            <h1 className="mt-3 font-serif text-[clamp(2.8rem,6.5vw,4.1rem)] leading-[1.04] text-neutral-950">
               {analysis.profile.headline}
             </h1>
             <p className="mt-5 text-[17px] leading-8 text-neutral-700">{analysis.profile.summary}</p>
           </div>
-          <div className="rounded-[1.8rem] border border-black/[0.08] bg-black/[0.025] p-5">
-            <div className="flex items-center gap-4">
+          <div className="w-full max-w-[27rem] self-start rounded-[1.8rem] border border-black/[0.08] bg-black/[0.025] p-5">
+            <div className="flex min-w-0 items-center gap-4">
               <img
                 alt={analysis.profile.name}
-                className="h-[4.5rem] w-[4.5rem] rounded-[1.5rem] object-cover"
+                className="h-[4.5rem] w-[4.5rem] shrink-0 rounded-[1.5rem] object-cover"
                 src={analysis.profile.avatarUrl}
               />
-              <div>
-                <p className="font-serif text-2xl text-neutral-950">{analysis.profile.name}</p>
-                <p className="mt-1 text-sm text-neutral-500">@{analysis.profile.username}</p>
-                <a className="mt-3 inline-block text-sm underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
+              <div className="min-w-0 flex-1">
+                <p className="break-words font-serif text-[clamp(1.8rem,4vw,2.25rem)] leading-none text-neutral-950">
+                  {analysis.profile.name}
+                </p>
+                <p className="mt-1 truncate text-sm text-neutral-500">@{analysis.profile.username}</p>
+                <a className="mt-3 inline-flex max-w-full break-all text-sm underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
                   {dict.common.githubProfile}
                 </a>
               </div>
@@ -65,8 +67,8 @@ export function ProfileTemplate({
         </div>
       </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_0.9fr]">
-        <div className="space-y-6">
+      <div className="document-grid-profile mt-8">
+        <div className="min-w-0 space-y-6">
           <SectionBlock title={dict.templates.profile.sections.type} eyebrow={dict.templates.profile.sections.type}>
             <p>{analysis.inferred.developerType}</p>
           </SectionBlock>
@@ -77,7 +79,7 @@ export function ProfileTemplate({
             <ProjectList analysis={analysis} locale={locale} />
           </SectionBlock>
         </div>
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <SectionBlock title={dict.templates.profile.sections.tech} eyebrow={dict.templates.profile.sections.tech}>
             <ChipList items={analysis.facts.topLanguages} />
           </SectionBlock>

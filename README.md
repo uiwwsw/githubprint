@@ -1,249 +1,270 @@
 # GitFolio
 
-GitFolio is a minimal two-page web app that turns a public GitHub URL into a polished developer document.
+Turn a public GitHub URL into a polished, PDF-ready developer document.
 
-GitFolio는 공개 GitHub URL을 읽기 쉬운 개발자 문서로 바꿔 주는 2페이지 MVP입니다.
+공개 GitHub URL을 전달 가능한 개발자 문서로 바꾸는 2페이지 MVP입니다.
+
+`Next.js 16` `TypeScript` `Tailwind CSS v4` `OpenAI` `GitHub API` `Bilingual UI`
+
+[English](#english) | [한국어](#한국어) | [Contributing](./CONTRIBUTING.md)
+
+## English
+
+### Overview
+
+GitFolio is a minimal product, not an analysis dashboard.
+
+It keeps a single analysis model and renders that shared data through three document templates:
+
+- `brief`: compressed, resume-adjacent summary
+- `profile`: balanced default document
+- `insight`: interpretation-heavy report
+
+The product surface is intentionally small:
 
 - Public page 1: `/`
 - Public page 2: `/result`
-- One analysis model, three presentation templates: `brief`, `profile`, `insight`
-- A4-friendly preview with browser print-to-PDF download
-- Bilingual UI and result generation: Korean and English
+- Localized public paths: `/en`, `/en/result`
 
-## Features
+The output is designed to feel like a document first, with A4-friendly print styles and browser PDF export.
 
-- Accepts both GitHub profile URLs and repository URLs
-- Validates and extracts the GitHub username on the server
-- Fetches public GitHub data on the server
-- Uses OpenAI for structured JSON analysis with Zod validation
-- Falls back to deterministic summary generation when AI is unavailable
-- Supports Korean and English through path-based locale URLs
-- Adds localized SEO metadata for Korean and English on the home page
-- Marks dynamic result pages as `noindex` to avoid indexing user-specific documents
-- Includes `robots.txt` and `sitemap.xml`
+### Product Contract
 
-## Tech Stack
+These constraints are intentional and should stay true unless the product direction changes:
 
-- Next.js 16 App Router
-- TypeScript
-- Tailwind CSS v4
-- Zod
-- OpenAI Responses API
-- Server-side GitHub fetching
+- One input flow, one result flow
+- No auth
+- No dashboard
+- No database for the MVP
+- No extra public marketing pages
+- One underlying analysis schema, multiple presentation templates
+- Server-side GitHub fetch and server-side AI analysis
+- Graceful deterministic fallback when OpenAI is unavailable
 
-## Routes
+### What It Does
 
-- `/`
-  - Input page
-  - GitHub URL field
-  - Template selector
-  - Language toggle
-- `/en`
-  - English input page
-- `/result`
-  - Result document preview
-  - Download action
-  - Language toggle
-- `/en/result`
-  - English result document preview
+- Accepts a GitHub profile URL or repository URL
+- Extracts the GitHub username on the server
+- Fetches public GitHub profile and repository signals
+- Selects representative projects from multiple weighted signals
+- Generates a structured JSON analysis validated with Zod
+- Falls back to deterministic copy when the AI step fails
+- Renders a print-optimized result page in Korean or English
 
-The app still keeps one input flow and one result flow, with language-specific public paths.
+### Localized Routing
 
-## Localization
+- Korean home: `/`
+- Korean result: `/result`
+- English home: `/en`
+- English result: `/en/result`
 
-Supported locales:
+Locale switching is path-based, not query-based. Legacy `?lang=en` URLs are redirected to the canonical path form.
 
-- `ko` (default)
-- `en`
+### SEO
 
-How it works:
+Home pages are indexable and localized:
 
-- Locale is handled through path-based public URLs.
-- Korean uses `/` and `/result`.
-- English uses `/en` and `/en/result`.
-- The selected locale is preserved from input page to result page.
-- UI copy, loading state, error state, metadata, and analysis output all follow the selected locale.
-- Browser language detection is used only for UX suggestion on the home page, not for search-indexable HTML variation.
-- Legacy `?lang=en` style URLs are redirected to path-based locale URLs.
+- localized `title`, `description`, `keywords`
+- localized Open Graph and Twitter metadata
+- canonical URLs for `/` and `/en`
+- alternate language metadata for Korean and English
+- `robots.txt` and `sitemap.xml`
 
-Examples:
+Result pages are intentionally not indexed:
 
-- `http://localhost:3000/`
-- `http://localhost:3000/en`
-- `http://localhost:3000/result?url=https%3A%2F%2Fgithub.com%2Fvercel&template=profile`
-- `http://localhost:3000/en/result?url=https%3A%2F%2Fgithub.com%2Fvercel&template=insight`
+- `noindex, nofollow`
+- user-specific and query-driven by design
 
-## SEO
+### Architecture
 
-Home page SEO:
+| Path | Responsibility |
+| --- | --- |
+| [`/Users/uiwwsw/gitfolio/app/page.tsx`](/Users/uiwwsw/gitfolio/app/page.tsx) | Korean home route |
+| [`/Users/uiwwsw/gitfolio/app/en/page.tsx`](/Users/uiwwsw/gitfolio/app/en/page.tsx) | English home route |
+| [`/Users/uiwwsw/gitfolio/app/result/page.tsx`](/Users/uiwwsw/gitfolio/app/result/page.tsx) | Korean result route |
+| [`/Users/uiwwsw/gitfolio/app/en/result/page.tsx`](/Users/uiwwsw/gitfolio/app/en/result/page.tsx) | English result route |
+| [`/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx) | Shared home page UI |
+| [`/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx) | Shared result page flow |
+| [`/Users/uiwwsw/gitfolio/lib/github.ts`](/Users/uiwwsw/gitfolio/lib/github.ts) | GitHub fetching, scoring, caching |
+| [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts) | OpenAI analysis and fallback generation |
+| [`/Users/uiwwsw/gitfolio/lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts) | Zod schemas for search params and analysis output |
+| [`/Users/uiwwsw/gitfolio/lib/i18n.ts`](/Users/uiwwsw/gitfolio/lib/i18n.ts) | Dictionaries, locale helpers, localized path logic |
+| [`/Users/uiwwsw/gitfolio/lib/seo.ts`](/Users/uiwwsw/gitfolio/lib/seo.ts) | Metadata builders |
+| [`/Users/uiwwsw/gitfolio/proxy.ts`](/Users/uiwwsw/gitfolio/proxy.ts) | Locale query redirect and request locale header |
+| [`/Users/uiwwsw/gitfolio/components/templates/brief.tsx`](/Users/uiwwsw/gitfolio/components/templates/brief.tsx) | Brief document template |
+| [`/Users/uiwwsw/gitfolio/components/templates/profile.tsx`](/Users/uiwwsw/gitfolio/components/templates/profile.tsx) | Profile document template |
+| [`/Users/uiwwsw/gitfolio/components/templates/insight.tsx`](/Users/uiwwsw/gitfolio/components/templates/insight.tsx) | Insight document template |
 
-- Localized `title`, `description`, `keywords`
-- Localized Open Graph and Twitter metadata
-- Canonical and alternate language metadata for `/` and `/en`
-- Path-based locale URLs instead of query-parameter locale URLs
-- Search-indexable HTML no longer changes by `Accept-Language`
+### Prerequisites
 
-Result page SEO:
+- Node.js `20.9+`
+- npm `10+`
+- `GITHUB_TOKEN` recommended
+- `OPENAI_API_KEY` required for AI analysis
 
-- Localized metadata for the selected locale
-- `noindex, nofollow` because result pages are user-specific and query-driven
+### Getting Started
 
-Discovery support:
-
-- `app/robots.ts` serves `robots.txt`
-- `app/sitemap.ts` serves `sitemap.xml`
-
-Environment note:
-
-- `NEXT_PUBLIC_SITE_URL` is used as the metadata base for canonical/Open Graph URLs
-
-## Environment Variables
-
-Copy the example file first:
-
-```bash
-cp .env.example .env.local
-```
-
-Required for best results:
-
-- `GITHUB_TOKEN`
-  - Recommended to avoid tight GitHub API rate limits
-- `OPENAI_API_KEY`
-  - Required for AI-generated structured analysis
-
-Optional:
-
-- `OPENAI_MODEL`
-  - Defaults to `gpt-5-mini`
-- `NEXT_PUBLIC_SITE_URL`
-  - Defaults to `http://localhost:3000`
-- `GITFOLIO_USE_FIXTURE=1`
-  - Enables the local mock fixture in development only
-
-## Local Setup
-
-1. Install dependencies
+1. Install dependencies.
 
 ```bash
 npm install
 ```
 
-2. Configure environment variables
+2. Copy environment variables.
 
 ```bash
 cp .env.example .env.local
 ```
 
-3. Run the development server
+3. Start the development server.
 
 ```bash
 npm run dev
 ```
 
-4. Open the app
+4. Open the app.
 
 ```text
 http://localhost:3000
 ```
 
-## Product Flow
+Production:
 
-1. Enter a GitHub URL on `/`
-2. Choose a template
-3. Choose Korean or English if needed
-4. Click convert
-5. GitFolio fetches GitHub data on the server
-6. GitFolio generates a structured analysis
-7. `/result` renders the same data through the selected template
-8. Download through the browser print/PDF flow
+```text
+https://gitfolio-seven.vercel.app
+```
 
-## Input Rules
+### Environment Variables
 
-Accepted:
+| Variable | Required | Description |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | Recommended | Raises GitHub API limits and improves reliability |
+| `OPENAI_API_KEY` | Yes | Enables structured analysis generation |
+| `OPENAI_MODEL` | No | Overrides the default model, currently `gpt-5-mini` |
+| `NEXT_PUBLIC_SITE_URL` | No | Canonical origin for metadata, defaults to `https://gitfolio-seven.vercel.app` |
+| `GITFOLIO_USE_FIXTURE` | No | Enables local fixture mode for development only |
 
-- `https://github.com/username`
-- `https://github.com/username/repository`
-- `github.com/username`
+### Available Scripts
 
-Handled errors:
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the local Next.js dev server |
+| `npm run build` | Create a production build |
+| `npm run start` | Run the production server |
+| `npm run typecheck` | Run TypeScript checks |
+| `npm run check` | Run typecheck and production build |
 
-- Invalid GitHub URL format
-- Unsupported host
-- Failed username extraction
-- Unknown user
-- Organization account
-- GitHub API rate limiting
+### Fixture Mode
 
-## Architecture
-
-- [`app/page.tsx`](/Users/uiwwsw/gitfolio/app/page.tsx)
-  - Input page and localized home metadata
-- [`app/result/page.tsx`](/Users/uiwwsw/gitfolio/app/result/page.tsx)
-  - Result page, localized result metadata, localized error handling
-- [`lib/github.ts`](/Users/uiwwsw/gitfolio/lib/github.ts)
-  - GitHub fetching, project scoring, caching, locale-aware activity/evidence signals
-- [`lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts)
-  - OpenAI analysis, locale-aware fallback generation, structured JSON validation
-- [`lib/i18n.ts`](/Users/uiwwsw/gitfolio/lib/i18n.ts)
-  - Locale resolution, path helpers, and UI copy
-- [`lib/seo.ts`](/Users/uiwwsw/gitfolio/lib/seo.ts)
-  - Metadata helpers for bilingual SEO
-- [`proxy.ts`](/Users/uiwwsw/gitfolio/proxy.ts)
-  - legacy locale query redirect and request locale headers for `html lang`
-- [`lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts)
-  - Zod schemas for templates, locales, and analysis output
-- [`components/templates/brief.tsx`](/Users/uiwwsw/gitfolio/components/templates/brief.tsx)
-- [`components/templates/profile.tsx`](/Users/uiwwsw/gitfolio/components/templates/profile.tsx)
-- [`components/templates/insight.tsx`](/Users/uiwwsw/gitfolio/components/templates/insight.tsx)
-- [`fixtures/mock-profile.ts`](/Users/uiwwsw/gitfolio/fixtures/mock-profile.ts)
-  - Development fixture
-
-## Analysis Behavior
-
-GitFolio only uses public GitHub signals such as:
-
-- Profile metadata
-- Repository descriptions
-- README content
-- Topics
-- Top languages
-- Stars
-- Updated timestamps
-- Pinned repository signals when available
-
-Constraints:
-
-- It does not invent career history
-- It does not assume tenure, leadership, or business impact without evidence
-- It keeps conclusions interpretive rather than absolute
-
-## Caching
-
-- GitHub fetches use a short server cache
-- Analysis results also use a short cache
-- Locale is part of the result generation flow, so Korean and English outputs are treated independently
-
-## PDF Export
-
-- No separate PDF microservice is used
-- The result page is print-optimized HTML
-- The download button uses the browser print flow
-- Print CSS hides UI chrome and keeps the document layout clean on A4
-
-## Fixture Mode
-
-To work on UI quickly without hitting real APIs:
+For UI work without external API calls:
 
 ```bash
 GITFOLIO_USE_FIXTURE=1 npm run dev
 ```
 
-This is ignored in production.
+Fixture mode is a development convenience only. Production paths must not use fake data.
 
-## Verification
+### Verification
 
-Verified locally with:
+Before shipping or opening a PR:
 
-- `npm run typecheck`
-- `npm run build`
+```bash
+npm run check
+```
+
+### Collaboration Notes
+
+If you are contributing to GitFolio, preserve these rules:
+
+- Keep the user-facing product to two primary pages
+- Do not add auth, dashboards, or persistence-heavy flows unless product direction changes
+- Do not expose `GITHUB_TOKEN` or `OPENAI_API_KEY` to the client
+- Keep result pages printable and PDF-friendly
+- Keep AI output schema-first and validated with Zod
+- If the AI step fails, the result page must still render via fallback
+- Do not invent facts beyond public GitHub evidence
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the collaborator workflow.
+
+### Troubleshooting
+
+| Problem | What to check |
+| --- | --- |
+| GitHub rate limiting | Set `GITHUB_TOKEN`, then retry after reset |
+| Empty or missing result | Check URL normalization and public profile availability |
+| AI output rejection | Review schema validation in [`/Users/uiwwsw/gitfolio/lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts) and fallback logic in [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts) |
+| Wrong locale page | Use `/` for Korean and `/en` for English |
+
+## 한국어
+
+### 개요
+
+GitFolio는 분석 대시보드가 아니라, 공개 GitHub를 읽기 쉬운 문서로 바꾸는 작은 제품입니다.
+
+핵심 원칙은 단순합니다.
+
+- 사용자에게 보이는 주요 흐름은 입력 페이지와 결과 페이지 두 개뿐입니다.
+- 분석 데이터 모델은 하나이고, 템플릿만 다르게 보여 줍니다.
+- 결과물은 웹 페이지이면서 동시에 A4 출력과 브라우저 PDF 저장에 맞춰져 있습니다.
+
+### 제품 구조
+
+- 한국어 홈: `/`
+- 한국어 결과: `/result`
+- 영어 홈: `/en`
+- 영어 결과: `/en/result`
+
+### 주요 기능
+
+- profile URL과 repo URL 모두 입력 가능
+- 서버에서 GitHub username 추출 및 검증
+- 공개 GitHub 데이터 서버 수집
+- OpenAI 구조화 분석 JSON 생성
+- Zod 검증 실패 시 deterministic fallback 생성
+- 한국어/영어 UI 및 결과 문서 지원
+- 홈 페이지 다국어 SEO 지원
+- 결과 페이지 `noindex` 처리
+
+### 빠른 시작
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+브라우저에서 `http://localhost:3000`을 열면 됩니다.
+
+배포 주소는 `https://gitfolio-seven.vercel.app` 입니다.
+
+### 환경 변수
+
+| 변수 | 필수 여부 | 설명 |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | 권장 | GitHub API rate limit 완화 |
+| `OPENAI_API_KEY` | 필수 | AI 분석 생성 |
+| `OPENAI_MODEL` | 선택 | 기본값은 `gpt-5-mini` |
+| `NEXT_PUBLIC_SITE_URL` | 선택 | canonical / OG 메타데이터 기준 주소. 기본값은 `https://gitfolio-seven.vercel.app` |
+| `GITFOLIO_USE_FIXTURE` | 선택 | 개발 전용 fixture 모드 |
+
+### 협업 가이드
+
+협업 시에는 아래 원칙을 유지하는 것이 중요합니다.
+
+- 퍼블릭 제품 구조는 두 페이지를 유지합니다.
+- auth, dashboard, DB 의존 기능은 MVP 범위를 벗어나므로 함부로 추가하지 않습니다.
+- 비밀키는 클라이언트에 노출하지 않습니다.
+- 결과 페이지는 항상 인쇄 가능한 문서 형태를 유지합니다.
+- AI 응답은 반드시 스키마 검증을 거칩니다.
+- AI 실패 시에도 결과 페이지는 fallback으로 깨지지 않아야 합니다.
+- GitHub 공개 정보 이상을 단정적으로 만들어내지 않습니다.
+
+자세한 협업 규칙은 [CONTRIBUTING.md](./CONTRIBUTING.md)를 참고하면 됩니다.
+
+### 검증
+
+출시 전이나 PR 전에는 아래 명령을 권장합니다.
+
+```bash
+npm run check
+```

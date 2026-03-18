@@ -32,20 +32,20 @@ export function BriefTemplate({
         </div>
       }
     >
-      <div className="grid gap-8 lg:grid-cols-[1.35fr_0.85fr]">
-        <div>
-          <div className="flex items-start gap-5">
+      <div className="document-grid-brief gap-8">
+        <div className="min-w-0">
+          <div className="flex min-w-0 items-start gap-5">
             <img
               alt={analysis.profile.name}
-              className="h-20 w-20 rounded-[1.6rem] object-cover"
+              className="h-20 w-20 shrink-0 rounded-[1.6rem] object-cover"
               src={analysis.profile.avatarUrl}
             />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.brief.eyebrow}</p>
-              <h1 className="mt-2 font-serif text-4xl leading-tight text-neutral-950">
+              <h1 className="mt-2 break-words font-serif text-[clamp(2.2rem,5vw,3.3rem)] leading-tight text-neutral-950">
                 {analysis.profile.name}
               </h1>
-              <p className="mt-2 text-sm text-neutral-500">@{analysis.profile.username}</p>
+              <p className="mt-2 truncate text-sm text-neutral-500">@{analysis.profile.username}</p>
               <p className="mt-4 text-lg leading-8 text-neutral-800">{analysis.profile.headline}</p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function BriefTemplate({
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <SectionBlock title={dict.templates.brief.sections.type} eyebrow={dict.templates.brief.sections.type}>
             <p>{analysis.inferred.developerType}</p>
           </SectionBlock>
@@ -81,7 +81,7 @@ export function BriefTemplate({
             <EvidenceList analysis={analysis} />
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.source} eyebrow={dict.templates.brief.sections.source}>
-            <a className="underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
+            <a className="break-all underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
               {profileUrl}
             </a>
           </SectionBlock>
