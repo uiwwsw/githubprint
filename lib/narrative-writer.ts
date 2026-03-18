@@ -78,7 +78,7 @@ function buildDeveloperTypeText(
   }
 
   return locale === "ko"
-    ? `${base} 보조적으로는 ${secondary.label} 관련 신호도 함께 보입니다.`
+    ? `${base} 보조적으로는 ${secondary.label} 관련 경험도 함께 보입니다.`
     : `${base} Secondary signals around ${secondary.label} are also visible.`;
 }
 
@@ -91,7 +91,7 @@ function buildWorkingStyleText(
 
   if (!primary) {
     return locale === "ko"
-      ? "작업 방식은 공개 저장소 기준에서 제한적으로만 읽힙니다."
+      ? "작업 방식은 공개 저장소 기준으로는 제한적으로만 드러납니다."
       : "Working-style signals are only partially visible from public repositories.";
   }
 
@@ -122,7 +122,7 @@ function buildSummaryText(
     name: source.account.name ?? source.account.username,
     primaryOrientation:
       scoring.primaryOrientation?.label ??
-      (locale === "ko" ? "범용 구현" : "general implementation"),
+      (locale === "ko" ? "폭넓은 구현" : "general implementation"),
     primaryStyle:
       scoring.primaryWorkingStyle?.label ??
       (locale === "ko" ? "구현 중심 작업" : "implementation-led work"),
@@ -148,7 +148,7 @@ function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   }
   strengths.push(
     locale === "ko"
-      ? "대표 프로젝트를 기준으로 기술 선택과 관심 영역을 비교적 빠르게 읽을 수 있습니다."
+      ? "대표 프로젝트를 기준으로 기술 선택과 관심 영역을 비교적 빠르게 파악할 수 있습니다."
       : "The standout repositories make recurring technical choices and interests relatively easy to read.",
   );
   strengths.push(
@@ -203,7 +203,7 @@ function buildFallbackRoles(
   );
   fallback.push(
     locale === "ko"
-      ? "작은 팀의 범용 제품 개발 역할"
+      ? "작은 팀에서 여러 영역을 맡는 제품 개발 역할"
       : "General product development in smaller teams",
   );
 

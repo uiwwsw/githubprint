@@ -368,7 +368,7 @@ async function fetchPinnedRepos(
   return json.data.user.pinnedItems.nodes.map((repo) => ({
     name: repo.name,
     description: repo.description,
-    homepageUrl: repo.homepageUrl ?? "",
+    homepageUrl: sanitizeExternalUrl(repo.homepageUrl ?? ""),
     stars: repo.stargazerCount,
     topics: repo.repositoryTopics.nodes.map((node) => node.topic.name),
     updatedAt: repo.updatedAt,
@@ -403,6 +403,23 @@ function sanitizeReadme(readme: string | null) {
     .replace(/\n{3,}/g, "\n\n")
     .slice(0, 1600)
     .trim();
+}
+
+function sanitizeExternalUrl(url: string | null | undefined) {
+  if (!url) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "";
+    }
+
+    return parsed.toString();
+  } catch {
+    return "";
+  }
 }
 
 async function fetchRepoReadme(
@@ -555,7 +572,7 @@ function formatActivityNote(
 ) {
   if (!lastActiveAt) {
     return locale === "ko"
-      ? "공개 저장소 활동 신호가 많지 않아 최근 작업 패턴을 읽기 어렵습니다."
+      ? "공개 저장소 활동이 많지 않아 최근 작업 패턴을 파악하기 어렵습니다."
       : "There are not many public repository activity signals, so recent working patterns are hard to read.";
   }
 
@@ -656,7 +673,7 @@ function buildEvidenceSignals(
   if (source.representativeRepos.some((repo) => repo.homepageUrl)) {
     signals.push(
       locale === "ko"
-        ? "대표 프로젝트 중 실행 가능한 demo 혹은 외부 링크가 연결된 사례가 있습니다."
+        ? "대표 프로젝트 중 실행해 볼 수 있는 데모나 외부 링크가 연결된 사례가 있습니다."
         : "Some standout projects include a runnable demo or an external product link.",
     );
   }
@@ -790,7 +807,7 @@ async function fetchGitHubSourceInternal(
       defaultBranch: repo.default_branch,
       description: repo.description,
       forks: repo.forks_count,
-      homepageUrl: repo.homepage ?? "",
+      homepageUrl: sanitizeExternalUrl(repo.homepage ?? ""),
       isFork: repo.fork,
       isPinned: pinnedNames.has(repo.name.toLowerCase()),
       language: repo.language,
@@ -826,7 +843,9 @@ async function fetchGitHubSourceInternal(
       const mergedRepo: GitHubRepoSnapshot = {
         ...repo,
         description: repo.description ?? pinnedFromGraph?.description ?? null,
-        homepageUrl: repo.homepageUrl || pinnedFromGraph?.homepageUrl || "",
+        homepageUrl: sanitizeExternalUrl(
+          repo.homepageUrl || pinnedFromGraph?.homepageUrl || "",
+        ),
         readme: readmeMap.get(repo.name) ?? null,
         topics:
           repo.topics.length > 0
@@ -894,7 +913,7 @@ async function fetchGitHubSourceInternal(
       account: {
         avatarUrl: user.avatar_url,
         bio: user.bio,
-        blogUrl: user.blog,
+        blogUrl: sanitizeExternalUrl(user.blog),
         createdAt: user.created_at,
         followers: user.followers,
         following: user.following,

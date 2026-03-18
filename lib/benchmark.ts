@@ -134,17 +134,17 @@ function buildMetricNote(
 ) {
   if (percentile >= 75) {
     return locale === "ko"
-      ? `공개 GitHub 기준에서 ${label}이 비교적 강한 편입니다.`
+      ? `${label}은 공개 GitHub 기준에서 비교적 두드러집니다.`
       : `${label} is relatively strong against public GitHub peers.`;
   }
   if (percentile >= 45) {
     return locale === "ko"
-      ? `${label}은 비슷한 집단 안에서 중간 이상으로 읽힙니다.`
+      ? `${label}은 비슷한 개발자군 안에서 중간 이상입니다.`
       : `${label} reads as slightly above the middle of a similar cohort.`;
   }
 
   return locale === "ko"
-    ? `${label}은 아직 더 보수적으로 해석하는 편이 적절합니다.`
+    ? `${label}은 아직 단정하기 어려워 더 조심스럽게 보는 편이 맞습니다.`
     : `${label} should still be interpreted more conservatively.`;
 }
 
@@ -161,17 +161,17 @@ function buildBenchmarkInsight(
 
   if (overallPercentile >= 75) {
     return locale === "ko"
-      ? `${cohortLabel} 기준에서 전반적으로 상위권에 가깝고, 특히 ${strongest.join(", ")} 쪽 신호가 강합니다.`
+      ? `${cohortLabel} 안에서 전반적으로 상위권에 가깝고, 특히 ${strongest.join(", ")}이 두드러집니다.`
       : `Within the ${cohortLabel}, the profile lands in the stronger end overall, especially around ${strongest.join(", ")}.`;
   }
   if (overallPercentile >= 45) {
     return locale === "ko"
-      ? `${cohortLabel} 기준에서 중간 이상으로 읽히며, ${strongest.join(", ")} 쪽이 상대적으로 더 선명합니다.`
+      ? `${cohortLabel} 안에서 전반적으로 중간 이상이며, ${strongest.join(", ")}이 상대적으로 더 뚜렷합니다.`
       : `Within the ${cohortLabel}, the profile reads above the middle overall, with relatively clearer signals around ${strongest.join(", ")}.`;
   }
 
   return locale === "ko"
-    ? `${cohortLabel} 기준 비교는 아직 보수적으로 해석하는 편이 적절하지만, ${strongest.join(", ")} 쪽에서 상대적으로 더 많은 신호가 보입니다.`
+    ? `${cohortLabel}과의 비교는 아직 조심스럽게 봐야 하지만, ${strongest.join(", ")}이 상대적으로 더 두드러집니다.`
     : `Comparison against the ${cohortLabel} should still be read conservatively, but ${strongest.join(", ")} currently show the clearest relative signals.`;
 }
 

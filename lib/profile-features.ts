@@ -41,6 +41,23 @@ function normalizeText(value: string) {
   return value.trim().toLowerCase();
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function includesWithTokenBoundary(haystack: string, needle: string) {
+  if (needle.includes(" ")) {
+    return haystack.includes(needle);
+  }
+
+  const pattern = new RegExp(
+    `(^|[^a-z0-9])${escapeRegExp(needle)}(?=$|[^a-z0-9])`,
+    "i",
+  );
+
+  return pattern.test(haystack);
+}
+
 function matchesSignal(config: SignalConfig, haystacks: string[]) {
   if (!config.matches?.length) {
     return false;
@@ -51,7 +68,7 @@ function matchesSignal(config: SignalConfig, haystacks: string[]) {
     return config.matches!.some((rawNeedle) => {
       const needle = normalizeText(rawNeedle);
       if (config.matchMode === "includes") {
-        return haystack.includes(needle);
+        return includesWithTokenBoundary(haystack, needle);
       }
       if (config.matchMode === "startsWith") {
         return haystack.startsWith(needle);
