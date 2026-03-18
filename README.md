@@ -1,9 +1,13 @@
 <div align="center">
   <h1>GitFolio</h1>
-  <p><strong>Turn a public GitHub URL into a shareable, PDF-ready developer brief.</strong></p>
-  <p>공개 GitHub URL을 읽기 쉬운 A4 문서 형태의 개발자 소개 자료로 바꾸는 bilingual web app.</p>
+  <p><strong>Turn a public GitHub profile into a shareable, PDF-ready developer document.</strong></p>
+  <p>공개 GitHub 프로필을 공유 가능한 PDF형 개발자 문서로 정리합니다.</p>
   <p>
     <a href="https://gitfolio-seven.vercel.app">Live</a>
+    ·
+    <a href="#english">English</a>
+    ·
+    <a href="#한국어">한국어</a>
     ·
     <a href="./CONTRIBUTING.md">Contributing</a>
     ·
@@ -15,188 +19,114 @@
     <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" />
     <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-optional-111111" />
     <img alt="GitHub API" src="https://img.shields.io/badge/GitHub_API-public_data-181717?logo=github" />
-    <img alt="Bilingual" src="https://img.shields.io/badge/Locale-KO%20%2F%20EN-555555" />
+    <img alt="Locale" src="https://img.shields.io/badge/Locale-KO%20%2F%20EN-555555" />
   </p>
 </div>
 
-## GitFolio, Clearly
+## English
 
-GitFolio is a focused product.  
-It is not a dashboard, not a recruiting platform, and not a social profile builder.
+### Overview
 
-GitFolio takes one public GitHub URL and turns it into one shareable document.
+GitFolio turns public GitHub evidence into a readable developer document for sharing with recruiters, collaborators, or clients.
 
-- Input: a GitHub profile URL, repository URL, or username
-- Choice: one of three document templates
-- Output: a readable web document that is optimized for A4 print and browser PDF export
+- Input: GitHub profile URL, repository URL, or username
+- Output: a print-ready web document optimized for A4 and browser PDF export
+- Templates: `brief`, `profile`, `insight`
+- Analysis: OpenAI when available, schema-validated fallback otherwise
+- Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
 
-핵심은 단순합니다.
+### Scope
 
-- 입력: GitHub URL 또는 username
-- 선택: 템플릿 1개
-- 결과: 전달 가능한 문서 1개
+GitFolio uses only public GitHub information:
 
-## Status
+- profile metadata
+- public repositories
+- README content
+- topics, stars, update history, and homepage links
+- selected root files and recent commit messages
 
-> **Current stage: early v1 beta**  
-> **현재 단계: early v1 beta**
-
-GitFolio is past the “raw prototype” stage, but it is still deliberately narrow in scope.
-The current focus is not feature breadth. It is document quality, interpretation clarity, and a stable product loop.
-
-지금 GitFolio는 “대충 만든 MVP” 단계는 지났지만, 범위를 의도적으로 좁힌 상태입니다.
-현재 초점은 기능 수가 아니라 문서 품질, 해석의 명확성, 그리고 안정적인 개선 루프입니다.
-
-## What It Is
-
-- A two-page app with one clear job
-- A document-first interface instead of a metrics dashboard
-- A bilingual product with Korean and English routes
-- A GitHub-to-document pipeline with AI analysis plus deterministic fallback
-
-## What It Is Not
-
-- Not auth-heavy
-- Not database-centric
-- Not a multi-step wizard
-- Not a profile editor
-- Not a broad GitHub analytics suite
-
-## What You Get
-
-The same underlying analysis is rendered through three templates:
-
-| Template | Use | Tone |
-| --- | --- | --- |
-| `brief` | Short, compressed summary | Resume-adjacent |
-| `profile` | Balanced default document | General-purpose |
-| `insight` | Interpretation-heavy report | More analytical |
-
-GitFolio now also ships a **peer benchmark snapshot** on top of the document itself.
-
-- Which cohort does this profile most resemble?
-- How strong are activity, documentation, shipping, quality, and portfolio clarity signals inside that cohort?
-- How confident is the current reading?
-
-## Product Flow
-
-1. Enter a GitHub URL or username.
-2. Choose a template.
-3. Generate the result.
-4. Read it in-browser.
-5. Save it as PDF through the browser print flow.
-
-Public routes are intentionally small:
-
-- Korean home: `/`
-- Korean result: `/result`
-- English home: `/en`
-- English result: `/en/result`
-
-## What GitFolio Actually Tries To Say
-
-The goal is not to overclaim.  
-The goal is to produce a calm, readable summary of what is visible from public GitHub evidence.
-
-GitFolio tries to answer:
-
-- What kind of developer does this profile look like?
-- What do they seem to build repeatedly?
-- Which technologies show up most often?
-- What working style is visible from repositories, docs, files, and activity?
-- Which roles look like a reasonable fit?
-
-GitFolio does **not** try to assert:
+GitFolio does not assert:
 
 - career tenure
 - leadership
 - collaboration quality
 - business impact
-- anything that is not visible from public GitHub evidence
+- anything not visible from public GitHub evidence
 
-## How It Works
+Current product limits:
 
-At a high level:
+- individual developer accounts only; organization accounts are not supported
+- result pages are query-driven and intentionally not indexed
+- local development is more reliable with `GITHUB_TOKEN`
 
-1. Normalize the GitHub input on the server.
-2. Fetch public profile and repository data.
-3. Select representative repositories.
-4. Analyze the data with OpenAI when available.
-5. Fall back to a deterministic profiling engine when AI is unavailable or rejected.
-6. Render a print-optimized document.
+### Features
 
-## Data-Driven Profiling Engine
+- Three document templates rendered from the same analysis data
+- Cohort benchmark snapshot for activity, documentation, publication, quality, portfolio clarity, and specialization clarity
+- Server-side GitHub URL normalization and public data collection
+- AI analysis with a deterministic fallback path
+- Print-friendly result pages with browser PDF export
+- Fixture mode for UI work without external API calls
 
-The fallback analysis is intentionally not buried in a single hardcoded function anymore.
+## 한국어
 
-It follows this structure:
+### 개요
 
-1. [`/Users/uiwwsw/gitfolio/lib/github.ts`](/Users/uiwwsw/gitfolio/lib/github.ts) collects GitHub profile, repo, README, root file, and recent commit signals
-2. [`/Users/uiwwsw/gitfolio/lib/profile-features.ts`](/Users/uiwwsw/gitfolio/lib/profile-features.ts) converts raw GitHub data into normalized feature matches
-3. [`/Users/uiwwsw/gitfolio/data/signals/`](/Users/uiwwsw/gitfolio/data/signals) defines which languages, topics, files, keywords, and commit patterns matter
-4. [`/Users/uiwwsw/gitfolio/data/rules/`](/Users/uiwwsw/gitfolio/data/rules) defines scoring rules for developer orientation, working style, strengths, and role fit
-5. [`/Users/uiwwsw/gitfolio/data/templates/narratives.json`](/Users/uiwwsw/gitfolio/data/templates/narratives.json) defines the shareable narrative bands
-6. [`/Users/uiwwsw/gitfolio/lib/narrative-writer.ts`](/Users/uiwwsw/gitfolio/lib/narrative-writer.ts) turns those scores into the final JSON document
+GitFolio는 공개 GitHub 정보를 바탕으로 채용 담당자, 협업자, 클라이언트에게 전달할 수 있는 개발자 문서를 만듭니다.
 
-If you want to tune interpretation, prefer editing `data/*.json` before rewriting TypeScript logic.
+- 입력: GitHub 프로필 URL, 저장소 URL, 또는 사용자 이름(username)
+- 출력: A4 인쇄와 브라우저 PDF 저장에 맞춘 문서형 결과
+- 템플릿: `brief`, `profile`, `insight`
+- 분석: OpenAI 사용 가능 시 AI 분석, 불가 시 규칙 기반 대체 분석
+- 언어 경로: `/`, `/result`, `/en`, `/en/result`
 
-## Cohort Benchmark Layer
+### 범위
 
-GitFolio now includes a cohort-based benchmark layer in addition to the descriptive document.
+GitFolio는 공개 GitHub 정보만 사용합니다:
 
-- determine the closest visible cohort
-- score benchmark metrics inside that cohort
-- estimate percentile-style placement
-- expose a confidence score for how stable the current reading is
+- 프로필 메타데이터
+- 공개 저장소
+- README 내용
+- topic, star 수, 최근 업데이트, 홈페이지 링크
+- 일부 루트 파일과 최근 커밋 메시지
 
-This is intentionally **not** an “overall developer rank.”
-It is closer to: “how this public GitHub profile reads relative to a similar public cohort.”
+GitFolio는 다음 항목을 단정하지 않습니다:
 
-Baseline cohort distributions live in [`/Users/uiwwsw/gitfolio/data/benchmarks/cohorts.json`](/Users/uiwwsw/gitfolio/data/benchmarks/cohorts.json), and the runtime comparator lives in [`/Users/uiwwsw/gitfolio/lib/benchmark.ts`](/Users/uiwwsw/gitfolio/lib/benchmark.ts).
+- 경력 연차
+- 리더십
+- 협업 능력
+- 비즈니스 성과
+- 공개 GitHub 근거로 확인할 수 없는 내용
 
-## Internal Insight Capture
+현재 제품 제약:
 
-If GitFolio is meant to improve as more profiles are analyzed, it needs a machine-readable learning layer, not just prettier copy.
+- 개인 개발자 계정만 지원하며, 조직 계정은 지원하지 않습니다
+- 결과 페이지는 쿼리 기반 경로이며 검색 인덱싱 대상이 아닙니다
+- 로컬 개발은 `GITHUB_TOKEN`이 있을 때 더 안정적입니다
 
-That foundation now exists:
+### 주요 기능
 
-- [`/Users/uiwwsw/gitfolio/lib/internal-insights.ts`](/Users/uiwwsw/gitfolio/lib/internal-insights.ts) builds compact internal learning snapshots
-- `GITFOLIO_CAPTURE_INSIGHTS=1` stores those snapshots for internal tuning
-- each snapshot carries cohort, benchmark, matched signals, representative-repo shape, and scoring vectors
+- 같은 분석 데이터를 세 가지 문서 템플릿으로 렌더링
+- 활동성, 문서화, 외부 공개, 검증 흔적, 포트폴리오 선명도, 전문성 선명도를 보여주는 벤치마크 스냅샷
+- 서버 측 GitHub URL 정규화 및 공개 데이터 수집
+- AI 분석과 규칙 기반 fallback 경로
+- 인쇄 친화 결과 페이지와 브라우저 PDF 저장
+- 외부 API 없이 UI 작업이 가능한 fixture mode
 
-This makes it possible to evolve from rule-only interpretation toward a stronger internal benchmark service over time.
-
-The collaborator-facing process is documented in [`/Users/uiwwsw/gitfolio/docs/learning-loop.md`](/Users/uiwwsw/gitfolio/docs/learning-loop.md).
-
-## Architecture Snapshot
+## Architecture
 
 | Path | Responsibility |
 | --- | --- |
-| [`/Users/uiwwsw/gitfolio/app/page.tsx`](/Users/uiwwsw/gitfolio/app/page.tsx) | Korean home route |
-| [`/Users/uiwwsw/gitfolio/app/en/page.tsx`](/Users/uiwwsw/gitfolio/app/en/page.tsx) | English home route |
-| [`/Users/uiwwsw/gitfolio/app/result/page.tsx`](/Users/uiwwsw/gitfolio/app/result/page.tsx) | Korean result route |
-| [`/Users/uiwwsw/gitfolio/app/en/result/page.tsx`](/Users/uiwwsw/gitfolio/app/en/result/page.tsx) | English result route |
-| [`/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/home-page-content.tsx) | Shared landing UI |
-| [`/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx`](/Users/uiwwsw/gitfolio/components/pages/result-page-content.tsx) | Shared result flow |
-| [`/Users/uiwwsw/gitfolio/lib/analyze.ts`](/Users/uiwwsw/gitfolio/lib/analyze.ts) | AI analysis + deterministic fallback entry |
-| [`/Users/uiwwsw/gitfolio/lib/schemas.ts`](/Users/uiwwsw/gitfolio/lib/schemas.ts) | Zod schemas for routes and analysis output |
-| [`/Users/uiwwsw/gitfolio/lib/seo.ts`](/Users/uiwwsw/gitfolio/lib/seo.ts) | Metadata, canonical, alternate languages |
-| [`/Users/uiwwsw/gitfolio/proxy.ts`](/Users/uiwwsw/gitfolio/proxy.ts) | Path-based locale redirect handling |
-
-## SEO and Internationalization
-
-Home pages are indexable and localized.
-
-- Korean canonical: `/`
-- English canonical: `/en`
-- alternate language metadata is included
-- `robots.txt` and `sitemap.xml` are provided
-
-Result pages are intentionally not indexed.
-
-- `noindex, nofollow`
-- query-driven by design
-- not intended as search landing pages
+| `app/page.tsx` / `app/en/page.tsx` | Localized home routes |
+| `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes |
+| `components/templates/` | Document templates for `brief`, `profile`, and `insight` |
+| `lib/github.ts` | GitHub collection, caching, fixture mode, and representative repository selection |
+| `lib/analyze.ts` | AI analysis and fallback orchestration |
+| `lib/profile-features.ts` | Feature extraction from raw GitHub source data |
+| `data/signals/` | Signal definitions for languages, topics, files, and commit patterns |
+| `data/rules/` | Scoring rules for orientation, working style, strengths, and role fit |
+| `lib/benchmark.ts` | Cohort benchmark comparison |
+| `lib/seo.ts` | Canonical metadata, alternates, sitemap, and robots rules |
 
 ## Tech Stack
 
@@ -204,12 +134,12 @@ Result pages are intentionally not indexed.
 - TypeScript
 - Tailwind CSS v4
 - OpenAI Responses API
-- GitHub REST + GraphQL
+- GitHub REST API + GraphQL
 - Zod
 
 ## Local Development
 
-### Prerequisites
+### Requirements
 
 - Node.js `20.9+`
 - npm `10+`
@@ -222,61 +152,51 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open:
+Open [http://localhost:3000](http://localhost:3000).
 
-```text
-http://localhost:3000
-```
-
-Production:
-
-```text
-https://gitfolio-seven.vercel.app
-```
+Production is available at [gitfolio-seven.vercel.app](https://gitfolio-seven.vercel.app).
 
 ### Environment Variables
 
-| Variable | Required | Description |
+| Variable | Required | Purpose |
 | --- | --- | --- |
 | `GITHUB_TOKEN` | Recommended | Raises GitHub API limits and improves local reliability |
-| `OPENAI_API_KEY` | Optional | Enables AI analysis; deterministic fallback still works without it |
-| `OPENAI_MODEL` | No | Overrides the default model, currently `gpt-5-mini` |
-| `NEXT_PUBLIC_SITE_URL` | No | Canonical origin, defaults to `https://gitfolio-seven.vercel.app` |
-| `GITFOLIO_USE_FIXTURE` | No | Explicitly enables local fixture mode |
-| `GITFOLIO_CAPTURE_INSIGHTS` | No | Stores internal benchmark/scoring snapshots for future tuning |
-| `GITFOLIO_BENCHMARK_OVERRIDE_PATH` | No | Optional runtime path for testing aggregated benchmark files |
+| `OPENAI_API_KEY` | Optional | Enables AI analysis; fallback still works without it |
+| `OPENAI_MODEL` | Optional | Overrides the default model, currently `gpt-5-mini` |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Canonical origin for metadata and Open Graph tags |
+| `GITFOLIO_USE_FIXTURE` | Optional | Enables local fixture mode for UI work |
+| `GITFOLIO_CAPTURE_INSIGHTS` | Optional | Captures internal scoring snapshots for tuning |
+| `GITFOLIO_BENCHMARK_OVERRIDE_PATH` | Optional | Loads an aggregated benchmark JSON during local testing |
 
-### Local Rate Limit Behavior
+### Local GitHub Rate Limits
 
-If you run locally without `GITHUB_TOKEN`, GitFolio does three things:
+When you run without `GITHUB_TOKEN`, GitFolio:
 
 - reduces GitHub fetch depth
-- reuses the last successful local GitHub source from `.cache/`
-- if GitHub is already rate-limited and no local cache exists yet, renders a minimal local fallback document instead of crashing
-
-This keeps local iteration moving, but real testing quality is still much better with `GITHUB_TOKEN`.
+- reuses the last successful local source from `.cache/`
+- falls back to a minimal local document when no cache is available and GitHub is already rate-limited
 
 ### Fixture Mode
 
-For UI-only work without external API calls:
+For UI work without external API calls:
 
 ```bash
 GITFOLIO_USE_FIXTURE=1 npm run dev
 ```
 
-Fixture mode is development-only. Production paths must not use fake data.
+Fixture mode is development-only.
 
 ## Scripts
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start the local Next.js dev server |
+| `npm run dev` | Start the Next.js development server |
 | `npm run build` | Create a production build |
-| `npm run start` | Run the production server |
+| `npm run start` | Start the production server |
 | `npm run typecheck` | Run TypeScript checks |
-| `npm run check` | Run typecheck and production build |
-| `npm run insights:aggregate` | Aggregate captured internal insight snapshots into reports and derived benchmarks |
-| `npm run quality:regress` | Run fixture-based quality regressions for orientation, working style, cohort, and confidence |
+| `npm run check` | Run build, typecheck, and quality regressions |
+| `npm run quality:regress` | Run fixture-based quality regressions |
+| `npm run insights:aggregate` | Aggregate captured internal insight snapshots |
 
 ## Verification
 
@@ -286,41 +206,15 @@ Before shipping or opening a PR:
 npm run check
 ```
 
-`npm run check` now includes build, typecheck, and fixture-based quality regressions.
-If you want to run only the regression layer, use `npm run quality:regress`.
+`npm run check` runs:
 
-Regression reports are written to `.cache/gitfolio/reports/regression-summary.json` and `.md`.
+- production build
+- TypeScript checks
+- fixture-based quality regressions
 
-## Collaboration Notes
+Regression reports are written to `.cache/gitfolio/reports/`.
 
-If you contribute to GitFolio, keep these rules intact:
+## Additional Docs
 
-- preserve the two-page product surface
-- do not casually add auth, dashboards, or persistence-heavy flows
-- keep secrets server-only
-- keep result pages printable and PDF-friendly
-- keep AI output schema-first and Zod-validated
-- keep deterministic fallback usable when AI fails
-- do not invent facts beyond public GitHub evidence
-- prefer adjusting `data/*.json` rules before hardcoding new interpretation logic
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the collaborator workflow.
-
-## Korean Summary
-
-GitFolio는 “GitHub를 문서로 바꾸는 앱”입니다.  
-분석 대시보드가 아니라, 채용 담당자나 협업자에게 전달할 수 있는 결과물을 만드는 데 초점을 둡니다.
-
-현재 단계는 범위를 좁게 유지한 **early v1 beta**입니다.
-
-- 입력 페이지 1개
-- 결과 페이지 1개
-- 템플릿 3개
-- 동일한 분석 데이터 모델
-- 동일 성향 집단 기준 benchmark snapshot
-- confidence score
-- A4 출력 / 브라우저 PDF 저장 최적화
-- GitHub 공개 정보 기반
-- AI 실패 시 deterministic fallback 유지
-
-즉, “기능이 덜 붙은 실험작”보다는 “전달력과 해석 품질에 집중한 early v1 beta”에 더 가깝습니다.
+- [Contributing](./CONTRIBUTING.md)
+- [Learning Loop](./docs/learning-loop.md)
