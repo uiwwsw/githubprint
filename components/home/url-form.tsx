@@ -106,7 +106,7 @@ export function UrlForm({ locale }: { locale: Locale }) {
           data-form-type="other"
           data-lpignore="true"
           id="gitfolio-profile-url-input"
-          inputMode="url"
+          inputMode="text"
           name="gitfolioProfileUrl"
           onBlur={() => {
             setHasBlurredUrl(true);
@@ -119,7 +119,7 @@ export function UrlForm({ locale }: { locale: Locale }) {
           }}
           placeholder={dict.home.urlPlaceholder}
           spellCheck={false}
-          type="url"
+          type="text"
           value={url}
         />
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-neutral-500">
