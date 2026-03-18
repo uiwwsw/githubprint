@@ -69,6 +69,7 @@
 .document-page {
   width: min(100%, 210mm);
   min-height: 297mm;
+  container-type: inline-size;
 }
 
 .screen-toolbar {
@@ -84,6 +85,37 @@
 
 .print-only {
   display: none;
+}
+
+.document-grid-brief,
+.document-grid-profile,
+.document-grid-insight-top,
+.document-grid-insight-middle,
+.document-grid-insight-bottom {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@container (min-width: 44rem) {
+  .document-grid-brief {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  }
+
+  .document-grid-profile {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+
+  .document-grid-insight-top {
+    grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr);
+  }
+
+  .document-grid-insight-middle {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  }
+
+  .document-grid-insight-bottom {
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  }
 }
 
 @media print {

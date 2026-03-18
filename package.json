@@ -1,19 +1,34 @@
 {
   "name": "gitfolio",
   "version": "0.1.0",
+  "description": "Turn a public GitHub URL into a polished, PDF-ready developer document.",
   "private": true,
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": ">=20.9.0",
+    "npm": ">=10"
+  },
+  "keywords": [
+    "nextjs",
+    "github",
+    "portfolio",
+    "developer-profile",
+    "openai",
+    "pdf"
+  ],
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "tsc --noEmit && next build --webpack"
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "next": "latest",
+    "next": "16.1.7",
     "openai": "^6.7.0",
-    "react": "latest",
-    "react-dom": "latest",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12"
   },

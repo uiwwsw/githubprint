@@ -34,18 +34,18 @@ export function InsightTemplate({
       }
     >
       <header className="rounded-[1.9rem] border border-black/[0.08] bg-black/[0.03] p-7">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
+        <div className="flex flex-col gap-6">
+          <div className="min-w-0 max-w-none">
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.insight.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-5xl leading-[1.05] text-neutral-950">
+            <h1 className="mt-3 font-serif text-[clamp(2.9rem,6.8vw,4.3rem)] leading-[1.04] text-neutral-950">
               {analysis.profile.headline}
             </h1>
             <p className="mt-5 text-[17px] leading-8 text-neutral-700">{analysis.profile.summary}</p>
           </div>
-          <div className="max-w-xs border-l border-black/10 pl-5 text-sm leading-7 text-neutral-600">
+          <div className="w-full border-t border-black/10 pt-5 text-sm leading-7 text-neutral-600">
             <p className="font-medium text-neutral-900">{analysis.profile.name}</p>
             <p>@{analysis.profile.username}</p>
-            <a className="mt-2 inline-block underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
+            <a className="mt-2 inline-block max-w-full break-all underline decoration-black/20 underline-offset-4" href={profileUrl} rel="noreferrer" target="_blank">
               {profileUrl}
             </a>
           </div>
@@ -56,7 +56,7 @@ export function InsightTemplate({
       </header>
 
       <div className="mt-8 space-y-6">
-        <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="document-grid-insight-top">
           <SectionBlock className="bg-white" title={dict.templates.insight.sections.type} eyebrow={dict.templates.insight.sections.type}>
             <p>{analysis.inferred.developerType}</p>
           </SectionBlock>
@@ -65,7 +65,7 @@ export function InsightTemplate({
           </SectionBlock>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="document-grid-insight-middle">
           <SectionBlock title={dict.templates.insight.sections.fit} eyebrow={dict.templates.insight.sections.fit}>
             <div className="space-y-4">
               <div>
@@ -84,7 +84,7 @@ export function InsightTemplate({
           </SectionBlock>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="document-grid-insight-bottom">
           <SectionBlock title={dict.templates.insight.sections.evidence} eyebrow={dict.templates.insight.sections.evidence}>
             <EvidenceList analysis={analysis} />
           </SectionBlock>

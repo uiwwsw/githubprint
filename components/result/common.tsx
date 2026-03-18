@@ -69,7 +69,7 @@ function FactCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[1.1rem] border border-black/[0.07] bg-black/[0.025] p-4">
       <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">{label}</p>
-      <p className="mt-3 text-sm font-medium text-neutral-900">{value}</p>
+      <p className="mt-3 break-words text-sm font-medium text-neutral-900">{value}</p>
     </div>
   );
 }
@@ -101,14 +101,14 @@ export function ProjectList({
       {analysis.projects.map((project) => (
         <article className={cn("print-break-inside-avoid", cardClass)} key={project.repoUrl}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-serif text-xl text-neutral-950">{project.name}</h3>
+                <h3 className="break-words font-serif text-xl text-neutral-950">{project.name}</h3>
                 <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] tracking-[0.18em] text-neutral-500 uppercase">
                   {project.stars} {dict.common.starsLabel}
                 </span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-neutral-600">{project.description}</p>
+              <p className="mt-3 break-words text-sm leading-6 text-neutral-600">{project.description}</p>
             </div>
             <div className="shrink-0 text-sm text-neutral-500">
               <p>{formatDate(project.updatedAt, locale)}</p>
@@ -120,11 +120,11 @@ export function ProjectList({
           <p className="mt-4 text-sm leading-7 text-neutral-700">{project.whyItMatters}</p>
           <p className="mt-3 text-sm leading-7 text-neutral-500">{project.evidence}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
-            <a className="underline decoration-black/20 underline-offset-4" href={project.repoUrl} rel="noreferrer" target="_blank">
+            <a className="break-all underline decoration-black/20 underline-offset-4" href={project.repoUrl} rel="noreferrer" target="_blank">
               {dict.common.repoLink}
             </a>
             {project.homepageUrl ? (
-              <a className="underline decoration-black/20 underline-offset-4" href={project.homepageUrl} rel="noreferrer" target="_blank">
+              <a className="break-all underline decoration-black/20 underline-offset-4" href={project.homepageUrl} rel="noreferrer" target="_blank">
                 {dict.common.liveLink}
               </a>
             ) : null}

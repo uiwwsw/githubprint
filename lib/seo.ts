@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/schemas";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
-
-function getSiteUrl() {
-  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
-}
+import { getSiteUrl } from "@/lib/site-url";
 
 function localePath(pathname: "/" | "/result", locale: Locale, search?: Record<string, string>) {
   const url = new URL(pathname, getSiteUrl());
