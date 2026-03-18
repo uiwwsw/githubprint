@@ -10,7 +10,7 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "프론트엔드와 UI 구현 신호가 가장 강하게 드러납니다.",
+          "ko": "프론트엔드와 UI 구현 경험이 가장 두드러집니다.",
           "en": "Frontend and UI implementation signals are the clearest part of the profile."
         },
         "headline": {
@@ -21,22 +21,22 @@
       {
         "min": 45,
         "developerType": {
-          "ko": "UI 구현과 제품 표면 작업 경험이 비교적 선명합니다.",
+          "ko": "UI 구현과 사용자 화면 작업 경험이 비교적 또렷합니다.",
           "en": "UI implementation and product-surface work are relatively visible."
         },
         "headline": {
-          "ko": "UI 구현 경험이 비교적 또렷한 제품형 개발자",
+          "ko": "UI 구현 경험이 비교적 또렷한 개발자",
           "en": "A product-oriented developer with visible UI implementation signals"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "프론트엔드 관련 신호가 일부 확인됩니다.",
+          "ko": "프론트엔드 관련 경험이 일부 확인됩니다.",
           "en": "Some frontend-related signals are visible."
         },
         "headline": {
-          "ko": "구현 중심 결과물을 쌓아가는 개발자",
+          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
           "en": "A hands-on builder with visible implementation output"
         }
       }
@@ -53,7 +53,7 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "서비스 구조와 데이터 흐름을 다루는 백엔드 신호가 강합니다.",
+          "ko": "서비스 구조와 데이터 흐름을 다룬 경험이 두드러집니다.",
           "en": "Service structure and data-flow signals are strongly backend-oriented."
         },
         "headline": {
@@ -64,22 +64,22 @@
       {
         "min": 45,
         "developerType": {
-          "ko": "API와 서버 측 구현 신호가 비교적 분명합니다.",
+          "ko": "API와 서버 구현 경험이 비교적 뚜렷합니다.",
           "en": "API and server-side implementation signals are relatively clear."
         },
         "headline": {
-          "ko": "서버 구현과 데이터 흐름 설계 경험이 읽히는 개발자",
+          "ko": "서버 구현과 데이터 흐름 설계 경험이 드러나는 개발자",
           "en": "A developer with visible server-side implementation and data-flow design signals"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "백엔드 관련 신호가 일부 확인됩니다.",
+          "ko": "백엔드 관련 경험이 일부 확인됩니다.",
           "en": "Some backend-related signals are visible."
         },
         "headline": {
-          "ko": "구현 중심 결과물을 쌓아가는 개발자",
+          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
           "en": "A hands-on builder with visible implementation output"
         }
       }
@@ -96,33 +96,33 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "앱 형태의 결과물을 만드는 모바일 구현 신호가 강합니다.",
+          "ko": "앱 형태의 결과물을 만든 경험이 두드러집니다.",
           "en": "App-shaped implementation signals point strongly toward mobile work."
         },
         "headline": {
-          "ko": "아이디어를 앱 형태로 빠르게 옮기는 모바일 제품 지향 개발자",
+          "ko": "아이디어를 앱으로 빠르게 옮기는 모바일 개발자",
           "en": "A product-minded mobile developer who quickly turns ideas into app experiences"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "모바일 앱 구현 경험이 비교적 분명하게 드러납니다.",
+          "ko": "모바일 앱 구현 경험이 비교적 뚜렷합니다.",
           "en": "Mobile app implementation experience is relatively visible."
         },
         "headline": {
-          "ko": "앱 중심 결과물을 만들어 온 모바일 성향의 개발자",
+          "ko": "앱 중심 프로젝트 경험이 보이는 모바일 개발자",
           "en": "A mobile-leaning developer with visible app-focused output"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "모바일 관련 신호가 일부 확인됩니다.",
+          "ko": "모바일 관련 경험이 일부 확인됩니다.",
           "en": "Some mobile-related signals are visible."
         },
         "headline": {
-          "ko": "구현 중심 결과물을 쌓아가는 개발자",
+          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
           "en": "A hands-on builder with visible implementation output"
         }
       }
@@ -139,33 +139,33 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "AI 기능을 실제 제품 실험으로 연결하는 응용 신호가 강합니다.",
+          "ko": "AI 기능을 실제 제품 실험으로 이어가는 경험이 두드러집니다.",
           "en": "The profile strongly points to applied work that turns AI capability into product experiments."
         },
         "headline": {
-          "ko": "AI 기능을 실제 제품 실험으로 연결하려는 응용 개발자",
+          "ko": "AI 기능을 제품 실험으로 이어가는 개발자",
           "en": "An applied developer trying to turn AI capabilities into real product experiments"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "LLM/AI 기능을 다루는 프로젝트 신호가 비교적 분명합니다.",
+          "ko": "LLM/AI 기능을 다루는 프로젝트가 비교적 뚜렷합니다.",
           "en": "Projects involving LLM/AI capabilities are relatively visible."
         },
         "headline": {
-          "ko": "AI 기능 실험이 반복적으로 보이는 응용 개발자",
+          "ko": "AI 기능 실험 경험이 반복적으로 보이는 개발자",
           "en": "An applied developer with recurring AI feature experiments"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "AI 관련 신호가 일부 확인됩니다.",
+          "ko": "AI 관련 경험이 일부 확인됩니다.",
           "en": "Some AI-related signals are visible."
         },
         "headline": {
-          "ko": "구현 중심 결과물을 쌓아가는 개발자",
+          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
           "en": "A hands-on builder with visible implementation output"
         }
       }
@@ -182,33 +182,33 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "툴링과 개발 워크플로우 개선 신호가 강하게 보입니다.",
+          "ko": "툴링과 개발 워크플로우를 개선한 경험이 두드러집니다.",
           "en": "Tooling and developer workflow improvement signals are strongly visible."
         },
         "headline": {
-          "ko": "개발 워크플로우와 도구 개선에 관심이 큰 툴링 성향의 개발자",
+          "ko": "개발 도구와 워크플로우 개선에 관심이 큰 개발자",
           "en": "A tooling-leaning developer focused on improving developer workflows"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "CLI, automation, workflow 쪽 신호가 비교적 분명합니다.",
+          "ko": "CLI, 자동화, 워크플로우 관련 경험이 비교적 뚜렷합니다.",
           "en": "CLI, automation, and workflow signals are relatively clear."
         },
         "headline": {
-          "ko": "자동화와 개발 편의성 개선 신호가 보이는 개발자",
+          "ko": "자동화와 개발 편의성 개선 경험이 보이는 개발자",
           "en": "A developer with visible signals around automation and developer ergonomics"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "툴링 관련 신호가 일부 확인됩니다.",
+          "ko": "툴링 관련 경험이 일부 확인됩니다.",
           "en": "Some tooling-related signals are visible."
         },
         "headline": {
-          "ko": "구현 중심 결과물을 쌓아가는 개발자",
+          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
           "en": "A hands-on builder with visible implementation output"
         }
       }

@@ -3,7 +3,7 @@
     "id": "strength:demo-output",
     "priority": 10,
     "text": {
-      "ko": "실행 가능한 결과물이나 demo 링크로 작업 결과를 보여주는 프로젝트가 있습니다.",
+      "ko": "실행해 볼 수 있는 결과물이나 데모 링크가 있는 프로젝트가 있습니다.",
       "en": "There are projects that present output through runnable demos or linked product surfaces."
     },
     "anySignals": ["meta:has-demo", "meta:multiple-demos"]
@@ -23,7 +23,7 @@
     "id": "strength:frontend",
     "priority": 8,
     "text": {
-      "ko": "UI 구현과 제품 표면 작업 신호가 반복되어 프론트엔드 메시지가 선명합니다.",
+      "ko": "UI 구현과 사용자 화면 작업이 반복되어 프론트엔드 경험이 비교적 분명합니다.",
       "en": "Repeated UI and product-surface signals make the frontend story relatively clear."
     },
     "minOrientationScores": {
@@ -34,7 +34,7 @@
     "id": "strength:backend",
     "priority": 8,
     "text": {
-      "ko": "API, 데이터, 서버 구조 관련 신호가 반복되어 백엔드 메시지가 분명합니다.",
+      "ko": "API, 데이터, 서버 구조를 다룬 경험이 반복되어 백엔드 성향이 비교적 분명합니다.",
       "en": "Repeated API, data, and server-structure signals make the backend story relatively clear."
     },
     "minOrientationScores": {
@@ -45,7 +45,7 @@
     "id": "strength:mobile",
     "priority": 8,
     "text": {
-      "ko": "앱 형태의 결과물을 다루는 신호가 반복되어 모바일 성향이 분명합니다.",
+      "ko": "앱 중심 결과물이 반복되어 모바일 경험이 비교적 분명합니다.",
       "en": "Repeated app-oriented implementation signals make the mobile inclination relatively clear."
     },
     "minOrientationScores": {
@@ -56,7 +56,7 @@
     "id": "strength:ai",
     "priority": 8,
     "text": {
-      "ko": "LLM/AI 기능을 실제 제품 실험으로 연결하는 프로젝트 신호가 있습니다.",
+      "ko": "LLM/AI 기능을 실제 제품 실험으로 이어가는 프로젝트가 보입니다.",
       "en": "There are visible projects that try to turn LLM or AI capability into product experiments."
     },
     "minOrientationScores": {
@@ -67,7 +67,7 @@
     "id": "strength:devtools",
     "priority": 8,
     "text": {
-      "ko": "자동화와 개발 워크플로우 개선 신호가 보여 툴링 성향이 드러납니다.",
+      "ko": "자동화와 개발 워크플로우 개선 경험이 보여 툴링 성향이 드러납니다.",
       "en": "Signals around automation and developer workflow improvement make the tooling orientation visible."
     },
     "minOrientationScores": {
@@ -78,7 +78,7 @@
     "id": "strength:quality",
     "priority": 7,
     "text": {
-      "ko": "테스트와 검증 도구 신호가 있어 품질 관리에 관심이 읽힙니다.",
+      "ko": "테스트와 검증 도구가 있어 품질 관리에 관심이 있는 편으로 보입니다.",
       "en": "Testing and verification tooling suggests some visible interest in quality management."
     },
     "minWorkingStyleScores": {
@@ -100,7 +100,7 @@
     "id": "strength:structure",
     "priority": 6,
     "text": {
-      "ko": "모노레포, 설정, 워크플로우 구성이 보여 구조 정리 역량이 드러납니다.",
+      "ko": "모노레포, 설정, 워크플로우 구성이 보여 구조를 정리하는 역량이 드러납니다.",
       "en": "Monorepo layout, configuration, and workflow signals suggest strength around structuring a codebase."
     },
     "minWorkingStyleScores": {

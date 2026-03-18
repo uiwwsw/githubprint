@@ -34,7 +34,9 @@ export type ScoredWorkingStyle = {
 export type ProfileScoringResult = {
   confidence: number;
   confidenceBand: "high" | "medium" | "low";
+  matchedRoleIds: string[];
   matchedSignalIds: string[];
+  matchedStrengthIds: string[];
   orientationEvidence: string[];
   orientationScores: ScoreMap;
   orientations: ScoredOrientation[];
@@ -179,7 +181,6 @@ function localizeRuleMatches<T extends StrengthRule | RoleRule>(
       ruleMatches(rule, orientationScores, workingStyleScores, matchedSignalIds),
     )
     .sort((left, right) => right.priority - left.priority)
-    .map((rule) => localizeText(rule.text, locale))
     .slice(0, limit);
 }
 
@@ -243,7 +244,7 @@ export function scoreProfile(
   const primaryWorkingStyle = workingStyles[0] ?? null;
   const secondaryWorkingStyle = workingStyles[1] ?? null;
   const matchedSignalIds = new Set(featureSet.matchedSignalIds);
-  const strengthMatches = localizeRuleMatches(
+  const matchedStrengthRules = localizeRuleMatches(
     config.rules.strengths,
     locale,
     Object.fromEntries(orientations.map((item) => [item.id, item.score])),
@@ -251,7 +252,7 @@ export function scoreProfile(
     matchedSignalIds,
     4,
   );
-  const roleMatches = localizeRuleMatches(
+  const matchedRoleRules = localizeRuleMatches(
     config.rules.roles,
     locale,
     Object.fromEntries(orientations.map((item) => [item.id, item.score])),
@@ -275,7 +276,9 @@ export function scoreProfile(
   return {
     confidence,
     confidenceBand: confidenceBand(confidence),
+    matchedRoleIds: matchedRoleRules.map((rule) => rule.id),
     matchedSignalIds: [...matchedSignalIds],
+    matchedStrengthIds: matchedStrengthRules.map((rule) => rule.id),
     orientationEvidence: primaryOrientation
       ? groupEvidenceByCategory(
           allSignals,
@@ -289,10 +292,10 @@ export function scoreProfile(
     primaryOrientation,
     primaryWorkingStyle,
     repoFeatures: featureSet.repoFeatures,
-    roles: roleMatches,
+    roles: matchedRoleRules.map((rule) => localizeText(rule.text, locale)),
     secondaryOrientation,
     secondaryWorkingStyle,
-    strengths: strengthMatches,
+    strengths: matchedStrengthRules.map((rule) => localizeText(rule.text, locale)),
     workingStyleEvidence: primaryWorkingStyle
       ? groupEvidenceByCategory(
           allSignals,

@@ -1,7 +1,7 @@
 [
   {
     "id": "frontend",
-    "label": { "ko": "프론트엔드 성향 집단", "en": "frontend-leaning cohort" },
+    "label": { "ko": "프론트엔드 성향 개발자군", "en": "frontend-leaning cohort" },
     "sampleSize": 1280,
     "metrics": [
       {
@@ -16,12 +16,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 10, "p25": 22, "p50": 39, "p75": 58, "p90": 76 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 5, "p25": 12, "p50": 24, "p75": 43, "p90": 61 }
       },
       {
@@ -38,7 +38,7 @@
   },
   {
     "id": "backend",
-    "label": { "ko": "백엔드 성향 집단", "en": "backend-leaning cohort" },
+    "label": { "ko": "백엔드 성향 개발자군", "en": "backend-leaning cohort" },
     "sampleSize": 1160,
     "metrics": [
       {
@@ -53,12 +53,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 9, "p25": 19, "p50": 35, "p75": 53, "p90": 72 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 6, "p25": 15, "p50": 29, "p75": 48, "p90": 67 }
       },
       {
@@ -75,7 +75,7 @@
   },
   {
     "id": "mobile",
-    "label": { "ko": "모바일 성향 집단", "en": "mobile-leaning cohort" },
+    "label": { "ko": "모바일 성향 개발자군", "en": "mobile-leaning cohort" },
     "sampleSize": 720,
     "metrics": [
       {
@@ -90,12 +90,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 11, "p25": 23, "p50": 41, "p75": 61, "p90": 79 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 5, "p25": 11, "p50": 22, "p75": 39, "p90": 58 }
       },
       {
@@ -112,7 +112,7 @@
   },
   {
     "id": "ai",
-    "label": { "ko": "AI 응용 성향 집단", "en": "AI-application cohort" },
+    "label": { "ko": "AI 응용 개발자군", "en": "AI-application cohort" },
     "sampleSize": 690,
     "metrics": [
       {
@@ -127,12 +127,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 8, "p25": 18, "p50": 34, "p75": 54, "p90": 73 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 5, "p25": 12, "p50": 25, "p75": 43, "p90": 62 }
       },
       {
@@ -149,7 +149,7 @@
   },
   {
     "id": "devtools",
-    "label": { "ko": "툴링 성향 집단", "en": "tooling/devtools cohort" },
+    "label": { "ko": "툴링 성향 개발자군", "en": "tooling/devtools cohort" },
     "sampleSize": 540,
     "metrics": [
       {
@@ -164,12 +164,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 7, "p25": 16, "p50": 31, "p75": 49, "p90": 68 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 9, "p25": 20, "p50": 36, "p75": 55, "p90": 74 }
       },
       {
@@ -186,7 +186,7 @@
   },
   {
     "id": "generalist",
-    "label": { "ko": "범용 제품 개발 집단", "en": "generalist product-builder cohort" },
+    "label": { "ko": "다방면 제품 개발자군", "en": "generalist product-builder cohort" },
     "sampleSize": 1480,
     "metrics": [
       {
@@ -201,12 +201,12 @@
       },
       {
         "id": "shipping",
-        "label": { "ko": "결과물 공개", "en": "shipping" },
+        "label": { "ko": "외부 공개", "en": "shipping" },
         "distribution": { "p10": 9, "p25": 19, "p50": 35, "p75": 55, "p90": 74 }
       },
       {
         "id": "quality",
-        "label": { "ko": "검증 신호", "en": "quality signals" },
+        "label": { "ko": "검증 흔적", "en": "quality signals" },
         "distribution": { "p10": 5, "p25": 11, "p50": 23, "p75": 41, "p90": 60 }
       },
       {

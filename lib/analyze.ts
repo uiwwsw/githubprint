@@ -106,21 +106,21 @@ function buildHeadline(source: GitHubSourceData, locale: Locale) {
   }
   if (orientation === "mobile") {
     return locale === "ko"
-      ? "아이디어를 앱 형태로 빠르게 옮기는 모바일 제품 지향 개발자"
+      ? "아이디어를 앱으로 빠르게 옮기는 모바일 개발자"
       : "A product-minded mobile developer who quickly turns ideas into app experiences";
   }
   if (orientation === "ai") {
     return locale === "ko"
-      ? "AI 기능을 실제 제품 실험으로 연결하려는 응용 개발자"
+      ? "AI 기능을 제품 실험으로 이어가는 개발자"
       : "An applied developer trying to turn AI capabilities into real product experiments";
   }
   if (primaryLanguage) {
     return locale === "ko"
-      ? `${primaryLanguage} 중심으로 결과물을 꾸준히 쌓아 온 제품형 개발자`
+      ? `${primaryLanguage} 중심으로 결과물을 꾸준히 쌓아 온 개발자`
       : `A product-oriented developer who has steadily built visible work around ${primaryLanguage}`;
   }
   return locale === "ko"
-    ? "공개 GitHub 기준으로 제품 구현 흔적이 보이는 실무형 개발자"
+    ? "공개 GitHub에서 구현 경험이 드러나는 개발자"
     : "A hands-on builder with visible product implementation signals on public GitHub";
 }
 
@@ -141,17 +141,17 @@ function buildWorkingStyle(source: GitHubSourceData, locale: Locale) {
         : "The work is primarily organized around repositories and implementation output.",
     strongDocs
       ? locale === "ko"
-        ? "README가 비교적 충실한 프로젝트가 있어 설명과 맥락을 남기려는 습관도 읽힙니다."
+        ? "README가 비교적 충실한 프로젝트가 있어 설명과 맥락을 남기려는 습관도 보입니다."
         : "Some projects have relatively detailed READMEs, suggesting an effort to preserve context and explanation."
       : locale === "ko"
-        ? "문서화보다는 구현 결과 자체로 신호를 주는 프로젝트가 더 많습니다."
+        ? "문서화보다는 구현 결과 자체로 성격이 드러나는 프로젝트가 더 많습니다."
         : "More projects signal through implementation output itself than through heavy documentation.",
     recentSignals
       ? locale === "ko"
         ? "최근에도 반복적으로 손을 대며 다듬는 흐름이 확인됩니다."
         : "Recent updates also suggest an iterative habit of revisiting and refining work."
       : locale === "ko"
-        ? "최근 공개 활동은 제한적이어서 현재 작업 속도는 보수적으로 해석하는 편이 적절합니다."
+        ? "최근 공개 활동은 제한적이어서 현재 작업 속도는 단정하기 어렵습니다."
         : "Recent public activity is limited, so current working speed should be interpreted conservatively.",
   ];
 
@@ -172,7 +172,7 @@ function buildStrengths(source: GitHubSourceData, locale: Locale) {
   if (source.representativeRepos.some((repo) => repo.homepageUrl)) {
     strengths.add(
       locale === "ko"
-        ? "실행 가능한 결과물이나 demo 링크로 산출물을 보여주는 프로젝트가 있습니다."
+        ? "실행해 볼 수 있는 결과물이나 데모 링크가 있는 프로젝트가 있습니다."
         : "There are projects that present output through runnable demos or linked product surfaces.",
     );
   }
@@ -264,7 +264,7 @@ function buildBestFitRoles(source: GitHubSourceData, locale: Locale) {
     ? [
         "초기 제품 MVP 구현",
         "아이디어 검증형 프로토타이핑",
-        "작은 팀의 범용 제품 개발 역할",
+        "작은 팀에서 여러 영역을 맡는 제품 개발 역할",
       ]
     : [
         "Early-stage MVP implementation",
@@ -282,8 +282,8 @@ function buildSummary(source: GitHubSourceData, locale: Locale) {
     return `${name}의 공개 GitHub를 기준으로 보면 ${topLanguages.length > 0 ? topLanguages.join(", ") : "여러 기술"} 중심의 프로젝트가 두드러집니다. ${
       projects.length > 0
         ? `${projects.join(", ")} 같은 대표 저장소가 포트폴리오의 축을 이룹니다.`
-        : "대표 프로젝트 신호는 제한적이지만 공개 저장소 활동 자체는 확인됩니다."
-    } 공개 정보만으로 읽히는 범위 안에서 보면, 특정 기술을 깊게 파기보다 실제 결과물을 여러 형태로 쌓아가는 쪽에 가깝습니다.`;
+        : "대표 프로젝트는 뚜렷하지 않지만 공개 저장소 활동 자체는 확인됩니다."
+    } 공개 정보만 놓고 보면, 특정 기술 하나를 깊게 파기보다 실제 결과물을 여러 형태로 쌓아가는 쪽에 가깝습니다.`;
   }
 
   return `Based on public GitHub signals, ${name} stands out more through projects built around ${topLanguages.length > 0 ? topLanguages.join(", ") : "multiple technologies"}. ${

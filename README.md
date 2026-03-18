@@ -276,6 +276,7 @@ Fixture mode is development-only. Production paths must not use fake data.
 | `npm run typecheck` | Run TypeScript checks |
 | `npm run check` | Run typecheck and production build |
 | `npm run insights:aggregate` | Aggregate captured internal insight snapshots into reports and derived benchmarks |
+| `npm run quality:regress` | Run fixture-based quality regressions for orientation, working style, cohort, and confidence |
 
 ## Verification
 
@@ -284,6 +285,11 @@ Before shipping or opening a PR:
 ```bash
 npm run check
 ```
+
+`npm run check` now includes build, typecheck, and fixture-based quality regressions.
+If you want to run only the regression layer, use `npm run quality:regress`.
+
+Regression reports are written to `.cache/gitfolio/reports/regression-summary.json` and `.md`.
 
 ## Collaboration Notes
 
@@ -305,7 +311,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the collaborator workflow.
 GitFolio는 “GitHub를 문서로 바꾸는 앱”입니다.  
 분석 대시보드가 아니라, 채용 담당자나 협업자에게 전달할 수 있는 결과물을 만드는 데 초점을 둡니다.
 
-현재 단계는 기능을 최소한으로 유지한 **제품형 MVP**입니다.
+현재 단계는 범위를 좁게 유지한 **early v1 beta**입니다.
 
 - 입력 페이지 1개
 - 결과 페이지 1개

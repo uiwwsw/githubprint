@@ -3,6 +3,7 @@ import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { GitHubUrlError, normalizeGitHubUrlInput } from "@/lib/github-url";
 import { getDictionary } from "@/lib/i18n";
+import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
 import { buildResultMetadata } from "@/lib/seo";
 import {
   resultSearchParamsSchema,
@@ -61,6 +62,19 @@ function getErrorPresentation(error: unknown, locale: Locale) {
     return {
       title: dict.errors.fetchTitle,
       message: dict.errors.fetchMessage,
+    };
+  }
+
+  if (error instanceof RequestThrottleError) {
+    return {
+      title: dict.errors.rateLimitTitle,
+      message:
+        locale === "ko"
+          ? "요청이 너무 빠르게 반복되어 잠시 동안 다시 생성이 제한되었습니다."
+          : "Requests are being repeated too quickly, so regeneration is temporarily limited.",
+      detail: error.retryAt
+        ? `${dict.errors.rateLimitResetPrefix}: ${new Date(error.retryAt).toLocaleString(locale === "ko" ? "ko-KR" : "en-US")}`
+        : undefined,
     };
   }
 
@@ -129,7 +143,11 @@ export async function ResultPageContent({
 
   try {
     const normalized = normalizeGitHubUrlInput(parsed.data.url, locale);
-    const forceFresh = Boolean(parsed.data.refresh);
+    const forceFresh =
+      Boolean(parsed.data.refresh) &&
+      (process.env.NODE_ENV !== "production" ||
+        process.env.GITFOLIO_ALLOW_RESULT_REFRESH === "1");
+    await assertResultRequestAllowed({ forceFresh });
     const source = await getGitHubSource(normalized.username, {
       forceFresh,
       locale,

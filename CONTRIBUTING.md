@@ -42,6 +42,8 @@ Run this before opening a PR:
 npm run check
 ```
 
+`npm run check` includes build, typecheck, and fixture-based quality regressions.
+
 ### Documentation
 
 If you change product behavior, update at least one of these:
@@ -88,6 +90,8 @@ PR 전 아래 명령 실행:
 ```bash
 npm run check
 ```
+
+`npm run check` 안에 build, typecheck, quality regression이 모두 포함됩니다.
 
 ### 문서 업데이트
 

@@ -21,8 +21,9 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "check": "tsc --noEmit && next build --webpack",
-    "insights:aggregate": "node scripts/aggregate-insights.mjs"
+    "check": "npm run build && npm run typecheck && npm run quality:regress",
+    "insights:aggregate": "node scripts/aggregate-insights.mjs",
+    "quality:regress": "node scripts/run-quality-regressions.cjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
