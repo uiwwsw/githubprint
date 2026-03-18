@@ -3,7 +3,11 @@ import "server-only";
 import { unstable_cache } from "next/cache";
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
+import { profileEngineConfig } from "@/lib/data-loader";
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
+import { buildRuleBasedAnalysis } from "@/lib/narrative-writer";
+import { extractProfileFeatures } from "@/lib/profile-features";
+import { scoreProfile } from "@/lib/rule-engine";
 import type { Locale } from "@/lib/schemas";
 import { analysisSchema, type GitFolioAnalysis } from "@/lib/schemas";
 
@@ -280,136 +284,9 @@ function buildSummary(source: GitHubSourceData, locale: Locale) {
 }
 
 function buildFallbackAnalysis(source: GitHubSourceData, locale: Locale): GitFolioAnalysis {
-  const name = source.account.name ?? source.account.username;
-  const strengths = buildStrengths(source, locale);
-  const projects = source.representativeRepos.slice(0, 5).map((repo) => ({
-    name: repo.name,
-    description:
-      repo.description ??
-      (locale === "ko"
-        ? "설명이 짧아 저장소 이름과 구조 중심으로만 해석 가능합니다."
-        : "The description is limited, so interpretation relies mostly on the repository name and structure."),
-    whyItMatters:
-      repo.isPinned || repo.stars > 0
-        ? locale === "ko"
-          ? `대표작 후보로 보이는 저장소입니다. ${repoSignalText(repo, locale)}.`
-          : `This repository looks like a standout project candidate. ${repoSignalText(repo, locale)}.`
-        : locale === "ko"
-          ? `최근 작업 흐름을 보여주는 저장소입니다. ${repoSignalText(repo, locale)}.`
-          : `This repository helps show the recent flow of work. ${repoSignalText(repo, locale)}.`,
-    tech: repo.techSignals.length > 0 ? repo.techSignals : repo.language ? [repo.language] : ["GitHub"],
-    repoUrl: repo.repoUrl,
-    homepageUrl: repo.homepageUrl,
-    stars: repo.stars,
-    updatedAt: repo.updatedAt,
-    evidence:
-      repo.readme && repo.readme.length > 300
-        ? locale === "ko"
-          ? "README와 저장소 메타데이터가 함께 확인됩니다."
-          : "Both the README and repository metadata are visible."
-        : locale === "ko"
-          ? "저장소 설명, stars, 최근 업데이트 시점을 기준으로 선정했습니다."
-          : "Selection is based on repository description, stars, and recent update timing.",
-  }));
-
-  return analysisSchema.parse({
-    profile: {
-      avatarUrl: source.account.avatarUrl,
-      headline: buildHeadline(source, locale),
-      name,
-      summary: buildSummary(source, locale),
-      username: source.account.username,
-    },
-    facts: {
-      activityNote: source.activity.note,
-      followers: source.account.followers,
-      publicRepoCount: source.account.publicRepoCount,
-      topLanguages: source.topLanguages.map((item) => item.name).slice(0, 6),
-    },
-    inferred: {
-      bestFitRoles: buildBestFitRoles(source, locale),
-      cautionNote:
-        locale === "ko"
-          ? "작업 방식과 역할 적합성은 공개 저장소, README, 최근 활동 시점을 바탕으로 한 추정이며 실제 협업 방식이나 경력 정보는 포함하지 않습니다."
-          : "Working style and role fit are inferred from public repositories, READMEs, and recency signals. They do not include verified collaboration style or career history.",
-      developerType:
-        detectOrientation(source) === "frontend"
-          ? locale === "ko"
-            ? "제품 구현과 사용자 경험에 무게가 있는 프론트엔드 지향"
-            : "Frontend-leaning, with emphasis on product implementation and user experience"
-          : detectOrientation(source) === "backend"
-            ? locale === "ko"
-              ? "서비스 구조와 데이터 흐름을 정리하는 백엔드 지향"
-              : "Backend-leaning, with emphasis on service structure and data flow"
-            : detectOrientation(source) === "mobile"
-              ? locale === "ko"
-                ? "앱 형태의 결과물을 빠르게 만드는 모바일 지향"
-                : "Mobile-leaning, with emphasis on turning ideas into app-shaped output quickly"
-              : detectOrientation(source) === "ai"
-                ? locale === "ko"
-                  ? "AI 기능을 제품 실험으로 연결하는 응용 개발 지향"
-                  : "Applied-development leaning, with emphasis on turning AI capability into product experiments"
-                : locale === "ko"
-                  ? "구현 중심 결과물을 꾸준히 쌓는 범용 제품 개발 지향"
-                  : "A generalist product-building orientation with steady implementation output",
-      strengths:
-        strengths.length > 0
-          ? strengths
-          : locale === "ko"
-            ? [
-                "공개 저장소 기준으로 꾸준한 구현 흔적이 있습니다.",
-                "대표 프로젝트를 중심으로 기술 스택과 관심 영역을 읽을 수 있습니다.",
-              ]
-            : [
-                "There is steady implementation output visible in public repositories.",
-                "The standout projects make it possible to read both stack choices and recurring interests.",
-              ],
-      workingStyle: buildWorkingStyle(source, locale),
-    },
-    projects,
-    evidence: [
-      {
-        label: locale === "ko" ? "활동 신호" : "Activity signal",
-        detail: source.activity.note,
-      },
-      {
-        label: locale === "ko" ? "기술 분포" : "Technology distribution",
-        detail:
-          source.topLanguages.length > 0
-            ? source.topLanguages
-                .slice(0, 4)
-                .map((item) =>
-                  locale === "ko"
-                    ? `${item.name} (${item.repoCount} repos)`
-                    : `${item.name} (${item.repoCount} repos)`,
-                )
-                .join(", ")
-            : locale === "ko"
-              ? "주요 언어 분포는 제한적으로만 확인됩니다."
-              : "Top language distribution is only partially visible.",
-      },
-      {
-        label: locale === "ko" ? "대표 프로젝트 선정" : "Standout project selection",
-        detail:
-          source.representativeRepos.length > 0
-            ? source.representativeRepos
-                .slice(0, 3)
-                .map((repo) => `${repo.name}: ${repoSignalText(repo, locale)}`)
-                .join(" / ")
-            : locale === "ko"
-              ? "대표 프로젝트로 볼 만한 공개 저장소가 충분하지 않습니다."
-              : "There are not enough public repositories to identify standout projects confidently.",
-      },
-      ...source.evidenceSignals.slice(0, 2).map((signal, index) => ({
-        label: locale === "ko" ? `추가 근거 ${index + 1}` : `Additional evidence ${index + 1}`,
-        detail: signal,
-      })),
-    ].slice(0, 5),
-    disclaimer:
-      locale === "ko"
-        ? "이 문서는 공개 GitHub 기준에서 관찰되는 정보만 바탕으로 작성되었습니다. 경력 연차, 협업 방식, 비즈니스 임팩트 등은 확인되지 않는 한 단정하지 않았습니다."
-        : "This document is based only on information observable from public GitHub data. Career tenure, collaboration style, and business impact are not asserted unless clearly evidenced.",
-  });
+  const featureSet = extractProfileFeatures(source, profileEngineConfig);
+  const scoring = scoreProfile(source, featureSet, profileEngineConfig, locale);
+  return buildRuleBasedAnalysis(source, scoring, profileEngineConfig, locale);
 }
 
 function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
@@ -421,6 +298,7 @@ function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
     activity: source.activity,
     pinnedRepoNames: source.pinnedRepoNames,
     representativeProjects: source.representativeRepos.map((repo) => ({
+      commitMessages: repo.recentCommitMessages,
       name: repo.name,
       description: repo.description,
       homepageUrl: repo.homepageUrl,
@@ -428,6 +306,7 @@ function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
       language: repo.language,
       readmePreview: repo.readme,
       repoUrl: repo.repoUrl,
+      rootFiles: repo.rootFiles,
       signal: repoSignalText(repo, locale),
       stars: repo.stars,
       techSignals: repo.techSignals,

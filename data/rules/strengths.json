@@ -1,0 +1,110 @@
+[
+  {
+    "id": "strength:demo-output",
+    "priority": 10,
+    "text": {
+      "ko": "실행 가능한 결과물이나 demo 링크로 작업 결과를 보여주는 프로젝트가 있습니다.",
+      "en": "There are projects that present output through runnable demos or linked product surfaces."
+    },
+    "anySignals": ["meta:has-demo", "meta:multiple-demos"]
+  },
+  {
+    "id": "strength:documentation",
+    "priority": 9,
+    "text": {
+      "ko": "핵심 프로젝트의 README와 문서 구조가 비교적 충실해 맥락 전달력이 좋습니다.",
+      "en": "Core projects tend to preserve context well through README quality and documentation structure."
+    },
+    "minWorkingStyleScores": {
+      "documentation": 45
+    }
+  },
+  {
+    "id": "strength:frontend",
+    "priority": 8,
+    "text": {
+      "ko": "UI 구현과 제품 표면 작업 신호가 반복되어 프론트엔드 메시지가 선명합니다.",
+      "en": "Repeated UI and product-surface signals make the frontend story relatively clear."
+    },
+    "minOrientationScores": {
+      "frontend": 55
+    }
+  },
+  {
+    "id": "strength:backend",
+    "priority": 8,
+    "text": {
+      "ko": "API, 데이터, 서버 구조 관련 신호가 반복되어 백엔드 메시지가 분명합니다.",
+      "en": "Repeated API, data, and server-structure signals make the backend story relatively clear."
+    },
+    "minOrientationScores": {
+      "backend": 55
+    }
+  },
+  {
+    "id": "strength:mobile",
+    "priority": 8,
+    "text": {
+      "ko": "앱 형태의 결과물을 다루는 신호가 반복되어 모바일 성향이 분명합니다.",
+      "en": "Repeated app-oriented implementation signals make the mobile inclination relatively clear."
+    },
+    "minOrientationScores": {
+      "mobile": 55
+    }
+  },
+  {
+    "id": "strength:ai",
+    "priority": 8,
+    "text": {
+      "ko": "LLM/AI 기능을 실제 제품 실험으로 연결하는 프로젝트 신호가 있습니다.",
+      "en": "There are visible projects that try to turn LLM or AI capability into product experiments."
+    },
+    "minOrientationScores": {
+      "ai": 55
+    }
+  },
+  {
+    "id": "strength:devtools",
+    "priority": 8,
+    "text": {
+      "ko": "자동화와 개발 워크플로우 개선 신호가 보여 툴링 성향이 드러납니다.",
+      "en": "Signals around automation and developer workflow improvement make the tooling orientation visible."
+    },
+    "minOrientationScores": {
+      "devtools": 55
+    }
+  },
+  {
+    "id": "strength:quality",
+    "priority": 7,
+    "text": {
+      "ko": "테스트와 검증 도구 신호가 있어 품질 관리에 관심이 읽힙니다.",
+      "en": "Testing and verification tooling suggests some visible interest in quality management."
+    },
+    "minWorkingStyleScores": {
+      "quality": 45
+    }
+  },
+  {
+    "id": "strength:iteration",
+    "priority": 7,
+    "text": {
+      "ko": "최근까지 저장소를 반복적으로 손본 흔적이 있어 꾸준한 작업 흐름이 관찰됩니다.",
+      "en": "Recent revision patterns suggest a continued working rhythm rather than one-off output."
+    },
+    "minWorkingStyleScores": {
+      "iteration": 45
+    }
+  },
+  {
+    "id": "strength:structure",
+    "priority": 6,
+    "text": {
+      "ko": "모노레포, 설정, 워크플로우 구성이 보여 구조 정리 역량이 드러납니다.",
+      "en": "Monorepo layout, configuration, and workflow signals suggest strength around structuring a codebase."
+    },
+    "minWorkingStyleScores": {
+      "structure": 45
+    }
+  }
+]

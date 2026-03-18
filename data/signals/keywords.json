@@ -1,0 +1,107 @@
+[
+  {
+    "id": "keyword:design-system",
+    "matches": ["design system", "ui kit", "component library"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "frontend": 9
+      },
+      "workingStyles": {
+        "quality": 2
+      }
+    }
+  },
+  {
+    "id": "keyword:user-experience",
+    "matches": ["user experience", "ux", "ui"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "frontend": 6
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "keyword:backend-domain",
+    "matches": ["api", "authentication", "database", "webhook", "queue", "service"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "backend": 5
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "keyword:mobile-app",
+    "matches": ["mobile app", "app store", "play store"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "mobile": 8
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "keyword:ai-domain",
+    "matches": ["llm", "rag", "embedding", "retrieval", "prompt", "agent"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "ai": 8
+      },
+      "workingStyles": {
+        "prototyping": 1
+      }
+    }
+  },
+  {
+    "id": "keyword:tooling",
+    "matches": ["developer tooling", "automation", "workflow", "cli", "plugin"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {
+        "devtools": 8
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "keyword:prototype",
+    "matches": ["prototype", "prototyping", "mvp", "starter", "boilerplate", "template"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "prototyping": 7
+      }
+    }
+  },
+  {
+    "id": "keyword:docs",
+    "matches": ["documentation", "guide", "getting started", "usage", "docs"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "documentation": 6
+      }
+    }
+  },
+  {
+    "id": "keyword:testing",
+    "matches": ["testing", "e2e", "test suite", "coverage"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "quality": 7
+      }
+    }
+  }
+]

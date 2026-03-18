@@ -1,0 +1,195 @@
+[
+  {
+    "id": "language:typescript",
+    "matches": ["typescript"],
+    "contributions": {
+      "orientations": {
+        "frontend": 10,
+        "backend": 4,
+        "devtools": 4
+      },
+      "workingStyles": {
+        "prototyping": 2,
+        "shipping": 2
+      }
+    },
+    "evidence": {
+      "ko": "TypeScript 사용 비중이 대표 저장소에서 반복됩니다.",
+      "en": "TypeScript appears repeatedly across representative repositories."
+    }
+  },
+  {
+    "id": "language:javascript",
+    "matches": ["javascript"],
+    "contributions": {
+      "orientations": {
+        "frontend": 8,
+        "backend": 4
+      },
+      "workingStyles": {
+        "prototyping": 2
+      }
+    },
+    "evidence": {
+      "ko": "JavaScript 기반 프로젝트가 반복적으로 확인됩니다.",
+      "en": "JavaScript-based projects appear repeatedly."
+    }
+  },
+  {
+    "id": "language:html",
+    "matches": ["html"],
+    "contributions": {
+      "orientations": {
+        "frontend": 7
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:css",
+    "matches": ["css", "scss", "sass"],
+    "contributions": {
+      "orientations": {
+        "frontend": 8
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:mdx",
+    "matches": ["mdx"],
+    "contributions": {
+      "orientations": {
+        "frontend": 3
+      },
+      "workingStyles": {
+        "documentation": 8
+      }
+    }
+  },
+  {
+    "id": "language:python",
+    "matches": ["python"],
+    "contributions": {
+      "orientations": {
+        "backend": 8,
+        "ai": 10,
+        "devtools": 3
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:go",
+    "matches": ["go"],
+    "contributions": {
+      "orientations": {
+        "backend": 10,
+        "devtools": 6
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "language:rust",
+    "matches": ["rust"],
+    "contributions": {
+      "orientations": {
+        "backend": 6,
+        "devtools": 10
+      },
+      "workingStyles": {
+        "structure": 3,
+        "quality": 2
+      }
+    }
+  },
+  {
+    "id": "language:dart",
+    "matches": ["dart"],
+    "contributions": {
+      "orientations": {
+        "mobile": 12
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:swift",
+    "matches": ["swift"],
+    "contributions": {
+      "orientations": {
+        "mobile": 12
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:kotlin",
+    "matches": ["kotlin"],
+    "contributions": {
+      "orientations": {
+        "mobile": 10,
+        "backend": 4
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:java",
+    "matches": ["java"],
+    "contributions": {
+      "orientations": {
+        "backend": 8,
+        "mobile": 4
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:php",
+    "matches": ["php"],
+    "contributions": {
+      "orientations": {
+        "backend": 9
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:ruby",
+    "matches": ["ruby"],
+    "contributions": {
+      "orientations": {
+        "backend": 7
+      },
+      "workingStyles": {}
+    }
+  },
+  {
+    "id": "language:shell",
+    "matches": ["shell", "bash", "sh"],
+    "contributions": {
+      "orientations": {
+        "devtools": 7,
+        "backend": 2
+      },
+      "workingStyles": {
+        "structure": 2
+      }
+    }
+  },
+  {
+    "id": "language:cxx",
+    "matches": ["c++", "c"],
+    "contributions": {
+      "orientations": {
+        "devtools": 8,
+        "backend": 3
+      },
+      "workingStyles": {}
+    }
+  }
+]

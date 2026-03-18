@@ -1,0 +1,188 @@
+[
+  {
+    "id": "prototyping",
+    "label": {
+      "ko": "프로토타이핑",
+      "en": "prototyping"
+    },
+    "scoreCap": 18,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "데모와 결과물 공개가 반복되어, 아이디어를 빠르게 형태로 옮기는 프로토타이핑 성향이 읽힙니다.",
+          "en": "Repeated demos and visible outputs suggest a prototyping-heavy way of working that turns ideas into concrete artifacts quickly."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "작은 결과물을 빠르게 만들어 보는 흐름이 일부 확인됩니다.",
+          "en": "There is some visible tendency to test ideas through smaller, quickly assembled outputs."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "프로토타이핑 성향은 제한적으로만 보입니다.",
+          "en": "Prototyping signals are only partially visible."
+        }
+      }
+    ]
+  },
+  {
+    "id": "shipping",
+    "label": {
+      "ko": "결과물 정리와 공개",
+      "en": "shipping and presentation"
+    },
+    "scoreCap": 18,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "배포 링크와 대표작 구성을 보면, 결과물을 실제 사용 가능한 형태로 정리해 내는 편으로 해석됩니다.",
+          "en": "Deployment links and standout-project structure suggest a tendency to package work into something shareable and usable."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "구현 결과를 외부에 보여 주려는 정리 습관이 일부 보입니다.",
+          "en": "There are some visible habits around presenting implementation output externally."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "결과물 공개 신호는 제한적입니다.",
+          "en": "Signals around presenting finished output are limited."
+        }
+      }
+    ]
+  },
+  {
+    "id": "documentation",
+    "label": {
+      "ko": "문서화",
+      "en": "documentation"
+    },
+    "scoreCap": 16,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "README와 문서 구조를 보면 설명과 맥락을 남기려는 습관이 비교적 뚜렷합니다.",
+          "en": "README quality and documentation structure suggest a clear habit of leaving explanation and context behind."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "일부 프로젝트에서는 설명과 문서화에 신경 쓴 흔적이 확인됩니다.",
+          "en": "Some projects show a meaningful amount of care around explanation and documentation."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "문서화 신호는 제한적으로만 보입니다.",
+          "en": "Documentation signals are only partially visible."
+        }
+      }
+    ]
+  },
+  {
+    "id": "structure",
+    "label": {
+      "ko": "구조화와 운영 정리",
+      "en": "structure and operational organization"
+    },
+    "scoreCap": 18,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "모노레포, 설정 파일, CI 구성을 보면 구조와 운영 흐름을 정리하는 편으로 해석됩니다.",
+          "en": "Monorepo layouts, configuration files, and CI signals suggest an inclination toward structuring systems and operational flow."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "일부 저장소에서 구조와 설정 관리에 신경 쓴 흔적이 보입니다.",
+          "en": "Some repositories show visible care around structure and configuration management."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "구조화 신호는 제한적으로만 보입니다.",
+          "en": "Structure-oriented signals are only partially visible."
+        }
+      }
+    ]
+  },
+  {
+    "id": "quality",
+    "label": {
+      "ko": "품질과 검증",
+      "en": "quality and verification"
+    },
+    "scoreCap": 16,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "테스트와 검증 도구 신호가 보여, 품질 관리에 일정 수준의 관심이 읽힙니다.",
+          "en": "Testing and verification tooling suggest a meaningful concern for quality and reliability."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "테스트나 검증 관련 설정이 일부 저장소에서 확인됩니다.",
+          "en": "Testing or verification setup is visible in some repositories."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "품질 검증 신호는 제한적입니다.",
+          "en": "Quality-verification signals are limited."
+        }
+      }
+    ]
+  },
+  {
+    "id": "iteration",
+    "label": {
+      "ko": "반복 개선",
+      "en": "iterative refinement"
+    },
+    "scoreCap": 18,
+    "bands": [
+      {
+        "min": 65,
+        "text": {
+          "ko": "최근 활동과 수정 흐름을 보면, 저장소를 반복적으로 손보며 다듬는 편으로 읽힙니다.",
+          "en": "Recent activity and maintenance patterns suggest an iterative habit of revisiting and refining repositories."
+        }
+      },
+      {
+        "min": 35,
+        "text": {
+          "ko": "최근에도 간헐적으로 손을 대며 유지하는 흐름이 일부 확인됩니다.",
+          "en": "There is some visible pattern of revisiting and maintaining work over time."
+        }
+      },
+      {
+        "min": 0,
+        "text": {
+          "ko": "반복 개선 신호는 제한적입니다.",
+          "en": "Iterative-maintenance signals are limited."
+        }
+      }
+    ]
+  }
+]

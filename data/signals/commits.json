@@ -1,0 +1,71 @@
+[
+  {
+    "id": "commit:feat",
+    "matches": ["feat:", "feat(", "feature"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "shipping": 4,
+        "prototyping": 2
+      }
+    }
+  },
+  {
+    "id": "commit:fix",
+    "matches": ["fix:", "fix(", "bugfix"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "iteration": 4,
+        "quality": 3
+      }
+    }
+  },
+  {
+    "id": "commit:refactor",
+    "matches": ["refactor", "cleanup"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "structure": 5,
+        "quality": 2
+      }
+    }
+  },
+  {
+    "id": "commit:docs",
+    "matches": ["docs:", "docs(", "documentation", "readme"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "documentation": 4
+      }
+    }
+  },
+  {
+    "id": "commit:test",
+    "matches": ["test:", "test(", "tests"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "quality": 5
+      }
+    }
+  },
+  {
+    "id": "commit:release",
+    "matches": ["release", "deploy"],
+    "matchMode": "includes",
+    "contributions": {
+      "orientations": {},
+      "workingStyles": {
+        "shipping": 5
+      }
+    }
+  }
+]
