@@ -174,9 +174,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleBottom: "전달 가능한 개발자 문서로",
       description:
         "공개 GitHub 데이터를 읽기 쉬운 한국어 결과물로 정리합니다. 분석 데이터는 하나이고, 보여주는 방식만 템플릿별로 달라집니다.",
-      urlLabel: "GitHub URL",
-      urlPlaceholder: "예: https://github.com/username",
-      urlHintPrimary: "profile URL과 repo URL 모두 입력할 수 있습니다.",
+      urlLabel: "GitHub URL 또는 아이디",
+      urlPlaceholder: "예: https://github.com/username 또는 username",
+      urlHintPrimary: "profile URL, repo URL, GitHub 아이디 모두 입력할 수 있습니다.",
       urlHintSecondary: "A4 인쇄와 브라우저 PDF 저장에 맞춰 결과가 정리됩니다.",
       templateHeading: "문서 템플릿 선택",
       templateHint: "분석 데이터는 동일하고, 레이아웃만 달라집니다.",
@@ -185,7 +185,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submit: "컨버팅",
       submitting: "컨버팅 중...",
       submitHint:
-        "기본 템플릿은 미리 선택되어 있으며, 유효한 URL이 입력되면 바로 컨버팅할 수 있습니다.",
+        "기본 템플릿은 미리 선택되어 있으며, 유효한 URL 또는 아이디가 입력되면 바로 컨버팅할 수 있습니다.",
     },
     result: {
       templateLabel: "템플릿",
@@ -202,14 +202,14 @@ const dictionaries: Record<Locale, Dictionary> = {
     },
     errors: {
       invalidSearchTitle: "입력 정보가 올바르지 않습니다",
-      invalidSearchMessage: "GitHub URL과 템플릿 값을 다시 확인해 주세요.",
-      invalidUrlTitle: "URL을 다시 확인해 주세요",
+      invalidSearchMessage: "GitHub URL 또는 아이디와 템플릿 값을 다시 확인해 주세요.",
+      invalidUrlTitle: "입력을 다시 확인해 주세요",
       notFoundTitle: "GitHub 계정을 찾지 못했습니다",
       notFoundMessage:
-        "입력한 URL에서 읽은 사용자 이름으로 공개 GitHub 계정을 찾지 못했습니다.",
+        "입력한 URL 또는 아이디에서 읽은 사용자 이름으로 공개 GitHub 계정을 찾지 못했습니다.",
       organizationTitle: "조직 계정은 아직 지원하지 않습니다",
       organizationMessage:
-        "GitFolio는 개인 개발자 계정을 문서로 요약하는 MVP입니다. 조직 계정 대신 개인 프로필 URL을 입력해 주세요.",
+        "GitFolio는 개인 개발자 계정을 문서로 요약하는 MVP입니다. 조직 계정 대신 개인 프로필 URL이나 아이디를 입력해 주세요.",
       rateLimitTitle: "잠시 후 다시 시도해 주세요",
       rateLimitMessage:
         "GitHub API 요청 한도에 도달했습니다. 잠시 후 다시 생성하면 정상적으로 불러올 수 있습니다.",
@@ -338,9 +338,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleBottom: "into a shareable developer document",
       description:
         "GitFolio reads public GitHub data and turns it into a polished document. The analysis stays the same while the presentation changes by template.",
-      urlLabel: "GitHub URL",
-      urlPlaceholder: "e.g. https://github.com/username",
-      urlHintPrimary: "Both profile URLs and repository URLs are accepted.",
+      urlLabel: "GitHub URL or username",
+      urlPlaceholder: "e.g. https://github.com/username or username",
+      urlHintPrimary: "Profile URLs, repository URLs, and GitHub usernames are all accepted.",
       urlHintSecondary: "The result is optimized for A4 print and browser PDF export.",
       templateHeading: "Choose a document template",
       templateHint: "The analysis stays the same. Only the layout changes.",
@@ -349,7 +349,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submit: "Convert",
       submitting: "Converting...",
       submitHint:
-        "The default template is preselected. Convert becomes available as soon as the URL is valid.",
+        "The default template is preselected. Convert becomes available as soon as the URL or username is valid.",
     },
     result: {
       templateLabel: "Template",
@@ -366,14 +366,14 @@ const dictionaries: Record<Locale, Dictionary> = {
     },
     errors: {
       invalidSearchTitle: "The input is not valid",
-      invalidSearchMessage: "Please check the GitHub URL and template selection.",
-      invalidUrlTitle: "Please check the URL",
+      invalidSearchMessage: "Please check the GitHub URL or username and template selection.",
+      invalidUrlTitle: "Please check the input",
       notFoundTitle: "GitHub account not found",
       notFoundMessage:
-        "We could not find a public GitHub account from the username extracted from the URL.",
+        "We could not find a public GitHub account from the username extracted from the URL or input.",
       organizationTitle: "Organization accounts are not supported yet",
       organizationMessage:
-        "GitFolio currently summarizes individual developer accounts. Please use a personal GitHub profile URL instead.",
+        "GitFolio currently summarizes individual developer accounts. Please use a personal GitHub profile URL or username instead.",
       rateLimitTitle: "Please try again shortly",
       rateLimitMessage:
         "The GitHub API rate limit has been reached. Try generating the document again in a few minutes.",
