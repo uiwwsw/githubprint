@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import type { Locale } from "@/lib/schemas";
+import { buildResultDocumentTitle } from "@/lib/result-document";
+import type { Locale, TemplateId } from "@/lib/schemas";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -19,6 +20,12 @@ function localePath(pathname: "/" | "/result", locale: Locale, search?: Record<s
 export function getBaseMetadata(): Metadata {
   return {
     metadataBase: new URL(getSiteUrl()),
+    icons: {
+      icon: [
+        { url: "/favicon.svg", type: "image/svg+xml" },
+      ],
+      shortcut: ["/favicon.svg"],
+    },
   };
 }
 
@@ -55,13 +62,16 @@ export function buildHomeMetadata(locale: Locale): Metadata {
   };
 }
 
-export function buildResultMetadata(locale: Locale, username?: string): Metadata {
+export function buildResultMetadata(
+  locale: Locale,
+  options?: { template?: TemplateId; username?: string },
+): Metadata {
   const dict = getDictionary(locale);
-  const title = username
-    ? locale === "ko"
-      ? `${username} 결과 문서 | GitFolio`
-      : `${username} result document | GitFolio`
-    : dict.metadata.resultTitle;
+  const title = buildResultDocumentTitle({
+    locale,
+    template: options?.template,
+    username: options?.username,
+  });
   const description = dict.metadata.resultDescription;
 
   return {

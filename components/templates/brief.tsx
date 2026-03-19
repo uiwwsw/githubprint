@@ -1,3 +1,7 @@
+import {
+  formatBenchmarkRankLabel,
+  getBenchmarkInterpretationNote,
+} from "@/lib/benchmark-presentation";
 import { getDictionary } from "@/lib/i18n";
 import { DocumentFooter, FactGrid, ProjectList, PublicDataScope, SectionBlock } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
@@ -114,17 +118,38 @@ function BriefBenchmarkSnapshot({
   topMetrics: BenchmarkSnapshot["metrics"];
   locale: Locale;
 }) {
+  const interpretationNote = getBenchmarkInterpretationNote({
+    confidenceScore: benchmark.confidenceScore,
+    sampleSize: benchmark.sampleSize,
+    locale,
+  });
+
   return (
     <div className="space-y-4">
       <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p>
+      {interpretationNote ? (
+        <p className="text-sm leading-6 text-neutral-500">{interpretationNote}</p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         {topMetrics.map((metric) => (
           <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" key={metric.id}>
             <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">{metric.label}</p>
             <p className="mt-2 text-base font-medium text-neutral-900">
-              {locale === "ko" ? `상위 ${metric.percentile}%` : `Top ${metric.percentile}%`}
+              {formatBenchmarkRankLabel({
+                percentile: metric.percentile,
+                confidenceScore: benchmark.confidenceScore,
+                sampleSize: benchmark.sampleSize,
+                locale,
+              })}
             </p>
             <p className="mt-2 text-sm leading-6 text-neutral-600">{metric.note}</p>
+            {metric.evidence.length > 0 ? (
+              <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-500">
+                {metric.evidence.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ))}
       </div>
