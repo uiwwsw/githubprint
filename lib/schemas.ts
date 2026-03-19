@@ -4,6 +4,16 @@ export const templateSchema = z.enum(["brief", "profile", "insight"]);
 export type TemplateId = z.infer<typeof templateSchema>;
 export const localeSchema = z.enum(["ko", "en"]);
 export type Locale = z.infer<typeof localeSchema>;
+export type DataMode = "public" | "private_enriched";
+export type ContributionSummary = {
+  endedAt: string;
+  startedAt: string;
+  totalCommitContributions: number;
+  totalContributions: number;
+  totalIssueContributions: number;
+  totalPullRequestContributions: number;
+  totalPullRequestReviewContributions: number;
+};
 
 export const resultSearchParamsSchema = z.object({
   lang: localeSchema.optional(),
@@ -82,5 +92,6 @@ export const analysisSchema = z.object({
   disclaimer: z.string().min(1),
 });
 
-export type GitFolioAnalysis = z.infer<typeof analysisSchema>;
+export type GitHubPrintAnalysis = z.infer<typeof analysisSchema>;
+export type GitFolioAnalysis = GitHubPrintAnalysis;
 export type BenchmarkSnapshot = z.infer<typeof benchmarkSnapshotSchema>;

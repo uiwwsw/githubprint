@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { buildProductStorageKey } from "@/lib/brand";
 import { getLocalizedPathname, resolveLocaleFromAcceptLanguage } from "@/lib/i18n";
 import type { Locale } from "@/lib/schemas";
 
-const STORAGE_KEY = "gitfolio-locale-suggestion-dismissed";
+const STORAGE_KEY = buildProductStorageKey("locale-suggestion-dismissed");
 
 export function LocaleSuggestion({ locale }: { locale: Locale }) {
   const [preferredLocale, setPreferredLocale] = useState<Locale | null>(null);

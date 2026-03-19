@@ -2,8 +2,8 @@ import { mkdir, readFile, readdir, writeFile } from "fs/promises";
 import path from "path";
 
 const cwd = process.cwd();
-const insightDir = path.join(cwd, ".cache", "gitfolio", "insights");
-const reportDir = path.join(cwd, ".cache", "gitfolio", "reports");
+const insightDir = path.join(cwd, ".cache", "githubprint", "insights");
+const reportDir = path.join(cwd, ".cache", "githubprint", "reports");
 const summaryJsonPath = path.join(reportDir, "insights-summary.json");
 const summaryMdPath = path.join(reportDir, "insights-summary.md");
 const derivedBenchmarksPath = path.join(reportDir, "derived-benchmarks.json");
@@ -93,7 +93,7 @@ function buildRecommendations(cohorts) {
 function buildMarkdown(summary) {
   const lines = [];
 
-  lines.push("# GitFolio Insight Summary");
+  lines.push("# GitHubPrint Insight Summary");
   lines.push("");
   lines.push(`Generated: ${summary.generatedAt}`);
   lines.push(`Snapshots: ${summary.snapshotCount}`);
@@ -261,7 +261,7 @@ async function main() {
       cohorts: [],
       generatedAt: new Date().toISOString(),
       recommendations: [
-        "No snapshots found. Run the app with GITFOLIO_CAPTURE_INSIGHTS=1 and analyze some profiles first.",
+        "No snapshots found. Run the app with GITHUBPRINT_CAPTURE_INSIGHTS=1 and analyze some profiles first.",
       ],
       snapshotCount: 0,
     };
@@ -269,7 +269,7 @@ async function main() {
     await writeFile(summaryJsonPath, JSON.stringify(empty, null, 2), "utf-8");
     await writeFile(
       summaryMdPath,
-      "# GitFolio Insight Summary\n\nNo snapshots found.\n",
+      "# GitHubPrint Insight Summary\n\nNo snapshots found.\n",
       "utf-8",
     );
     console.log(`Wrote ${summaryJsonPath}`);

@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = "https://gitfolio-seven.vercel.app";
+const DEFAULT_SITE_URL = "https://githubprint.vercel.app";
 
 export function getSiteUrl() {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim() || DEFAULT_SITE_URL;

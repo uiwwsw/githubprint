@@ -1,7 +1,7 @@
 {
-  "name": "gitfolio",
+  "name": "githubprint",
   "version": "0.1.0",
-  "description": "Turn a public GitHub URL into a shareable, PDF-ready developer brief.",
+  "description": "Turn GitHub into a shareable, PDF-ready developer brief.",
   "private": true,
   "packageManager": "npm@10.9.2",
   "engines": {

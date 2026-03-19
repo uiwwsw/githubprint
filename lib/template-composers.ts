@@ -1,4 +1,4 @@
-import type { BenchmarkSnapshot, GitFolioAnalysis, Locale } from "@/lib/schemas";
+import type { BenchmarkSnapshot, GitHubPrintAnalysis, Locale } from "@/lib/schemas";
 
 type BenchmarkMetric = BenchmarkSnapshot["metrics"][number];
 
@@ -61,7 +61,7 @@ function joinReadable(items: string[], locale: Locale) {
 }
 
 export function composeBriefTemplateView(
-  analysis: GitFolioAnalysis,
+  analysis: GitHubPrintAnalysis,
   benchmark: BenchmarkSnapshot,
   locale: Locale,
 ): BriefTemplateView {
@@ -86,7 +86,7 @@ export function composeBriefTemplateView(
 }
 
 export function composeInsightTemplateView(
-  analysis: GitFolioAnalysis,
+  analysis: GitHubPrintAnalysis,
   benchmark: BenchmarkSnapshot,
   locale: Locale,
 ): InsightTemplateView {
@@ -147,7 +147,7 @@ export function composeInsightTemplateView(
 }
 
 export function composeProfileTemplateView(
-  analysis: GitFolioAnalysis,
+  analysis: GitHubPrintAnalysis,
   benchmark: BenchmarkSnapshot,
   locale: Locale,
 ): ProfileTemplateView {

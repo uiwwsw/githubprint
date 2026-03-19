@@ -1,10 +1,15 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import {
+  LEGACY_LOCALE_HEADER_NAME,
+  LOCALE_HEADER_NAME,
+} from "@/lib/brand";
 import { detectLocaleFromPathname, getLocalizedPathname, resolveLocale } from "@/lib/i18n";
 
 function withLocaleHeader(request: NextRequest, locale: "ko" | "en") {
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-gitfolio-locale", locale);
+  requestHeaders.set(LOCALE_HEADER_NAME, locale);
+  requestHeaders.set(LEGACY_LOCALE_HEADER_NAME, locale);
   return requestHeaders;
 }
 

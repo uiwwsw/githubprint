@@ -18,11 +18,11 @@ import type { Locale } from "@/lib/schemas";
 import {
   analysisSchema,
   type BenchmarkSnapshot,
-  type GitFolioAnalysis,
+  type GitHubPrintAnalysis,
 } from "@/lib/schemas";
 
 export type AnalysisResult = {
-  analysis: GitFolioAnalysis;
+  analysis: GitHubPrintAnalysis;
   benchmark: BenchmarkSnapshot;
   mode: "openai" | "fallback";
 };
@@ -121,8 +121,8 @@ function buildHeadline(source: GitHubSourceData, locale: Locale) {
       : `A product-oriented developer who has steadily built visible work around ${primaryLanguage}`;
   }
   return locale === "ko"
-    ? "공개 GitHub에서 구현 경험이 드러나는 개발자"
-    : "A hands-on builder with visible product implementation signals on public GitHub";
+    ? "GitHub에서 구현 경험이 드러나는 개발자"
+    : "A hands-on builder with visible product implementation signals on GitHub";
 }
 
 function buildWorkingStyle(source: GitHubSourceData, locale: Locale) {
@@ -167,7 +167,7 @@ function buildStrengths(source: GitHubSourceData, locale: Locale) {
     strengths.add(
       locale === "ko"
         ? `${primaryLanguage} 기반 구현 경험이 공개 저장소 전반에서 일관되게 보입니다.`
-        : `Implementation experience around ${primaryLanguage} appears consistently across public repositories.`,
+        : `Implementation experience around ${primaryLanguage} appears consistently across repositories.`,
     );
   }
   if (source.representativeRepos.some((repo) => repo.homepageUrl)) {
@@ -278,20 +278,21 @@ function buildSummary(source: GitHubSourceData, locale: Locale) {
   const name = source.account.name ?? source.account.username;
   const topLanguages = source.topLanguages.slice(0, 3).map((item) => item.name);
   const projects = source.representativeRepos.slice(0, 2).map((repo) => repo.name);
+  const isPrivateEnriched = source.dataMode === "private_enriched";
 
   if (locale === "ko") {
-    return `${name}의 공개 GitHub를 기준으로 보면 ${topLanguages.length > 0 ? topLanguages.join(", ") : "여러 기술"} 중심의 프로젝트가 두드러집니다. ${
+    return `${name}의 ${isPrivateEnriched ? "승인된 GitHub 데이터" : "공개 GitHub"}를 기준으로 보면 ${topLanguages.length > 0 ? topLanguages.join(", ") : "여러 기술"} 중심의 프로젝트가 두드러집니다. ${
       projects.length > 0
         ? `${projects.join(", ")} 같은 대표 저장소가 포트폴리오의 축을 이룹니다.`
         : "대표 프로젝트는 뚜렷하지 않지만 공개 저장소 활동 자체는 확인됩니다."
-    } 공개 정보만 놓고 보면, 특정 기술 하나를 깊게 파기보다 실제 결과물을 여러 형태로 쌓아가는 쪽에 가깝습니다.`;
+    } ${isPrivateEnriched ? "승인된 범위 안에서 봐도" : "공개 정보만 놓고 보면,"} 특정 기술 하나를 깊게 파기보다 실제 결과물을 여러 형태로 쌓아가는 쪽에 가깝습니다.`;
   }
 
-  return `Based on public GitHub signals, ${name} stands out more through projects built around ${topLanguages.length > 0 ? topLanguages.join(", ") : "multiple technologies"}. ${
+  return `Based on ${isPrivateEnriched ? "authorized GitHub data for the signed-in account" : "public GitHub signals"}, ${name} stands out more through projects built around ${topLanguages.length > 0 ? topLanguages.join(", ") : "multiple technologies"}. ${
     projects.length > 0
       ? `Repositories such as ${projects.join(", ")} form the clearest portfolio spine.`
       : "Signals for standout projects are limited, but public repository activity is still visible."
-  } Within the limits of public evidence, the profile reads more like someone who keeps shipping tangible work in different forms than someone optimizing for a single narrow technical specialty.`;
+  } Within the limits of ${isPrivateEnriched ? "authorized GitHub evidence" : "public evidence"}, the profile reads more like someone who keeps shipping tangible work in different forms than someone optimizing for a single narrow technical specialty.`;
 }
 
 function buildFallbackAnalysis(
@@ -303,7 +304,7 @@ function buildFallbackAnalysis(
     profileEngineConfig,
     locale,
   ),
-): GitFolioAnalysis {
+): GitHubPrintAnalysis {
   return buildRuleBasedAnalysis(source, scoring, profileEngineConfig, locale);
 }
 
@@ -356,9 +357,11 @@ async function analyzeGitHubSourceInternal(
   const featureSet = extractProfileFeatures(source, profileEngineConfig);
   const scoring = scoreProfile(source, featureSet, profileEngineConfig, locale);
   const benchmark = buildBenchmarkSnapshot(source, featureSet, scoring, locale);
-  await captureLearningSnapshot(
-    buildLearningSnapshot(source, scoring, benchmark, locale),
-  );
+  if (source.dataMode === "public") {
+    await captureLearningSnapshot(
+      buildLearningSnapshot(source, scoring, benchmark, locale),
+    );
+  }
 
   if (!process.env.OPENAI_API_KEY) {
     return {
@@ -382,14 +385,26 @@ async function analyzeGitHubSourceInternal(
               type: "input_text",
               text: [
                 locale === "ko"
-                  ? "너는 GitHub 공개 정보만으로 개발자 소개 문서를 쓰는 분석가다."
-                  : "You are an analyst who writes developer profile documents using only public GitHub information.",
+                  ? source.dataMode === "private_enriched"
+                    ? "너는 로그인한 사용자가 승인한 GitHub 데이터 범위 안에서 개발자 소개 문서를 쓰는 분석가다."
+                    : "너는 GitHub 공개 정보만으로 개발자 소개 문서를 쓰는 분석가다."
+                  : source.dataMode === "private_enriched"
+                    ? "You are an analyst who writes developer profile documents using GitHub data authorized by the signed-in user."
+                    : "You are an analyst who writes developer profile documents using only public GitHub information.",
                 locale === "ko"
-                  ? "반드시 한국어로 작성하고, 없는 사실은 만들지 마라."
-                  : "Write in natural English and do not invent facts that are not visible from public evidence.",
+                  ? source.dataMode === "private_enriched"
+                    ? "반드시 한국어로 작성하고, GitHub 데이터로 확인되지 않는 사실은 만들지 마라."
+                    : "반드시 한국어로 작성하고, 없는 사실은 만들지 마라."
+                  : source.dataMode === "private_enriched"
+                    ? "Write in natural English and do not invent facts that are not visible from authorized GitHub evidence."
+                    : "Write in natural English and do not invent facts that are not visible from public evidence.",
                 locale === "ko"
-                  ? "경력 연차, 리더십, 협업 능력, 비즈니스 성과는 공개 근거가 없으면 단정하지 마라."
-                  : "Do not assert tenure, leadership, collaboration quality, or business impact unless there is public evidence.",
+                  ? source.dataMode === "private_enriched"
+                    ? "경력 연차, 리더십, 협업 능력, 비즈니스 성과는 GitHub 근거가 없으면 단정하지 마라."
+                    : "경력 연차, 리더십, 협업 능력, 비즈니스 성과는 공개 근거가 없으면 단정하지 마라."
+                  : source.dataMode === "private_enriched"
+                    ? "Do not assert tenure, leadership, collaboration quality, or business impact unless there is GitHub evidence."
+                    : "Do not assert tenure, leadership, collaboration quality, or business impact unless there is public evidence.",
                 locale === "ko"
                   ? "추론은 가능하지만 해석이나 추정의 어조를 유지하라."
                   : "Inference is allowed, but keep the wording interpretive and careful rather than absolute.",
@@ -397,11 +412,19 @@ async function analyzeGitHubSourceInternal(
                   ? "출력은 주어진 Zod 스키마와 정확히 맞는 JSON이어야 한다."
                   : "The output must be valid JSON that matches the provided Zod schema exactly.",
                 locale === "ko"
-                  ? "facts.coreStack에는 공개 근거로 확인되는 핵심 스택을 짧게 정리하라."
-                  : "Use facts.coreStack for a concise list of the clearest stack signals supported by public evidence.",
+                  ? source.dataMode === "private_enriched"
+                    ? "facts.coreStack에는 GitHub 근거로 확인되는 핵심 스택을 짧게 정리하라."
+                    : "facts.coreStack에는 공개 근거로 확인되는 핵심 스택을 짧게 정리하라."
+                  : source.dataMode === "private_enriched"
+                    ? "Use facts.coreStack for a concise list of the clearest stack signals supported by GitHub evidence."
+                    : "Use facts.coreStack for a concise list of the clearest stack signals supported by public evidence.",
                 locale === "ko"
-                  ? "projects는 대표 프로젝트 3~5개를 고르고, evidence는 구체적인 근거 중심으로 작성하라."
-                  : "Select three to five representative projects and write evidence items around specific public signals.",
+                  ? source.dataMode === "private_enriched"
+                    ? "projects는 대표 프로젝트 3~5개를 고르고, evidence는 구체적인 GitHub 근거 중심으로 작성하라."
+                    : "projects는 대표 프로젝트 3~5개를 고르고, evidence는 구체적인 근거 중심으로 작성하라."
+                  : source.dataMode === "private_enriched"
+                    ? "Select three to five representative projects and write evidence items around specific GitHub signals."
+                    : "Select three to five representative projects and write evidence items around specific public signals.",
                 locale === "ko"
                   ? "문장 톤은 차분하고 읽기 쉬운 전달 문서 스타일로 유지하라."
                   : "Keep the tone calm, readable, and appropriate for a shareable document.",
@@ -420,7 +443,7 @@ async function analyzeGitHubSourceInternal(
         },
       ],
       text: {
-        format: zodTextFormat(analysisSchema, "gitfolio_analysis"),
+        format: zodTextFormat(analysisSchema, "githubprint_analysis"),
       },
     });
 
@@ -443,7 +466,7 @@ async function analyzeGitHubSourceInternal(
 const getCachedAnalysis = unstable_cache(
   async (source: GitHubSourceData, locale: Locale) =>
     analyzeGitHubSourceInternal(source, locale),
-  ["gitfolio-analysis"],
+  ["githubprint-analysis"],
   { revalidate: ANALYSIS_CACHE_SECONDS },
 );
 
@@ -452,7 +475,7 @@ export async function analyzeGitHubSource(
   options?: { forceFresh?: boolean; locale?: Locale },
 ) {
   const locale = options?.locale ?? "ko";
-  return options?.forceFresh
+  return options?.forceFresh || source.dataMode !== "public"
     ? analyzeGitHubSourceInternal(source, locale)
     : getCachedAnalysis(source, locale);
 }

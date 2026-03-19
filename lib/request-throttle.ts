@@ -1,6 +1,8 @@
 import "server-only";
 
 import { headers } from "next/headers";
+import { PRODUCT_SLUG } from "@/lib/brand";
+import { isEnvEnabled } from "@/lib/env";
 
 type BucketEntry = {
   count: number;
@@ -11,21 +13,21 @@ type RateLimiterStore = Map<string, BucketEntry>;
 
 declare global {
   // eslint-disable-next-line no-var
-  var __gitfolioRateLimiterStore: RateLimiterStore | undefined;
+  var __githubprintRateLimiterStore: RateLimiterStore | undefined;
 }
 
 function getStore() {
-  if (!globalThis.__gitfolioRateLimiterStore) {
-    globalThis.__gitfolioRateLimiterStore = new Map();
+  if (!globalThis.__githubprintRateLimiterStore) {
+    globalThis.__githubprintRateLimiterStore = new Map();
   }
 
-  return globalThis.__gitfolioRateLimiterStore;
+  return globalThis.__githubprintRateLimiterStore;
 }
 
 function isThrottleEnabled() {
   return (
     process.env.NODE_ENV === "production" &&
-    process.env.GITFOLIO_DISABLE_THROTTLE !== "1"
+    !isEnvEnabled("GITHUBPRINT_DISABLE_THROTTLE", "GITFOLIO_DISABLE_THROTTLE")
   );
 }
 
@@ -83,7 +85,7 @@ export async function assertResultRequestAllowed(options?: {
 
   const rawHeaders = await headers();
   const fingerprint = getRequestFingerprint(rawHeaders);
-  const analysisBucket = consume(`result:${fingerprint}`, 8, 60 * 1000);
+  const analysisBucket = consume(`${PRODUCT_SLUG}:result:${fingerprint}`, 8, 60 * 1000);
 
   if (!analysisBucket.allowed) {
     throw new RequestThrottleError(
@@ -93,7 +95,11 @@ export async function assertResultRequestAllowed(options?: {
   }
 
   if (options?.forceFresh) {
-    const refreshBucket = consume(`result-refresh:${fingerprint}`, 1, 5 * 60 * 1000);
+    const refreshBucket = consume(
+      `${PRODUCT_SLUG}:result-refresh:${fingerprint}`,
+      1,
+      5 * 60 * 1000,
+    );
 
     if (!refreshBucket.allowed) {
       throw new RequestThrottleError(

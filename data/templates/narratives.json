@@ -11,30 +11,30 @@
   },
   "summary": {
     "high": {
-      "ko": "{name}의 공개 GitHub를 보면 {languages} 중심의 프로젝트가 반복되고, {projects} 같은 대표 저장소에서 {primaryOrientation} 경향이 비교적 분명하게 드러납니다. 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
-      "en": "Based on public GitHub signals, {name} repeatedly ships projects around {languages}, and repositories such as {projects} make the {primaryOrientation} orientation relatively clear. Overall, the profile leans toward {primaryStyle}."
+      "ko": "{name}의 GitHub를 보면 {languages} 중심의 프로젝트가 반복되고, {projects} 같은 대표 저장소에서 {primaryOrientation} 경향이 비교적 분명하게 드러납니다. 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
+      "en": "Based on GitHub signals, {name} repeatedly ships projects around {languages}, and repositories such as {projects} make the {primaryOrientation} orientation relatively clear. Overall, the profile leans toward {primaryStyle}."
     },
     "medium": {
-      "ko": "{name}의 공개 저장소를 보면 {languages} 중심의 구현 경험이 보이고, {projects} 같은 저장소에서 {primaryOrientation} 경향을 확인할 수 있습니다. 공개 정보 범위 안에서는 {primaryStyle} 성향도 함께 드러납니다.",
-      "en": "Across public repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} suggest a {primaryOrientation} tilt. Within the limits of public evidence, there are also visible signals of {primaryStyle}."
+      "ko": "{name}의 저장소를 보면 {languages} 중심의 구현 경험이 보이고, {projects} 같은 저장소에서 {primaryOrientation} 경향을 확인할 수 있습니다. 확인 가능한 GitHub 정보 범위 안에서는 {primaryStyle} 성향도 함께 드러납니다.",
+      "en": "Across repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} suggest a {primaryOrientation} tilt. Within the limits of visible GitHub evidence, there are also signals of {primaryStyle}."
     },
     "low": {
-      "ko": "{name}의 공개 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 경향이 상대적으로 더 두드러진다고 보는 편이 맞습니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 드러납니다.",
-      "en": "Public GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} signals are only relatively stronger than the rest. The working style currently reads as somewhat {primaryStyle}."
+      "ko": "{name}의 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 경향이 상대적으로 더 두드러진다고 보는 편이 맞습니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 드러납니다.",
+      "en": "GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} signals are only relatively stronger than the rest. The working style currently reads as somewhat {primaryStyle}."
     }
   },
   "caution": {
     "high": {
-      "ko": "공개 저장소, 문서, 최근 활동을 통해 확인 가능한 정보는 비교적 충분하지만, 실제 협업 방식과 경력 정보까지 확인되는 것은 아닙니다.",
-      "en": "Public repositories, documentation, and recent activity provide relatively solid evidence, but they still do not verify collaboration style or career history."
+      "ko": "저장소, 문서, 최근 활동을 통해 확인 가능한 정보는 비교적 충분하지만, 실제 협업 방식과 경력 정보까지 확인되는 것은 아닙니다.",
+      "en": "Repositories, documentation, and recent activity provide relatively solid evidence, but they still do not verify collaboration style or career history."
     },
     "medium": {
-      "ko": "판단은 공개 저장소와 README, 최근 활동을 바탕으로 한 해석이며, 실제 업무 맥락은 더 조심스럽게 보는 편이 맞습니다.",
-      "en": "These conclusions are interpretive and based on public repositories, READMEs, and recency signals. Actual working context should still be read conservatively."
+      "ko": "판단은 저장소와 README, 최근 활동을 바탕으로 한 해석이며, 실제 업무 맥락은 더 조심스럽게 보는 편이 맞습니다.",
+      "en": "These conclusions are interpretive and based on repositories, READMEs, and recency signals. Actual working context should still be read conservatively."
     },
     "low": {
-      "ko": "공개 정보가 제한적이어서 개발자 유형과 작업 방식은 추정 수준으로 보는 편이 맞습니다.",
-      "en": "Public signals are limited, so developer type and working style should be treated as tentative rather than definitive."
+      "ko": "확인 가능한 정보가 제한적이어서 개발자 유형과 작업 방식은 추정 수준으로 보는 편이 맞습니다.",
+      "en": "Visible GitHub signals are limited, so developer type and working style should be treated as tentative rather than definitive."
     }
   },
   "evidenceLabels": {

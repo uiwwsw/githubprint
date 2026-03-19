@@ -7,7 +7,7 @@ const ts = require("typescript");
 
 const projectRoot = path.resolve(__dirname, "..");
 const shimPath = path.join(__dirname, "shims", "server-only.cjs");
-const reportDir = path.join(projectRoot, ".cache", "gitfolio", "reports");
+const reportDir = path.join(projectRoot, ".cache", "githubprint", "reports");
 const reportPath = path.join(reportDir, "regression-summary.json");
 const markdownPath = path.join(reportDir, "regression-summary.md");
 const originalResolveFilename = Module._resolveFilename;
@@ -75,7 +75,7 @@ function writeReports(results) {
   fs.writeFileSync(reportPath, JSON.stringify(results, null, 2));
 
   const lines = [
-    "# GitFolio Regression Summary",
+    "# GitHubPrint Regression Summary",
     "",
     `Generated at: ${new Date().toISOString()}`,
     "",

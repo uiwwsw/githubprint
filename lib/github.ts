@@ -4,26 +4,32 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { unstable_cache } from "next/cache";
 import { mockGitHubProfile } from "@/fixtures/mock-profile";
+import { PRODUCT_NAME, PRODUCT_SLUG, LEGACY_PRODUCT_SLUG } from "@/lib/brand";
+import { readEnv } from "@/lib/env";
 import {
   inferRepoIdentity,
   summarizeRepoStack,
   type RepoIdentity,
   type RepoStackSummary,
 } from "@/lib/repo-identity";
-import type { Locale } from "@/lib/schemas";
+import type { ContributionSummary, DataMode, Locale } from "@/lib/schemas";
 
 type GitHubUserResponse = {
   avatar_url: string;
   bio: string | null;
   blog: string | null;
+  company?: string | null;
   created_at: string;
+  email?: string | null;
   followers: number;
   following: number;
   html_url: string;
   location: string | null;
   login: string;
   name: string | null;
+  public_gists?: number;
   public_repos: number;
+  twitter_username?: string | null;
   type: "User" | "Organization";
   updated_at: string;
 };
@@ -90,6 +96,25 @@ type GitHubPinnedResponse = {
   errors?: Array<{ message: string }>;
 };
 
+type GitHubViewerContributionResponse = {
+  data?: {
+    viewer?: {
+      contributionsCollection: {
+        contributionCalendar: {
+          totalContributions: number;
+        };
+        endedAt: string;
+        startedAt: string;
+        totalCommitContributions: number;
+        totalIssueContributions: number;
+        totalPullRequestContributions: number;
+        totalPullRequestReviewContributions: number;
+      };
+    } | null;
+  };
+  errors?: Array<{ message: string }>;
+};
+
 export type GitHubRepoSnapshot = {
   archived: boolean;
   defaultBranch: string;
@@ -121,23 +146,29 @@ export type GitHubSourceData = {
     avatarUrl: string;
     bio: string | null;
     blogUrl: string | null;
+    company: string | null;
     createdAt: string;
+    email: string | null;
     followers: number;
     following: number;
     location: string | null;
     name: string | null;
     profileUrl: string;
+    publicGistCount: number;
     publicRepoCount: number;
+    twitterUsername: string | null;
     type: "User";
     updatedAt: string;
     username: string;
   };
   activity: {
+    contributionSummary?: ContributionSummary | null;
     lastActiveAt: string | null;
     note: string;
     recentRepoCount: number;
   };
   cacheKey: string;
+  dataMode: DataMode;
   evidenceSignals: string[];
   pinnedRepoNames: string[];
   representativeRepos: GitHubRepoSnapshot[];
@@ -171,6 +202,12 @@ export class GitHubFetchError extends Error {
   }
 }
 
+export type GitHubSourceAuthContext = {
+  accessToken: string;
+  scopes: string[];
+  viewerUsername: string;
+};
+
 const GITHUB_API_BASE = "https://api.github.com";
 const CACHE_WINDOW_SECONDS = 60 * 15;
 const README_CANDIDATE_LIMIT = 8;
@@ -191,9 +228,15 @@ const ROOT_MANIFEST_FILE_NAMES = [
   "build.gradle.kts",
 ];
 const MANIFEST_CONTENT_LIMIT = 4;
-const DEV_CACHE_DIR = path.join(process.cwd(), ".cache", "gitfolio", "github");
+const DEV_CACHE_DIR = path.join(process.cwd(), ".cache", PRODUCT_SLUG, "github");
+const LEGACY_DEV_CACHE_DIR = path.join(
+  process.cwd(),
+  ".cache",
+  LEGACY_PRODUCT_SLUG,
+  "github",
+);
 const GRAPHQL_PINNED_QUERY = `
-  query GitFolioPinnedRepos($login: String!) {
+  query GitHubPrintPinnedRepos($login: String!) {
     user(login: $login) {
       pinnedItems(first: 6, types: REPOSITORY) {
         nodes {
@@ -217,13 +260,30 @@ const GRAPHQL_PINNED_QUERY = `
     }
   }
 `;
+const GRAPHQL_VIEWER_CONTRIBUTIONS_QUERY = `
+  query GitHubPrintViewerContributions {
+    viewer {
+      contributionsCollection {
+        startedAt
+        endedAt
+        totalCommitContributions
+        totalIssueContributions
+        totalPullRequestContributions
+        totalPullRequestReviewContributions
+        contributionCalendar {
+          totalContributions
+        }
+      }
+    }
+  }
+`;
 
 function isLocalDevelopment() {
   return process.env.NODE_ENV !== "production";
 }
 
 function isLightGitHubMode() {
-  return isLocalDevelopment() && !process.env.GITHUB_TOKEN?.trim();
+  return isLocalDevelopment() && !readEnv("GITHUB_TOKEN");
 }
 
 function getReadmeCandidateLimit() {
@@ -245,6 +305,13 @@ function getDevCachePath(username: string, locale: Locale) {
   );
 }
 
+function getLegacyDevCachePath(username: string, locale: Locale) {
+  return path.join(
+    LEGACY_DEV_CACHE_DIR,
+    `${username.toLowerCase().replace(/[^a-z0-9_-]/gi, "-")}--${locale}.json`,
+  );
+}
+
 async function readDevCachedSource(username: string, locale: Locale) {
   if (!isLocalDevelopment()) {
     return null;
@@ -254,7 +321,12 @@ async function readDevCachedSource(username: string, locale: Locale) {
     const file = await readFile(getDevCachePath(username, locale), "utf-8");
     return JSON.parse(file) as GitHubSourceData;
   } catch {
-    return null;
+    try {
+      const legacyFile = await readFile(getLegacyDevCachePath(username, locale), "utf-8");
+      return JSON.parse(legacyFile) as GitHubSourceData;
+    } catch {
+      return null;
+    }
   }
 }
 
@@ -282,12 +354,13 @@ async function writeDevCachedSource(
 function buildGitHubHeaders(
   accept: string,
   initHeaders?: HeadersInit,
+  accessToken?: string,
 ) {
-  const token = process.env.GITHUB_TOKEN?.trim();
+  const token = accessToken?.trim() || readEnv("GITHUB_TOKEN");
   const headers = new Headers(initHeaders);
 
   headers.set("Accept", accept);
-  headers.set("User-Agent", "GitFolio-MVP");
+  headers.set("User-Agent", PRODUCT_NAME);
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -300,17 +373,21 @@ async function githubRequest(
   path: string,
   options?: {
     accept?: string;
+    accessToken?: string;
+    disableCache?: boolean;
     forceFresh?: boolean;
     init?: RequestInit;
   },
 ) {
+  const disableCache = options?.forceFresh || options?.disableCache;
   const response = await fetch(`${GITHUB_API_BASE}${path}`, {
     ...options?.init,
-    cache: options?.forceFresh ? "no-store" : "force-cache",
-    next: options?.forceFresh ? undefined : { revalidate: CACHE_WINDOW_SECONDS },
+    cache: disableCache ? "no-store" : "force-cache",
+    next: disableCache ? undefined : { revalidate: CACHE_WINDOW_SECONDS },
     headers: buildGitHubHeaders(
       options?.accept ?? "application/vnd.github+json",
       options?.init?.headers,
+      options?.accessToken,
     ),
   });
 
@@ -350,6 +427,8 @@ async function githubJson<T>(
   path: string,
   options?: {
     accept?: string;
+    accessToken?: string;
+    disableCache?: boolean;
     forceFresh?: boolean;
     init?: RequestInit;
   },
@@ -361,18 +440,24 @@ async function githubJson<T>(
 async function fetchPinnedRepos(
   username: string,
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
-  if (!process.env.GITHUB_TOKEN) {
+  const token = accessToken?.trim() || readEnv("GITHUB_TOKEN");
+  if (!token) {
     return [];
   }
 
   const response = await fetch(`${GITHUB_API_BASE}/graphql`, {
     method: "POST",
-    cache: forceFresh ? "no-store" : "force-cache",
-    next: forceFresh ? undefined : { revalidate: CACHE_WINDOW_SECONDS },
+    cache: forceFresh || disableCache ? "no-store" : "force-cache",
+    next:
+      forceFresh || disableCache
+        ? undefined
+        : { revalidate: CACHE_WINDOW_SECONDS },
     headers: buildGitHubHeaders("application/json", {
       "Content-Type": "application/json",
-    }),
+    }, token),
     body: JSON.stringify({
       query: GRAPHQL_PINNED_QUERY,
       variables: { login: username },
@@ -397,6 +482,57 @@ async function fetchPinnedRepos(
     updatedAt: repo.updatedAt,
     url: repo.url,
   }));
+}
+
+async function fetchViewerContributionSummary(
+  forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
+) {
+  const token = accessToken?.trim() || readEnv("GITHUB_TOKEN");
+  if (!token) {
+    return null;
+  }
+
+  const response = await fetch(`${GITHUB_API_BASE}/graphql`, {
+    method: "POST",
+    cache: forceFresh || disableCache ? "no-store" : "force-cache",
+    next:
+      forceFresh || disableCache
+        ? undefined
+        : { revalidate: CACHE_WINDOW_SECONDS },
+    headers: buildGitHubHeaders(
+      "application/json",
+      {
+        "Content-Type": "application/json",
+      },
+      token,
+    ),
+    body: JSON.stringify({
+      query: GRAPHQL_VIEWER_CONTRIBUTIONS_QUERY,
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const json = (await response.json()) as GitHubViewerContributionResponse;
+  const contributions = json.data?.viewer?.contributionsCollection;
+  if (json.errors?.length || !contributions) {
+    return null;
+  }
+
+  return {
+    endedAt: contributions.endedAt,
+    startedAt: contributions.startedAt,
+    totalCommitContributions: contributions.totalCommitContributions,
+    totalContributions: contributions.contributionCalendar.totalContributions,
+    totalIssueContributions: contributions.totalIssueContributions,
+    totalPullRequestContributions: contributions.totalPullRequestContributions,
+    totalPullRequestReviewContributions:
+      contributions.totalPullRequestReviewContributions,
+  } satisfies ContributionSummary;
 }
 
 function decodeReadme(readme: GitHubReadmeResponse | null) {
@@ -449,11 +585,15 @@ async function fetchRepoReadme(
   username: string,
   repo: Pick<GitHubRepoSnapshot, "name">,
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
   try {
     const json = await githubJson<GitHubReadmeResponse>(
       `/repos/${username}/${repo.name}/readme`,
       {
+        accessToken,
+        disableCache,
         forceFresh,
       },
     );
@@ -468,11 +608,13 @@ async function fetchRepoRootFiles(
   username: string,
   repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
   try {
     const response = await githubJson<GitHubContentItemResponse[] | GitHubContentItemResponse>(
       `/repos/${username}/${repo.name}/contents?ref=${repo.defaultBranch}`,
-      { forceFresh },
+      { accessToken, disableCache, forceFresh },
     );
 
     if (!Array.isArray(response)) {
@@ -492,11 +634,13 @@ async function fetchRepoRecentCommitMessages(
   username: string,
   repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
   try {
     const response = await githubJson<GitHubCommitResponse[]>(
       `/repos/${username}/${repo.name}/commits?per_page=20&sha=${repo.defaultBranch}`,
-      { forceFresh },
+      { accessToken, disableCache, forceFresh },
     );
 
     return response
@@ -513,11 +657,13 @@ async function fetchRepoFileContent(
   repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
   filePath: string,
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
   try {
     const response = await githubJson<GitHubReadmeResponse>(
       `/repos/${username}/${repo.name}/contents/${encodeURIComponent(filePath)}?ref=${repo.defaultBranch}`,
-      { forceFresh },
+      { accessToken, disableCache, forceFresh },
     );
 
     return sanitizeReadme(decodeReadme(response));
@@ -537,6 +683,8 @@ async function fetchRepoManifestContents(
   repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
   rootFiles: string[],
   forceFresh?: boolean,
+  accessToken?: string,
+  disableCache?: boolean,
 ) {
   const targets = getRepoManifestTargets(rootFiles);
   if (targets.length === 0) {
@@ -544,7 +692,16 @@ async function fetchRepoManifestContents(
   }
 
   const contents = await Promise.all(
-    targets.map(async (target) => fetchRepoFileContent(username, repo, target, forceFresh)),
+    targets.map(async (target) =>
+      fetchRepoFileContent(
+        username,
+        repo,
+        target,
+        forceFresh,
+        accessToken,
+        disableCache,
+      ),
+    ),
   );
 
   return contents.filter((content): content is string => Boolean(content));
@@ -758,14 +915,44 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
     .slice(0, 6);
 }
 
+function formatLocaleNumber(value: number, locale: Locale) {
+  return new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(
+    value,
+  );
+}
+
 function buildEvidenceSignals(
   locale: Locale,
   source: Pick<
     GitHubSourceData,
-    "activity" | "representativeRepos" | "topLanguages" | "account" | "stackSummary"
+    | "account"
+    | "activity"
+    | "dataMode"
+    | "representativeRepos"
+    | "stackSummary"
+    | "topLanguages"
   >,
 ) {
   const signals: string[] = [];
+
+  if (source.dataMode === "private_enriched") {
+    signals.push(
+      locale === "ko"
+        ? "로그인한 본인 계정 기준으로 승인된 GitHub 데이터 범위까지 함께 읽었습니다."
+        : "This reading includes GitHub data authorized by the signed-in account, which may include private repositories.",
+    );
+  }
+
+  if (
+    source.dataMode === "private_enriched" &&
+    source.activity.contributionSummary
+  ) {
+    signals.push(
+      locale === "ko"
+        ? `최근 1년 기준 승인된 활동에서 총 ${formatLocaleNumber(source.activity.contributionSummary.totalContributions, locale)}건의 기여와 ${formatLocaleNumber(source.activity.contributionSummary.totalPullRequestContributions, locale)}건의 pull request가 확인됩니다.`
+        : `Within the authorized activity window, the past year shows ${formatLocaleNumber(source.activity.contributionSummary.totalContributions, locale)} contributions and ${formatLocaleNumber(source.activity.contributionSummary.totalPullRequestContributions, locale)} pull requests.`,
+    );
+  }
 
   if ((source.stackSummary?.coreStack.length ?? 0) > 0) {
     signals.push(
@@ -838,6 +1025,7 @@ function buildMockSource(
     account,
     activity,
     cacheKey: `${mockGitHubProfile.cacheKey}::${overrides?.cacheKeySuffix ?? "fixture"}`,
+    dataMode: "public",
     stackSummary: summarizeRepoStack(mockGitHubProfile.representativeRepos),
   };
 
@@ -846,6 +1034,7 @@ function buildMockSource(
     evidenceSignals: buildEvidenceSignals(locale, {
       account: source.account,
       activity: source.activity,
+      dataMode: source.dataMode,
       representativeRepos: source.representativeRepos,
       stackSummary: source.stackSummary,
       topLanguages: source.topLanguages,
@@ -865,13 +1054,17 @@ function buildDevelopmentFallbackSource(
           ? "로컬 개발 환경에서 GitHub API rate limit으로 인해 최소 정보만으로 문서를 렌더링했습니다."
           : "This document was rendered from a minimal local fallback because GitHub API rate limits were hit in development.",
       blogUrl: null,
+      company: null,
       createdAt: new Date(0).toISOString(),
+      email: null,
       followers: 0,
       following: 0,
       location: null,
       name: username,
       profileUrl: `https://github.com/${username}`,
+      publicGistCount: 0,
       publicRepoCount: 0,
+      twitterUsername: null,
       type: "User",
       updatedAt: new Date().toISOString(),
       username,
@@ -885,6 +1078,7 @@ function buildDevelopmentFallbackSource(
       recentRepoCount: 0,
     },
     cacheKey: `local-dev-fallback::${username.toLowerCase()}`,
+    dataMode: "public",
     evidenceSignals: [
       locale === "ko"
         ? "이 결과는 로컬 개발 편의를 위한 최소 fallback 문서입니다."
@@ -910,19 +1104,39 @@ async function fetchGitHubSourceInternal(
   username: string,
   locale: Locale,
   forceFresh?: boolean,
+  authContext?: GitHubSourceAuthContext,
 ): Promise<GitHubSourceData> {
   const useFixture =
     process.env.NODE_ENV !== "production" &&
-    process.env.GITFOLIO_USE_FIXTURE === "1";
+    readEnv("GITHUBPRINT_USE_FIXTURE", "GITFOLIO_USE_FIXTURE") === "1";
+
+  const isSignedInViewer = Boolean(
+    authContext &&
+      authContext.viewerUsername.toLowerCase() === username.toLowerCase(),
+  );
+  const dataMode: DataMode = isSignedInViewer ? "private_enriched" : "public";
+  const usePrivateRepoScope = Boolean(
+    isSignedInViewer &&
+      authContext?.scopes.some(
+        (scope) => scope === "repo" || scope === "public_repo",
+      ),
+  );
+  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const disableCache = Boolean(isSignedInViewer);
 
   if (useFixture) {
     return buildMockSource(locale);
   }
 
   try {
-    const user = await githubJson<GitHubUserResponse>(`/users/${username}`, {
-      forceFresh,
-    });
+    const user = await githubJson<GitHubUserResponse>(
+      isSignedInViewer ? "/user" : `/users/${username}`,
+      {
+        accessToken: authAccessToken,
+        disableCache,
+        forceFresh,
+      },
+    );
 
     if (user.type === "Organization") {
       throw new GitHubFetchError(
@@ -932,11 +1146,31 @@ async function fetchGitHubSourceInternal(
     }
 
     const reposResponse = await githubJson<GitHubRepoResponse[]>(
-      `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`,
-      { forceFresh },
+      usePrivateRepoScope
+        ? "/user/repos?per_page=100&sort=updated&direction=desc&visibility=all&affiliation=owner"
+        : `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`,
+      {
+        accessToken: authAccessToken,
+        disableCache,
+        forceFresh,
+      },
     );
 
-    const pinnedRepos = await fetchPinnedRepos(username, forceFresh);
+    const [pinnedRepos, contributionSummary] = await Promise.all([
+      fetchPinnedRepos(
+        username,
+        forceFresh,
+        authAccessToken,
+        disableCache,
+      ),
+      isSignedInViewer
+        ? fetchViewerContributionSummary(
+            forceFresh,
+            authAccessToken,
+            disableCache,
+          )
+        : Promise.resolve(null),
+    ]);
     const pinnedNames = new Set(pinnedRepos.map((repo) => repo.name.toLowerCase()));
 
     const repos: GitHubRepoSnapshot[] = reposResponse.map((repo) => ({
@@ -969,7 +1203,13 @@ async function fetchGitHubSourceInternal(
     const readmes = await Promise.all(
       readmeTargetRepos.map(async (repo) => [
         repo.name,
-        await fetchRepoReadme(username, repo, forceFresh),
+        await fetchRepoReadme(
+          username,
+          repo,
+          forceFresh,
+          authAccessToken,
+          disableCache,
+        ),
       ] as const),
     );
 
@@ -1031,14 +1271,28 @@ async function fetchGitHubSourceInternal(
         }
 
         const [rootFiles, recentCommitMessages] = await Promise.all([
-          fetchRepoRootFiles(username, repo, forceFresh),
-          fetchRepoRecentCommitMessages(username, repo, forceFresh),
+          fetchRepoRootFiles(
+            username,
+            repo,
+            forceFresh,
+            authAccessToken,
+            disableCache,
+          ),
+          fetchRepoRecentCommitMessages(
+            username,
+            repo,
+            forceFresh,
+            authAccessToken,
+            disableCache,
+          ),
         ]);
         const manifestContents = await fetchRepoManifestContents(
           username,
           repo,
           rootFiles,
           forceFresh,
+          authAccessToken,
+          disableCache,
         );
 
         const enrichedRepo: GitHubRepoSnapshot = {
@@ -1085,28 +1339,38 @@ async function fetchGitHubSourceInternal(
         avatarUrl: user.avatar_url,
         bio: user.bio,
         blogUrl: sanitizeExternalUrl(user.blog),
+        company: user.company ?? null,
         createdAt: user.created_at,
+        email: user.email ?? null,
         followers: user.followers,
         following: user.following,
         location: user.location,
         name: user.name,
         profileUrl: user.html_url,
+        publicGistCount: user.public_gists ?? 0,
         publicRepoCount: user.public_repos,
+        twitterUsername: user.twitter_username ?? null,
         type: "User",
         updatedAt: user.updated_at,
         username: user.login,
       },
       activity: {
+        contributionSummary,
         lastActiveAt,
         note: activityNote,
         recentRepoCount,
       },
       cacheKey: [
+        dataMode,
         user.login,
         user.updated_at,
+        contributionSummary
+          ? `${contributionSummary.endedAt}:${contributionSummary.totalContributions}`
+          : "no-contributions",
         lastActiveAt ?? "none",
         representativeRepos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|"),
       ].join("::"),
+      dataMode,
       evidenceSignals: [],
       pinnedRepoNames: pinnedRepos.map((repo) => repo.name),
       representativeRepos,
@@ -1120,14 +1384,17 @@ async function fetchGitHubSourceInternal(
       evidenceSignals: buildEvidenceSignals(locale, source),
     };
 
-    await writeDevCachedSource(username, locale, finalizedSource);
+    if (dataMode === "public") {
+      await writeDevCachedSource(username, locale, finalizedSource);
+    }
 
     return finalizedSource;
   } catch (error) {
     if (
       error instanceof GitHubFetchError &&
       error.code === "rate_limited" &&
-      isLocalDevelopment()
+      isLocalDevelopment() &&
+      !authContext
     ) {
       const cachedSource = await readDevCachedSource(username, locale);
       if (cachedSource) {
@@ -1143,15 +1410,23 @@ async function fetchGitHubSourceInternal(
 
 const getCachedGitHubSource = unstable_cache(
   async (username: string, locale: Locale) => fetchGitHubSourceInternal(username, locale, false),
-  ["gitfolio-github-source"],
+  ["githubprint-github-source"],
   { revalidate: CACHE_WINDOW_SECONDS },
 );
 
 export async function getGitHubSource(
   username: string,
-  options?: { forceFresh?: boolean; locale?: Locale },
+  options?: {
+    authContext?: GitHubSourceAuthContext;
+    forceFresh?: boolean;
+    locale?: Locale;
+  },
 ) {
   const locale = options?.locale ?? "ko";
+  if (options?.authContext) {
+    return fetchGitHubSourceInternal(username, locale, true, options.authContext);
+  }
+
   return options?.forceFresh
     ? fetchGitHubSourceInternal(username, locale, true)
     : getCachedGitHubSource(username, locale);

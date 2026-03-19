@@ -8,13 +8,21 @@ import { PublicDataScope } from "@/components/result/common";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { normalizeGitHubUrlInput, GitHubUrlError } from "@/lib/github-url";
 import { getTemplateMeta } from "@/lib/templates";
-import { type Locale, type TemplateId } from "@/lib/schemas";
+import { type DataMode, type Locale, type TemplateId } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
-export function UrlForm({ locale }: { locale: Locale }) {
+export function UrlForm({
+  initialUrl = "",
+  locale,
+  signedInUsername = null,
+}: {
+  initialUrl?: string;
+  locale: Locale;
+  signedInUsername?: string | null;
+}) {
   const router = useRouter();
   const dict = getDictionary(locale);
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>("profile");
   const [error, setError] = useState("");
   const [hasBlurredUrl, setHasBlurredUrl] = useState(false);
@@ -50,6 +58,12 @@ export function UrlForm({ locale }: { locale: Locale }) {
       };
     }
   }, [locale, url]);
+
+  const currentDataMode: DataMode =
+    signedInUsername &&
+    validation.parsed?.username.toLowerCase() === signedInUsername.toLowerCase()
+      ? "private_enriched"
+      : "public";
 
   const canSubmit = Boolean(validation.parsed) && !isPending;
   const displayError = error || (hasBlurredUrl ? validation.message : "");
@@ -94,7 +108,7 @@ export function UrlForm({ locale }: { locale: Locale }) {
       <div className="space-y-3">
         <label
           className="block text-sm font-medium text-neutral-700"
-          htmlFor="gitfolio-profile-url-input"
+          htmlFor="githubprint-profile-url-input"
         >
           {dict.home.urlLabel}
         </label>
@@ -106,9 +120,9 @@ export function UrlForm({ locale }: { locale: Locale }) {
           data-bwignore="true"
           data-form-type="other"
           data-lpignore="true"
-          id="gitfolio-profile-url-input"
+          id="githubprint-profile-url-input"
           inputMode="text"
-          name="gitfolioProfileUrl"
+          name="githubprintProfileUrl"
           onBlur={() => {
             setHasBlurredUrl(true);
           }}
@@ -203,7 +217,10 @@ export function UrlForm({ locale }: { locale: Locale }) {
             <span className="text-xs text-neutral-500">+</span>
           </summary>
           <div className="border-t border-black/[0.08] px-5 py-4">
-            <PublicDataScope locale={locale} />
+            <PublicDataScope
+              dataMode={currentDataMode}
+              locale={locale}
+            />
           </div>
         </details>
       </div>

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { getGitHubSession } from "@/lib/auth";
 import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
+import { readEnv } from "@/lib/env";
 import { GitHubUrlError, normalizeGitHubUrlInput } from "@/lib/github-url";
 import { getDictionary } from "@/lib/i18n";
 import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
@@ -153,9 +155,20 @@ export async function ResultPageContent({
     const forceFresh =
       Boolean(parsed.data.refresh) &&
       (process.env.NODE_ENV !== "production" ||
-        process.env.GITFOLIO_ALLOW_RESULT_REFRESH === "1");
+        readEnv("GITHUBPRINT_ALLOW_RESULT_REFRESH", "GITFOLIO_ALLOW_RESULT_REFRESH") === "1");
+    const session = await getGitHubSession();
+    const authContext =
+      session &&
+      session.user.login.toLowerCase() === normalized.username.toLowerCase()
+        ? {
+            accessToken: session.accessToken,
+            scopes: session.scopes,
+            viewerUsername: session.user.login,
+          }
+        : undefined;
     await assertResultRequestAllowed({ forceFresh });
     const source = await getGitHubSource(normalized.username, {
+      authContext,
       forceFresh,
       locale,
     });
@@ -173,6 +186,7 @@ export async function ResultPageContent({
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
+            dataMode={source.dataMode}
             downloadFileName={{
               generatedAt,
               template: parsed.data.template,
@@ -184,6 +198,8 @@ export async function ResultPageContent({
           />
           <RenderTemplate
             analysisResult={analysisResult}
+            contributionSummary={source.activity.contributionSummary}
+            dataMode={source.dataMode}
             generatedAt={generatedAt}
             locale={locale}
             profileUrl={normalized.canonicalProfileUrl}

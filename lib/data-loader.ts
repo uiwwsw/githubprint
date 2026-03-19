@@ -14,6 +14,7 @@ import roles from "@/data/rules/roles.json";
 import strengths from "@/data/rules/strengths.json";
 import workingStyles from "@/data/rules/working-styles.json";
 import narratives from "@/data/templates/narratives.json";
+import { readEnv } from "@/lib/env";
 import type { Locale } from "@/lib/schemas";
 import {
   benchmarkCohortSchema,
@@ -45,7 +46,10 @@ export const repoIdentityRules = repoIdentityRuleSetSchema.parse(
 );
 
 function loadBenchmarkCohorts() {
-  const overridePath = process.env.GITFOLIO_BENCHMARK_OVERRIDE_PATH?.trim();
+  const overridePath = readEnv(
+    "GITHUBPRINT_BENCHMARK_OVERRIDE_PATH",
+    "GITFOLIO_BENCHMARK_OVERRIDE_PATH",
+  );
 
   if (overridePath && existsSync(overridePath)) {
     const file = readFileSync(overridePath, "utf-8");

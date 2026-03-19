@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PRODUCT_SLUG } from "@/lib/brand";
 import { getDictionary } from "@/lib/i18n";
 import { buildDownloadFileName } from "@/lib/result-document";
 import { getTemplateMeta } from "@/lib/templates";
@@ -9,12 +10,14 @@ import { type Locale, type TemplateId } from "@/lib/schemas";
 export function ResultActions({
   template,
   mode,
+  dataMode = "public",
   canDownload = true,
   downloadFileName,
   locale,
 }: {
   template: TemplateId;
   mode: "openai" | "fallback";
+  dataMode?: "public" | "private_enriched";
   canDownload?: boolean;
   downloadFileName?: {
     generatedAt: string;
@@ -30,7 +33,7 @@ export function ResultActions({
     const originalTitle = document.title;
     const nextTitle = downloadFileName
       ? buildDownloadFileName(downloadFileName)
-      : "gitfolio-document";
+      : `${PRODUCT_SLUG}-document`;
     let restored = false;
 
     const restoreTitle = () => {
@@ -55,6 +58,9 @@ export function ResultActions({
         </span>
         <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
           {dict.result.modeLabel}: {mode === "openai" ? dict.result.modeAi : dict.result.modeFallback}
+        </span>
+        <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
+          {dict.result.dataModeLabel}: {dataMode === "private_enriched" ? dict.result.dataModePrivate : dict.result.dataModePublic}
         </span>
       </div>
       <div className="flex flex-wrap gap-2">

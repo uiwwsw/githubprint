@@ -5,7 +5,11 @@ import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
 import type { RepoFeature } from "@/lib/profile-features";
 import { buildRepoTechStack, summarizeRepoStack } from "@/lib/repo-identity";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
-import { analysisSchema, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
+import {
+  analysisSchema,
+  type GitHubPrintAnalysis,
+  type Locale,
+} from "@/lib/schemas";
 import type { ProfileEngineConfig } from "@/lib/schemas/rule-config";
 
 function repoSignalText(repo: GitHubRepoSnapshot, locale: Locale) {
@@ -97,7 +101,7 @@ function buildWorkingStyleText(
   if (!primary) {
     return locale === "ko"
       ? "작업 방식은 공개 저장소 기준으로는 제한적으로만 드러납니다."
-      : "Working-style signals are only partially visible from public repositories.";
+      : "Working-style signals are only partially visible from repositories.";
   }
 
   if (!secondary || secondary.id === primary.id || secondary.score < 45) {
@@ -119,6 +123,14 @@ function buildSummaryText(
   );
   const projectNames = source.representativeRepos.slice(0, 2).map((repo) => repo.name);
   const stackSummary = getStackSummary(source);
+  const projectFallback =
+    source.dataMode === "private_enriched"
+      ? locale === "ko"
+        ? "주요 저장소"
+        : "visible repositories"
+      : locale === "ko"
+        ? "주요 공개 저장소"
+        : "visible public repositories";
 
   return fillTemplate(template, {
     languages: joinReadable(
@@ -138,9 +150,7 @@ function buildSummaryText(
     projects:
       projectNames.length > 0
         ? joinReadable(projectNames, locale)
-        : locale === "ko"
-          ? "주요 공개 저장소"
-          : "visible public repositories",
+        : projectFallback,
   });
 }
 
@@ -152,8 +162,8 @@ function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   if (primaryLanguage) {
     strengths.push(
       locale === "ko"
-        ? `${primaryLanguage} 중심 구현 경험이 공개 저장소 전반에서 반복적으로 보입니다.`
-        : `${primaryLanguage}-centered implementation work appears repeatedly across public repositories.`,
+        ? `${primaryLanguage} 중심 구현 경험이 저장소 전반에서 반복적으로 보입니다.`
+        : `${primaryLanguage}-centered implementation work appears repeatedly across repositories.`,
     );
   }
   strengths.push(
@@ -163,8 +173,8 @@ function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   );
   strengths.push(
     locale === "ko"
-      ? "공개 저장소 기준에서 구현 결과물이 지속적으로 축적된 흔적이 보입니다."
-      : "Public repositories still show a visible pattern of accumulated implementation output.",
+      ? "저장소 기준에서 구현 결과물이 지속적으로 축적된 흔적이 보입니다."
+      : "Repositories still show a visible pattern of accumulated implementation output.",
   );
 
   return strengths;
@@ -304,7 +314,7 @@ export function buildRuleBasedAnalysis(
   scoring: ProfileScoringResult,
   config: ProfileEngineConfig,
   locale: Locale,
-): GitFolioAnalysis {
+): GitHubPrintAnalysis {
   const name = source.account.name ?? source.account.username;
   const repoFeatureMap = new Map(
     scoring.repoFeatures.map((item) => [item.repo.name.toLowerCase(), item] as const),
@@ -360,8 +370,8 @@ export function buildRuleBasedAnalysis(
               .map((repo) => `${repo.name}: ${repoSignalText(repo, locale)}`)
               .join(" / ")
           : locale === "ko"
-            ? "대표 프로젝트로 볼 만한 공개 저장소가 충분하지 않습니다."
-            : "There are not enough public repositories to identify standout projects confidently.",
+            ? "대표 프로젝트로 볼 만한 저장소가 충분하지 않습니다."
+            : "There are not enough repositories to identify standout projects confidently.",
       label: localizeText(config.templates.evidenceLabels.projects, locale),
     },
   ];
@@ -374,7 +384,12 @@ export function buildRuleBasedAnalysis(
   });
 
   return analysisSchema.parse({
-    disclaimer: localizeText(config.templates.disclaimer, locale),
+    disclaimer:
+      source.dataMode === "private_enriched"
+        ? locale === "ko"
+          ? "이 문서는 로그인한 사용자가 승인한 GitHub 데이터 범위 안에서 작성되었습니다. 승인된 비공개 저장소와 비공개 프로필 신호가 포함될 수 있으며, 경력 연차, 협업 방식, 비즈니스 임팩트 등은 여전히 확인되지 않는 한 단정하지 않았습니다."
+          : "This document is based on GitHub data authorized by the signed-in user. It may include approved private repositories and private profile signals, while career tenure, collaboration style, and business impact are still not asserted unless clearly evidenced."
+        : localizeText(config.templates.disclaimer, locale),
     evidence: evidence.slice(0, 6),
     facts: {
       activityNote: source.activity.note,

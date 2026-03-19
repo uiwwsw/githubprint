@@ -4,10 +4,15 @@ import {
   getBenchmarkInterpretationNote,
 } from "@/lib/benchmark-presentation";
 import { getDictionary } from "@/lib/i18n";
-import type { BenchmarkSnapshot, Locale } from "@/lib/schemas";
+import type {
+  BenchmarkSnapshot,
+  ContributionSummary,
+  DataMode,
+  GitHubPrintAnalysis,
+  Locale,
+} from "@/lib/schemas";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { type GitFolioAnalysis } from "@/lib/schemas";
 
 export function SectionBlock({
   title,
@@ -50,7 +55,7 @@ export function FactGrid({
   analysis,
   locale,
 }: {
-  analysis: GitFolioAnalysis;
+  analysis: GitHubPrintAnalysis;
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
@@ -144,12 +149,19 @@ export function BenchmarkSnapshotBlock({
 }
 
 export function PublicDataScope({
+  contributionSummary,
   locale,
+  dataMode = "public",
 }: {
+  contributionSummary?: ContributionSummary | null;
   locale: Locale;
+  dataMode?: DataMode;
 }) {
   const dict = getDictionary(locale);
-  const items = dict.home.dataScopeItems;
+  const items =
+    dataMode === "private_enriched"
+      ? dict.home.signedInDataScopeItems
+      : dict.home.dataScopeItems;
 
   return (
     <div className="space-y-3">
@@ -161,6 +173,69 @@ export function PublicDataScope({
           <p className="text-sm leading-6 text-neutral-600">{item}</p>
         </div>
       ))}
+      {dataMode === "private_enriched" && contributionSummary ? (
+        <SignedInActivitySnapshot
+          contributionSummary={contributionSummary}
+          locale={locale}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function SignedInActivitySnapshot({
+  contributionSummary,
+  locale,
+}: {
+  contributionSummary: ContributionSummary;
+  locale: Locale;
+}) {
+  const dict = getDictionary(locale);
+
+  return (
+    <div className="rounded-[1.1rem] border border-black/[0.08] bg-white p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">
+            {dict.common.signedInActivityTitle}
+          </p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            {dict.common.signedInActivityHint}
+          </p>
+        </div>
+        <p className="text-xs leading-5 text-neutral-500">
+          {dict.common.signedInActivityWindow}:{" "}
+          {formatDate(contributionSummary.startedAt, locale)} -{" "}
+          {formatDate(contributionSummary.endedAt, locale)}
+        </p>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <FactCard
+          label={dict.common.factContributionsYear}
+          value={formatNumber(contributionSummary.totalContributions, locale)}
+        />
+        <FactCard
+          label={dict.common.factCommitsYear}
+          value={formatNumber(
+            contributionSummary.totalCommitContributions,
+            locale,
+          )}
+        />
+        <FactCard
+          label={dict.common.factPullRequestsYear}
+          value={formatNumber(
+            contributionSummary.totalPullRequestContributions,
+            locale,
+          )}
+        />
+        <FactCard
+          label={dict.common.factIssuesYear}
+          value={formatNumber(
+            contributionSummary.totalIssueContributions,
+            locale,
+          )}
+        />
+      </div>
     </div>
   );
 }
@@ -179,7 +254,7 @@ export function ProjectList({
   locale,
   variant = "default",
 }: {
-  analysis: GitFolioAnalysis;
+  analysis: GitHubPrintAnalysis;
   locale: Locale;
   variant?: "default" | "compact" | "narrative";
 }) {
@@ -235,7 +310,7 @@ export function ProjectList({
   );
 }
 
-export function EvidenceList({ analysis }: { analysis: GitFolioAnalysis }) {
+export function EvidenceList({ analysis }: { analysis: GitHubPrintAnalysis }) {
   return (
     <div className="space-y-3">
       {analysis.evidence.map((item) => (

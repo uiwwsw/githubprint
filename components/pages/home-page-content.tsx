@@ -1,12 +1,15 @@
 import { UrlForm } from "@/components/home/url-form";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
+import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { LocaleSync } from "@/components/ui/locale-sync";
+import { getGitHubSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/schemas";
 
-export function HomePageContent({ locale }: { locale: Locale }) {
+export async function HomePageContent({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
+  const session = await getGitHubSession();
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
@@ -33,7 +36,15 @@ export function HomePageContent({ locale }: { locale: Locale }) {
         </div>
 
         <div className="mt-12 w-full">
-          <UrlForm locale={locale} />
+          <GitHubAuthStatus locale={locale} />
+        </div>
+
+        <div className="mt-6 w-full">
+          <UrlForm
+            initialUrl={session?.user.login ?? ""}
+            locale={locale}
+            signedInUsername={session?.user.login ?? null}
+          />
         </div>
       </div>
     </main>

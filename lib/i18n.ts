@@ -23,6 +23,16 @@ type Dictionary = {
     titleTop: string;
     titleBottom: string;
     description: string;
+    authEyebrow: string;
+    authTitle: string;
+    authDescription: string;
+    authReadyEyebrow: string;
+    authReadyMessage: string;
+    authReadyHint: string;
+    authGenerateSelf: string;
+    authSignIn: string;
+    authSignOut: string;
+    authSignedInAs: string;
     urlLabel: string;
     urlPlaceholder: string;
     urlHintPrimary: string;
@@ -40,10 +50,18 @@ type Dictionary = {
       repositories: string;
       limits: string;
     };
+    signedInDataScopeItems: {
+      profile: string;
+      repositories: string;
+      limits: string;
+    };
   };
   result: {
     templateLabel: string;
     modeLabel: string;
+    dataModeLabel: string;
+    dataModePublic: string;
+    dataModePrivate: string;
     modeAi: string;
     modeFallback: string;
     download: string;
@@ -74,11 +92,18 @@ type Dictionary = {
     factTech: string;
     factRepos: string;
     factFollowers: string;
+    factContributionsYear: string;
+    factCommitsYear: string;
+    factPullRequestsYear: string;
+    factIssuesYear: string;
     benchmarkOverall: string;
     confidenceLabel: string;
     cohortLabel: string;
     repoUnit: string;
     followerUnit: string;
+    signedInActivityTitle: string;
+    signedInActivityHint: string;
+    signedInActivityWindow: string;
     sampleSizeLabel: string;
     noProjects: string;
     repoLink: string;
@@ -163,7 +188,7 @@ type Dictionary = {
 
 const dictionaries: Record<Locale, Dictionary> = {
   ko: {
-    siteName: "GitFolio",
+    siteName: "GitHubPrint",
     htmlLang: "ko",
     language: {
       switchLabel: "언어 변경",
@@ -171,26 +196,39 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitFolio | GitHub를 전달 가능한 개발자 문서로",
+      homeTitle: "GitHubPrint | GitHub를 전달 가능한 개발자 문서로",
       homeDescription:
-        "공개 GitHub URL을 바탕으로 한국어 또는 영어 개발자 문서를 만드는 GitFolio MVP.",
+        "공개 GitHub 또는 로그인한 본인 GitHub 데이터를 바탕으로 한국어 또는 영어 개발자 문서를 만드는 GitHubPrint.",
       homeKeywords: [
-        "GitFolio",
+        "GitHubPrint",
         "GitHub 포트폴리오",
         "개발자 프로필 생성기",
         "GitHub PDF",
         "developer profile PDF",
       ],
-      resultTitle: "GitFolio 결과 문서",
+      resultTitle: "GitHubPrint 결과 문서",
       resultDescription:
-        "GitHub 공개 정보를 바탕으로 정리한 개발자 문서 미리보기.",
+        "GitHub 데이터를 바탕으로 정리한 개발자 문서 미리보기.",
     },
     home: {
-      eyebrow: "GitFolio",
+      eyebrow: "GitHubPrint",
       titleTop: "GitHub를",
       titleBottom: "전달 가능한 개발자 문서로",
       description:
-        "공개 GitHub 정보를 바탕으로 읽기 쉬운 한국어 문서를 만듭니다. 템플릿마다 강조하는 정보와 읽는 방식이 다릅니다.",
+        "공개 GitHub 정보를 바탕으로 읽기 쉬운 문서를 만들고, 로그인한 본인 계정은 private-enriched mode로 더 깊게 읽을 수 있습니다.",
+      authEyebrow: "로그인 모드",
+      authTitle: "GitHub 로그인으로 내 계정 더 깊게 보기",
+      authDescription:
+        "로그인한 상태에서 본인 프로필을 생성하면, GitHubPrint가 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
+      authReadyEyebrow: "Signed-in self mode",
+      authReadyMessage:
+        "본인 프로필을 생성하면 GitHubPrint가 승인된 GitHub 데이터 범위까지 반영합니다.",
+      authReadyHint:
+        "다른 사람 프로필을 생성할 때는 계속 공개 GitHub 정보만 사용합니다.",
+      authGenerateSelf: "내 프로필 바로 생성",
+      authSignIn: "GitHub로 로그인",
+      authSignOut: "로그아웃",
+      authSignedInAs: "로그인됨",
       urlLabel: "GitHub URL 또는 아이디",
       urlPlaceholder: "예: https://github.com/username 또는 username",
       urlHintPrimary: "프로필 URL, 저장소 URL, GitHub 아이디를 모두 입력할 수 있습니다.",
@@ -203,7 +241,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submitting: "문서 생성 중...",
       submitHint:
         "기본 템플릿이 미리 선택되어 있어, 유효한 URL 또는 아이디를 입력하면 바로 문서를 만들 수 있습니다.",
-      dataScopeTitle: "분석에 반영하는 공개 정보 범위",
+      dataScopeTitle: "분석에 반영하는 GitHub 데이터 범위",
       dataScopeItems: {
         profile:
           "프로필 이름, 자기소개, 팔로워 수, 공개 저장소 수 같은 공개 계정 정보",
@@ -212,10 +250,21 @@ const dictionaries: Record<Locale, Dictionary> = {
         limits:
           "비공개 저장소나 GitHub 밖 정보는 보지 않으며, 경력·협업 능력·비즈니스 성과는 단정하지 않습니다.",
       },
+      signedInDataScopeItems: {
+        profile:
+          "로그인한 본인 계정인 경우, 승인된 범위 안에서 프로필 필드와 일부 비공개 사용자 정보까지 함께 읽을 수 있습니다.",
+        repositories:
+          "본인이 소유한 저장소는 공개/비공개를 함께 읽을 수 있으며, README, topic, 최근 업데이트, 일부 루트 파일, 최근 커밋 메시지를 반영합니다.",
+        limits:
+          "로그인 모드는 본인 계정 생성에만 적용하며, GitHub 밖 정보와 경력·협업 능력·비즈니스 성과는 여전히 단정하지 않습니다.",
+      },
     },
     result: {
       templateLabel: "템플릿",
       modeLabel: "모드",
+      dataModeLabel: "데이터 범위",
+      dataModePublic: "공개 GitHub",
+      dataModePrivate: "로그인한 본인 계정",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
       download: "다운로드",
@@ -235,7 +284,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "입력한 URL 또는 아이디에서 추출한 사용자 이름으로 공개 GitHub 계정을 찾지 못했습니다.",
       organizationTitle: "조직 계정은 아직 지원하지 않습니다",
       organizationMessage:
-        "GitFolio는 개인 개발자 계정을 문서로 요약하는 MVP입니다. 조직 계정 대신 개인 프로필 URL이나 아이디를 입력해 주세요.",
+        "GitHubPrint는 개인 개발자 계정을 문서로 요약합니다. 조직 계정 대신 개인 프로필 URL이나 아이디를 입력해 주세요.",
       rateLimitTitle: "잠시 후 다시 시도해 주세요",
       rateLimitMessage:
         "GitHub API 요청 한도에 도달했습니다. 잠시 후 다시 생성하면 정상적으로 불러올 수 있습니다.",
@@ -249,11 +298,19 @@ const dictionaries: Record<Locale, Dictionary> = {
       factTech: "주요 기술",
       factRepos: "공개 저장소",
       factFollowers: "팔로워",
+      factContributionsYear: "최근 1년 기여",
+      factCommitsYear: "최근 1년 커밋",
+      factPullRequestsYear: "최근 1년 PR",
+      factIssuesYear: "최근 1년 이슈",
       benchmarkOverall: "유사한 개발자군 비교",
       confidenceLabel: "분석 신뢰도",
       cohortLabel: "비교 집단",
       repoUnit: "개",
       followerUnit: "명",
+      signedInActivityTitle: "승인된 활동 스냅샷",
+      signedInActivityHint:
+        "로그인한 본인 계정일 때만 읽을 수 있는 최근 1년 GitHub 활동 통계입니다.",
+      signedInActivityWindow: "기준 기간",
       sampleSizeLabel: "표본 수",
       noProjects: "대표 프로젝트로 볼 만한 공개 저장소가 충분하지 않습니다.",
       repoLink: "저장소 링크",
@@ -288,7 +345,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonSource: "분석",
         ribbonOpenAi: "AI 분석",
         ribbonFallback: "기본 요약",
-        eyebrow: "GitFolio Brief",
+        eyebrow: "GitHubPrint Brief",
         sections: {
           summary: "빠른 요약",
           strengths: "확인된 특징",
@@ -298,7 +355,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           benchmark: "벤치마크 스냅샷",
           bestFit: "어울리는 역할",
           evidence: "판단 근거",
-          dataScope: "분석에 반영한 공개 정보",
+          dataScope: "분석에 반영한 GitHub 데이터",
           source: "참고 링크",
           activity: "최근 활동",
         },
@@ -309,7 +366,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonMode: "분석",
         ribbonOpenAi: "AI 분석",
         ribbonFallback: "기본 요약",
-        eyebrow: "GitFolio Profile",
+        eyebrow: "GitHubPrint Profile",
         sections: {
           type: "개발자 유형",
           workingStyle: "작업 방식",
@@ -319,7 +376,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           strengths: "대표 강점",
           bestFit: "어울리는 역할",
           evidence: "판단 근거",
-          dataScope: "분석에 반영한 공개 정보",
+          dataScope: "분석에 반영한 GitHub 데이터",
           caution: "해석 시 유의할 점",
         },
       },
@@ -340,14 +397,14 @@ const dictionaries: Record<Locale, Dictionary> = {
           projectReading: "프로젝트 읽기",
           evidence: "판단 근거",
           benchmark: "벤치마크 해석",
-          dataScope: "분석에 반영한 공개 정보 범위",
+          dataScope: "분석에 반영한 GitHub 데이터 범위",
           tech: "기술 흐름",
         },
       },
     },
   },
   en: {
-    siteName: "GitFolio",
+    siteName: "GitHubPrint",
     htmlLang: "en",
     language: {
       switchLabel: "Change language",
@@ -355,26 +412,39 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitFolio | Turn GitHub into a shareable developer document",
+      homeTitle: "GitHubPrint | Turn GitHub into a shareable developer document",
       homeDescription:
-        "GitFolio turns a public GitHub URL into a polished developer document in Korean or English.",
+        "GitHubPrint turns public GitHub data, or your own signed-in GitHub account, into a polished developer document in Korean or English.",
       homeKeywords: [
-        "GitFolio",
+        "GitHubPrint",
         "GitHub portfolio",
         "developer profile generator",
         "GitHub PDF",
         "developer document",
       ],
-      resultTitle: "GitFolio Result Document",
+      resultTitle: "GitHubPrint Result Document",
       resultDescription:
-        "Preview a developer document generated from public GitHub signals.",
+        "Preview a developer document generated from GitHub signals.",
     },
     home: {
-      eyebrow: "GitFolio",
+      eyebrow: "GitHubPrint",
       titleTop: "Turn GitHub",
       titleBottom: "into a shareable developer document",
       description:
-        "GitFolio reads public GitHub data and turns it into a polished document. Each template emphasizes the same evidence differently.",
+        "GitHubPrint reads public GitHub data and turns it into a polished document. If you sign in, your own account can be analyzed in private-enriched mode.",
+      authEyebrow: "Signed-in mode",
+      authTitle: "Sign in with GitHub for a deeper self-read",
+      authDescription:
+        "When you sign in and generate your own profile, GitHubPrint can use the GitHub data you authorized, including private repositories and private profile signals.",
+      authReadyEyebrow: "Signed-in self mode",
+      authReadyMessage:
+        "When you generate your own profile, GitHubPrint will include the GitHub data range you authorized.",
+      authReadyHint:
+        "Profiles for other people still use public GitHub evidence only.",
+      authGenerateSelf: "Generate my profile",
+      authSignIn: "Sign in with GitHub",
+      authSignOut: "Sign out",
+      authSignedInAs: "Signed in as",
       urlLabel: "GitHub URL or username",
       urlPlaceholder: "e.g. https://github.com/username or username",
       urlHintPrimary: "Profile URLs, repository URLs, and GitHub usernames are all accepted.",
@@ -387,7 +457,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submitting: "Converting...",
       submitHint:
         "The default template is preselected. Convert becomes available as soon as the URL or username is valid.",
-      dataScopeTitle: "Public data used",
+      dataScopeTitle: "GitHub data used",
       dataScopeItems: {
         profile:
           "Public account fields such as name, bio, followers, and public repository count",
@@ -396,10 +466,21 @@ const dictionaries: Record<Locale, Dictionary> = {
         limits:
           "Private repositories and off-GitHub data are not read, and tenure, collaboration quality, or business impact are not asserted.",
       },
+      signedInDataScopeItems: {
+        profile:
+          "For the signed-in user's own account, authorized profile fields and some private user details may also be included.",
+        repositories:
+          "Owned repositories can be read across public and private visibility, including README, topics, update recency, some root files, and recent commit messages.",
+        limits:
+          "Signed-in mode applies only to the signed-in user's own account. Off-GitHub data, tenure, collaboration quality, and business impact are still not asserted.",
+      },
     },
     result: {
       templateLabel: "Template",
       modeLabel: "Mode",
+      dataModeLabel: "Data",
+      dataModePublic: "Public GitHub",
+      dataModePrivate: "Signed-in self mode",
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
       download: "Download",
@@ -407,7 +488,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       loadingMessage: "Reading GitHub data and generating the document preview.",
       stateStatusLabel: "Status",
       stateStatusValue: "Unavailable",
-      stateEyebrow: "GitFolio Result",
+      stateEyebrow: "GitHubPrint Result",
       backHome: "Back to home",
     },
     errors: {
@@ -419,7 +500,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "We could not find a public GitHub account from the username extracted from the URL or input.",
       organizationTitle: "Organization accounts are not supported yet",
       organizationMessage:
-        "GitFolio currently summarizes individual developer accounts. Please use a personal GitHub profile URL or username instead.",
+        "GitHubPrint currently summarizes individual developer accounts. Please use a personal GitHub profile URL or username instead.",
       rateLimitTitle: "Please try again shortly",
       rateLimitMessage:
         "The GitHub API rate limit has been reached. Try generating the document again in a few minutes.",
@@ -433,11 +514,19 @@ const dictionaries: Record<Locale, Dictionary> = {
       factTech: "Top stack",
       factRepos: "Public repos",
       factFollowers: "Followers",
+      factContributionsYear: "12m contributions",
+      factCommitsYear: "12m commits",
+      factPullRequestsYear: "12m PRs",
+      factIssuesYear: "12m issues",
       benchmarkOverall: "Peer benchmark",
       confidenceLabel: "Confidence",
       cohortLabel: "Cohort",
       repoUnit: "",
       followerUnit: "",
+      signedInActivityTitle: "Authorized activity snapshot",
+      signedInActivityHint:
+        "These last-12-month GitHub activity counts are available only for the signed-in user's own account.",
+      signedInActivityWindow: "Window",
       sampleSizeLabel: "Sample size",
       noProjects: "There are not enough public repository signals to interpret standout projects.",
       repoLink: "GitHub repo",
@@ -472,7 +561,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonSource: "Analysis",
         ribbonOpenAi: "AI analysis",
         ribbonFallback: "Fallback summary",
-        eyebrow: "GitFolio Brief",
+        eyebrow: "GitHubPrint Brief",
         sections: {
           summary: "Quick summary",
           strengths: "Confirmed signals",
@@ -482,7 +571,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           benchmark: "Benchmark snapshot",
           bestFit: "Best-fit roles",
           evidence: "Evidence",
-          dataScope: "Public data used",
+          dataScope: "GitHub data used",
           source: "Reference link",
           activity: "Recent activity",
         },
@@ -493,7 +582,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonMode: "Analysis",
         ribbonOpenAi: "AI analysis",
         ribbonFallback: "Fallback summary",
-        eyebrow: "GitFolio Profile",
+        eyebrow: "GitHubPrint Profile",
         sections: {
           type: "Developer type",
           workingStyle: "Working style",
@@ -503,7 +592,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           strengths: "Key strengths",
           bestFit: "Best-fit roles",
           evidence: "Evidence",
-          dataScope: "Public data used",
+          dataScope: "GitHub data used",
           caution: "Read with caution",
         },
       },
@@ -524,7 +613,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           projectReading: "Project reading",
           evidence: "Evidence",
           benchmark: "Benchmark reading",
-          dataScope: "Public data used",
+          dataScope: "GitHub data used",
           tech: "Technology throughline",
         },
       },

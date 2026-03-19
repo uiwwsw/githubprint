@@ -1,4 +1,4 @@
-# Contributing to GitFolio
+# Contributing to GitHubPrint
 
 [English](#english) | [한국어](#한국어)
 
@@ -6,7 +6,7 @@
 
 ### Scope
 
-GitFolio is intentionally small. Contributions should respect the product contract:
+GitHubPrint is intentionally small. Contributions should respect the product contract:
 
 - keep two primary user-facing pages
 - preserve one shared analysis model across all templates
@@ -58,7 +58,7 @@ If you change product behavior, update at least one of these:
 
 ### 범위
 
-GitFolio는 의도적으로 작은 제품입니다. 기여 시 아래 계약을 지켜야 합니다.
+GitHubPrint는 의도적으로 작은 제품입니다. 기여 시 아래 계약을 지켜야 합니다.
 
 - 사용자에게 보이는 주요 흐름은 두 페이지 유지
 - 템플릿은 달라도 분석 데이터 모델은 하나 유지

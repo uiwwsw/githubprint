@@ -2,6 +2,8 @@ import "server-only";
 
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { PRODUCT_SLUG } from "@/lib/brand";
+import { readEnv } from "@/lib/env";
 import type { GitHubSourceData } from "@/lib/github";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
 import type { BenchmarkSnapshot, Locale } from "@/lib/schemas";
@@ -45,7 +47,7 @@ export type LearningSnapshot = {
 const INSIGHT_CAPTURE_DIR = path.join(
   process.cwd(),
   ".cache",
-  "gitfolio",
+  PRODUCT_SLUG,
   "insights",
 );
 
@@ -93,7 +95,7 @@ export function buildLearningSnapshot(
 }
 
 export async function captureLearningSnapshot(snapshot: LearningSnapshot) {
-  if (process.env.GITFOLIO_CAPTURE_INSIGHTS !== "1") {
+  if (readEnv("GITHUBPRINT_CAPTURE_INSIGHTS", "GITFOLIO_CAPTURE_INSIGHTS") !== "1") {
     return;
   }
 

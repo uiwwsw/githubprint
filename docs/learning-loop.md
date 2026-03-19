@@ -1,10 +1,10 @@
-# GitFolio Learning Loop
+# GitHubPrint Learning Loop
 
-This document explains how GitFolio can improve as more profiles are analyzed, while still keeping the public product surface to two pages.
+This document explains how GitHubPrint can improve as more profiles are analyzed, while still keeping the public product surface to two pages.
 
 ## Goal
 
-GitFolio has two improvement layers:
+GitHubPrint has two improvement layers:
 
 1. **Manual rule tuning**
    - contributors update `data/signals/*.json`
@@ -12,7 +12,7 @@ GitFolio has two improvement layers:
    - contributors update `data/templates/narratives.json`
 
 2. **Internal insight loop**
-   - GitFolio captures analysis snapshots during real profile lookups
+   - GitHubPrint captures analysis snapshots during real profile lookups
    - those snapshots are aggregated into cohort summaries
    - contributors use the summaries to refine benchmark baselines and scoring rules
 
@@ -23,13 +23,13 @@ The second layer is what makes the system more accurate over time.
 Enable snapshot capture:
 
 ```bash
-GITFOLIO_CAPTURE_INSIGHTS=1 npm run dev
+GITHUBPRINT_CAPTURE_INSIGHTS=1 npm run dev
 ```
 
 Every analyzed profile can write a compact internal snapshot to:
 
 ```text
-.cache/gitfolio/insights/
+.cache/githubprint/insights/
 ```
 
 The snapshot includes:
@@ -52,9 +52,9 @@ npm run insights:aggregate
 This generates:
 
 ```text
-.cache/gitfolio/reports/insights-summary.json
-.cache/gitfolio/reports/insights-summary.md
-.cache/gitfolio/reports/derived-benchmarks.json
+.cache/githubprint/reports/insights-summary.json
+.cache/githubprint/reports/insights-summary.md
+.cache/githubprint/reports/derived-benchmarks.json
 ```
 
 ## Step 3. Read the report
@@ -78,10 +78,10 @@ Use the report to decide whether to:
 
 ## Step 5. Optionally test derived benchmarks at runtime
 
-You can point GitFolio at an aggregated benchmark file:
+You can point GitHubPrint at an aggregated benchmark file:
 
 ```bash
-GITFOLIO_BENCHMARK_OVERRIDE_PATH=.cache/gitfolio/reports/derived-benchmarks.json npm run dev
+GITHUBPRINT_BENCHMARK_OVERRIDE_PATH=.cache/githubprint/reports/derived-benchmarks.json npm run dev
 ```
 
 This lets you test the updated benchmark layer without manually copying the file into `data/`.

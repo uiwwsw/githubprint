@@ -7,18 +7,28 @@ import { ChipList, DocumentFooter, EvidenceList, FactGrid, PublicDataScope, Sect
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
 import { composeInsightTemplateView } from "@/lib/template-composers";
-import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
+import {
+  type BenchmarkSnapshot,
+  type ContributionSummary,
+  type DataMode,
+  type GitHubPrintAnalysis,
+  type Locale,
+} from "@/lib/schemas";
 
 export function InsightTemplate({
   analysis,
   benchmark,
+  contributionSummary,
+  dataMode,
   generatedAt,
   mode,
   profileUrl,
   locale,
 }: {
-  analysis: GitFolioAnalysis;
+  analysis: GitHubPrintAnalysis;
   benchmark: BenchmarkSnapshot;
+  contributionSummary?: ContributionSummary | null;
+  dataMode: DataMode;
   generatedAt: string;
   mode: "openai" | "fallback";
   profileUrl: string;
@@ -108,7 +118,11 @@ export function InsightTemplate({
             <EvidenceList analysis={analysis} />
           </SectionBlock>
           <SectionBlock title={dict.templates.insight.sections.dataScope} eyebrow={dict.templates.insight.sections.dataScope}>
-            <PublicDataScope locale={locale} />
+            <PublicDataScope
+              contributionSummary={contributionSummary}
+              dataMode={dataMode}
+              locale={locale}
+            />
           </SectionBlock>
         </div>
       </div>

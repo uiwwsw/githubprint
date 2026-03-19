@@ -1,5 +1,6 @@
 import { getDictionary } from "@/lib/i18n";
 import type { Locale, TemplateId } from "@/lib/schemas";
+import { PRODUCT_NAME, PRODUCT_SLUG } from "@/lib/brand";
 
 function sanitizeFileNamePart(value: string) {
   return value
@@ -31,14 +32,14 @@ export function buildResultDocumentTitle({
 
   if (username && templateLabel) {
     return locale === "ko"
-      ? `${username} ${templateLabel} 문서 | GitFolio`
-      : `${username} ${templateLabel} document | GitFolio`;
+      ? `${username} ${templateLabel} 문서 | ${PRODUCT_NAME}`
+      : `${username} ${templateLabel} document | ${PRODUCT_NAME}`;
   }
 
   if (username) {
     return locale === "ko"
-      ? `${username} 결과 문서 | GitFolio`
-      : `${username} result document | GitFolio`;
+      ? `${username} 결과 문서 | ${PRODUCT_NAME}`
+      : `${username} result document | ${PRODUCT_NAME}`;
   }
 
   return dict.metadata.resultTitle;
@@ -54,7 +55,7 @@ export function buildDownloadFileName({
   username?: string;
 }) {
   const parts = [
-    "gitfolio",
+    PRODUCT_SLUG,
     username ? sanitizeFileNamePart(username) : null,
     sanitizeFileNamePart(template),
     formatDatePart(generatedAt),
