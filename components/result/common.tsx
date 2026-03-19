@@ -1,4 +1,8 @@
 import type { ReactNode } from "react";
+import {
+  formatBenchmarkRankLabel,
+  getBenchmarkInterpretationNote,
+} from "@/lib/benchmark-presentation";
 import { getDictionary } from "@/lib/i18n";
 import type { BenchmarkSnapshot, Locale } from "@/lib/schemas";
 import { formatDate, formatNumber } from "@/lib/utils";
@@ -75,17 +79,23 @@ export function BenchmarkSnapshotBlock({
   showInsight?: boolean;
 }) {
   const dict = getDictionary(locale);
+  const interpretationNote = getBenchmarkInterpretationNote({
+    confidenceScore: benchmark.confidenceScore,
+    sampleSize: benchmark.sampleSize,
+    locale,
+  });
 
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <FactCard
           label={dict.common.benchmarkOverall}
-          value={
-            locale === "ko"
-              ? `상위 ${benchmark.overallPercentile}%`
-              : `Top ${benchmark.overallPercentile}%`
-          }
+          value={formatBenchmarkRankLabel({
+            percentile: benchmark.overallPercentile,
+            confidenceScore: benchmark.confidenceScore,
+            sampleSize: benchmark.sampleSize,
+            locale,
+          })}
         />
         <FactCard
           label={dict.common.confidenceLabel}
@@ -98,6 +108,9 @@ export function BenchmarkSnapshotBlock({
         />
       </div>
       {showInsight ? <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p> : null}
+      {interpretationNote ? (
+        <p className="text-sm leading-6 text-neutral-500">{interpretationNote}</p>
+      ) : null}
       <div className="space-y-3">
         {benchmark.metrics.map((metric) => (
           <div
@@ -107,12 +120,22 @@ export function BenchmarkSnapshotBlock({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-medium text-neutral-900">{metric.label}</p>
               <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                {locale === "ko"
-                  ? `상위 ${metric.percentile}%`
-                  : `Top ${metric.percentile}%`}
+                {formatBenchmarkRankLabel({
+                  percentile: metric.percentile,
+                  confidenceScore: benchmark.confidenceScore,
+                  sampleSize: benchmark.sampleSize,
+                  locale,
+                })}
               </span>
             </div>
             <p className="mt-2 text-sm leading-6 text-neutral-600">{metric.note}</p>
+            {metric.evidence.length > 0 ? (
+              <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-500">
+                {metric.evidence.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ))}
       </div>

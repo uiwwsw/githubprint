@@ -9,6 +9,7 @@ import {
   resultSearchParamsSchema,
   type Locale,
   type TemplateId,
+  templateSchema,
 } from "@/lib/schemas";
 import { ResultActions } from "@/components/result/result-actions";
 import { RenderTemplate } from "@/components/result/render-template";
@@ -90,16 +91,22 @@ export async function generateResultPageMetadata({
 }: ResultPageProps & { locale: Locale }): Promise<Metadata> {
   const params = await searchParams;
   const url = getFirstValue(params.url);
+  const rawTemplate = getFirstValue(params.template);
+  const templateResult = templateSchema.safeParse(rawTemplate);
+  const template = templateResult.success ? templateResult.data : undefined;
 
   if (!url) {
-    return buildResultMetadata(locale);
+    return buildResultMetadata(locale, { template });
   }
 
   try {
     const normalized = normalizeGitHubUrlInput(url, locale);
-    return buildResultMetadata(locale, normalized.username);
+    return buildResultMetadata(locale, {
+      template,
+      username: normalized.username,
+    });
   } catch {
-    return buildResultMetadata(locale);
+    return buildResultMetadata(locale, { template });
   }
 }
 
@@ -156,6 +163,7 @@ export async function ResultPageContent({
       forceFresh,
       locale,
     });
+    const generatedAt = new Date().toISOString();
 
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
@@ -165,13 +173,18 @@ export async function ResultPageContent({
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
+            downloadFileName={{
+              generatedAt,
+              template: parsed.data.template,
+              username: normalized.username,
+            }}
             locale={locale}
             mode={analysisResult.mode}
             template={parsed.data.template}
           />
           <RenderTemplate
             analysisResult={analysisResult}
-            generatedAt={new Date().toISOString()}
+            generatedAt={generatedAt}
             locale={locale}
             profileUrl={normalized.canonicalProfileUrl}
             template={parsed.data.template}

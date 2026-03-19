@@ -20,6 +20,7 @@ export const benchmarkMetricSnapshotSchema = z.object({
   note: z.string().min(1),
   percentile: z.number().int().min(1).max(99),
   value: z.number().min(0).max(100),
+  evidence: z.array(z.string().min(1)).max(3),
 });
 
 export const benchmarkSnapshotSchema = z.object({

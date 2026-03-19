@@ -355,7 +355,7 @@ async function analyzeGitHubSourceInternal(
 ): Promise<AnalysisResult> {
   const featureSet = extractProfileFeatures(source, profileEngineConfig);
   const scoring = scoreProfile(source, featureSet, profileEngineConfig, locale);
-  const benchmark = buildBenchmarkSnapshot(source, scoring, locale);
+  const benchmark = buildBenchmarkSnapshot(source, featureSet, scoring, locale);
   await captureLearningSnapshot(
     buildLearningSnapshot(source, scoring, benchmark, locale),
   );

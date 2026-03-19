@@ -119,8 +119,18 @@ function main() {
       profileEngineConfig,
       "en",
     );
-    const benchmarkKo = buildBenchmarkSnapshot(testCase.source, scoringKo, "ko");
-    const benchmarkEn = buildBenchmarkSnapshot(testCase.source, scoringEn, "en");
+    const benchmarkKo = buildBenchmarkSnapshot(
+      testCase.source,
+      featureSet,
+      scoringKo,
+      "ko",
+    );
+    const benchmarkEn = buildBenchmarkSnapshot(
+      testCase.source,
+      featureSet,
+      scoringEn,
+      "en",
+    );
     const analysisKo = buildRuleBasedAnalysis(
       testCase.source,
       scoringKo,
