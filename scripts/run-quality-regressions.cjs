@@ -191,6 +191,16 @@ function main() {
       );
     }
 
+    if (expectation.requiredCoreStack?.length) {
+      expectation.requiredCoreStack.forEach((stackItem) => {
+        assertCondition(
+          analysisKo.facts.coreStack.includes(stackItem),
+          `expected core stack item ${stackItem}`,
+          failures,
+        );
+      });
+    }
+
     if (expectation.requiredSignalIds?.length) {
       expectation.requiredSignalIds.forEach((signalId) => {
         assertCondition(

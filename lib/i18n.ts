@@ -104,17 +104,18 @@ type Dictionary = {
       ribbonFallback: string;
       eyebrow: string;
       sections: {
-          summary: string;
-          strengths: string;
-          projects: string;
-          type: string;
-          workingStyle: string;
-          benchmark: string;
-          bestFit: string;
-          evidence: string;
-          dataScope: string;
-          source: string;
-        };
+        summary: string;
+        strengths: string;
+        projects: string;
+        type: string;
+        workingStyle: string;
+        benchmark: string;
+        bestFit: string;
+        evidence: string;
+        dataScope: string;
+        source: string;
+        activity: string;
+      };
     };
     profile: {
       ribbonTemplate: string;
@@ -189,13 +190,13 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleTop: "GitHub를",
       titleBottom: "전달 가능한 개발자 문서로",
       description:
-        "공개 GitHub 정보를 바탕으로 읽기 쉬운 한국어 문서를 만듭니다. 분석 데이터는 같고, 템플릿마다 보여주는 방식만 다릅니다.",
+        "공개 GitHub 정보를 바탕으로 읽기 쉬운 한국어 문서를 만듭니다. 템플릿마다 강조하는 정보와 읽는 방식이 다릅니다.",
       urlLabel: "GitHub URL 또는 아이디",
       urlPlaceholder: "예: https://github.com/username 또는 username",
       urlHintPrimary: "프로필 URL, 저장소 URL, GitHub 아이디를 모두 입력할 수 있습니다.",
       urlHintSecondary: "A4 인쇄와 브라우저 PDF 저장에 맞춰 결과가 정리됩니다.",
       templateHeading: "문서 템플릿 선택",
-      templateHint: "분석 데이터는 동일하고, 레이아웃만 달라집니다.",
+      templateHint: "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
       selected: "선택됨",
       select: "선택",
       submit: "문서 생성",
@@ -263,9 +264,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "요약형",
-        description: "핵심만 짧고 선명하게 전달하는 1~2페이지 문서",
-        emphasis: "요약, 강점, 대표 프로젝트를 빠르게 훑기 좋습니다.",
+        shortLabel: "스냅샷",
+        description: "공개 GitHub에서 확인되는 사실을 짧고 선명하게 정리한 문서",
+        emphasis: "핵심 기술, 대표 프로젝트, 최근 활동을 빠르게 훑기 좋습니다.",
       },
       profile: {
         label: "Profile",
@@ -275,9 +276,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       insight: {
         label: "Insight",
-        shortLabel: "분석형",
-        description: "작업 패턴과 개발 성향 해석에 무게를 둔 리포트",
-        emphasis: "프로젝트 해석과 기술 선택 흐름을 더 깊게 보여줍니다.",
+        shortLabel: "내러티브",
+        description: "프로젝트 흐름과 작업 성향을 글 중심으로 풀어낸 리포트",
+        emphasis: "반복 패턴, 프로젝트 읽기, 해석 맥락을 더 깊게 보여줍니다.",
       },
     },
     templates: {
@@ -289,16 +290,17 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonFallback: "기본 요약",
         eyebrow: "GitFolio Brief",
         sections: {
-          summary: "짧은 요약",
-          strengths: "핵심 강점",
+          summary: "빠른 요약",
+          strengths: "확인된 특징",
           projects: "대표 프로젝트",
           type: "개발자 유형",
           workingStyle: "작업 방식",
-          benchmark: "유사한 개발자군 기준",
+          benchmark: "벤치마크 스냅샷",
           bestFit: "어울리는 역할",
           evidence: "판단 근거",
           dataScope: "분석에 반영한 공개 정보",
           source: "참고 링크",
+          activity: "최근 활동",
         },
       },
       profile: {
@@ -330,16 +332,16 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonFallback: "기본 요약",
         eyebrow: "Interpretive Report",
         sections: {
-          type: "개발자 유형 해석",
-          workingStyle: "작업 방식 해석",
-          fit: "강점과 적합 역할",
+          type: "핵심 해석",
+          workingStyle: "반복적으로 보이는 패턴",
+          fit: "강점과 역할 해석",
           strengths: "대표 강점",
           roles: "어울리는 역할",
-          projectReading: "프로젝트 해석",
+          projectReading: "프로젝트 읽기",
           evidence: "판단 근거",
-          benchmark: "유사한 개발자군 비교",
+          benchmark: "벤치마크 해석",
           dataScope: "분석에 반영한 공개 정보 범위",
-          tech: "핵심 기술 분포",
+          tech: "기술 흐름",
         },
       },
     },
@@ -372,13 +374,13 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleTop: "Turn GitHub",
       titleBottom: "into a shareable developer document",
       description:
-        "GitFolio reads public GitHub data and turns it into a polished document. The analysis stays the same while the presentation changes by template.",
+        "GitFolio reads public GitHub data and turns it into a polished document. Each template emphasizes the same evidence differently.",
       urlLabel: "GitHub URL or username",
       urlPlaceholder: "e.g. https://github.com/username or username",
       urlHintPrimary: "Profile URLs, repository URLs, and GitHub usernames are all accepted.",
       urlHintSecondary: "The result is optimized for A4 print and browser PDF export.",
       templateHeading: "Choose a document template",
-      templateHint: "The analysis stays the same. Only the layout changes.",
+      templateHint: "Templates use the same evidence, but differ in emphasis and reading style.",
       selected: "Selected",
       select: "Select",
       submit: "Convert",
@@ -446,9 +448,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "Compressed",
-        description: "A concise one to two page format focused on the essentials.",
-        emphasis: "Optimized for fast understanding through summary, strengths, and standout work.",
+        shortLabel: "Snapshot",
+        description: "A fact-first document built for quick scanning.",
+        emphasis: "Optimized for verified signals, selected projects, and recent activity.",
       },
       profile: {
         label: "Profile",
@@ -458,9 +460,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       insight: {
         label: "Insight",
-        shortLabel: "Interpretive",
-        description: "A report-style template with more emphasis on working patterns.",
-        emphasis: "Gives more room to project interpretation and recurring technical choices.",
+        shortLabel: "Narrative",
+        description: "A prose-led report that reads the profile in context.",
+        emphasis: "Gives more room to recurring patterns, project reading, and interpretation.",
       },
     },
     templates: {
@@ -473,15 +475,16 @@ const dictionaries: Record<Locale, Dictionary> = {
         eyebrow: "GitFolio Brief",
         sections: {
           summary: "Quick summary",
-          strengths: "Key strengths",
+          strengths: "Confirmed signals",
           projects: "Selected projects",
           type: "Developer type",
           workingStyle: "Working style",
-          benchmark: "Peer benchmark",
+          benchmark: "Benchmark snapshot",
           bestFit: "Best-fit roles",
           evidence: "Evidence",
           dataScope: "Public data used",
           source: "Reference link",
+          activity: "Recent activity",
         },
       },
       profile: {
@@ -513,16 +516,16 @@ const dictionaries: Record<Locale, Dictionary> = {
         ribbonFallback: "Fallback summary",
         eyebrow: "Interpretive Report",
         sections: {
-          type: "Developer type interpretation",
-          workingStyle: "Working style interpretation",
+          type: "Core reading",
+          workingStyle: "Recurring patterns",
           fit: "Strengths and role fit",
           strengths: "Key strengths",
           roles: "Best-fit roles",
-          projectReading: "Project interpretation",
+          projectReading: "Project reading",
           evidence: "Evidence",
-          benchmark: "Peer benchmark",
+          benchmark: "Benchmark reading",
           dataScope: "Public data used",
-          tech: "Core technology distribution",
+          tech: "Technology throughline",
         },
       },
     },

@@ -12,6 +12,7 @@ import {
 } from "@/lib/internal-insights";
 import { buildRuleBasedAnalysis } from "@/lib/narrative-writer";
 import { extractProfileFeatures } from "@/lib/profile-features";
+import { summarizeRepoStack } from "@/lib/repo-identity";
 import { scoreProfile } from "@/lib/rule-engine";
 import type { Locale } from "@/lib/schemas";
 import {
@@ -307,6 +308,8 @@ function buildFallbackAnalysis(
 }
 
 function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
+  const stackSummary = source.stackSummary ?? summarizeRepoStack(source.representativeRepos);
+
   return {
     account: {
       ...source.account,
@@ -319,6 +322,17 @@ function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
       name: repo.name,
       description: repo.description,
       homepageUrl: repo.homepageUrl,
+      identity: repo.identity
+        ? {
+            confidence: repo.identity.confidence,
+            domains: repo.identity.domains,
+            flags: repo.identity.flags,
+            frameworks: repo.identity.frameworks,
+            languages: repo.identity.languages,
+            primaryLanguage: repo.identity.primaryLanguage,
+            surfaces: repo.identity.surfaces,
+          }
+        : null,
       isPinned: repo.isPinned,
       language: repo.language,
       readmePreview: repo.readme,
@@ -330,6 +344,7 @@ function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
       topics: repo.topics,
       updatedAt: repo.updatedAt,
     })),
+    stackSummary,
     topLanguages: source.topLanguages,
   };
 }
@@ -381,6 +396,9 @@ async function analyzeGitHubSourceInternal(
                 locale === "ko"
                   ? "출력은 주어진 Zod 스키마와 정확히 맞는 JSON이어야 한다."
                   : "The output must be valid JSON that matches the provided Zod schema exactly.",
+                locale === "ko"
+                  ? "facts.coreStack에는 공개 근거로 확인되는 핵심 스택을 짧게 정리하라."
+                  : "Use facts.coreStack for a concise list of the clearest stack signals supported by public evidence.",
                 locale === "ko"
                   ? "projects는 대표 프로젝트 3~5개를 고르고, evidence는 구체적인 근거 중심으로 작성하라."
                   : "Select three to five representative projects and write evidence items around specific public signals.",

@@ -4,6 +4,12 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { unstable_cache } from "next/cache";
 import { mockGitHubProfile } from "@/fixtures/mock-profile";
+import {
+  inferRepoIdentity,
+  summarizeRepoStack,
+  type RepoIdentity,
+  type RepoStackSummary,
+} from "@/lib/repo-identity";
 import type { Locale } from "@/lib/schemas";
 
 type GitHubUserResponse = {
@@ -90,9 +96,11 @@ export type GitHubRepoSnapshot = {
   description: string | null;
   forks: number;
   homepageUrl: string;
+  identity?: RepoIdentity;
   isFork: boolean;
   isPinned: boolean;
   language: string | null;
+  manifestContents?: string[];
   name: string;
   openIssuesCount: number;
   pushedAt: string;
@@ -134,6 +142,7 @@ export type GitHubSourceData = {
   pinnedRepoNames: string[];
   representativeRepos: GitHubRepoSnapshot[];
   repos: GitHubRepoSnapshot[];
+  stackSummary?: RepoStackSummary;
   topLanguages: Array<{
     name: string;
     repoCount: number;
@@ -168,6 +177,20 @@ const README_CANDIDATE_LIMIT = 8;
 const LIGHT_MODE_README_CANDIDATE_LIMIT = 3;
 const REPRESENTATIVE_REPO_LIMIT = 5;
 const LIGHT_MODE_REPRESENTATIVE_DETAIL_LIMIT = 2;
+const ROOT_MANIFEST_FILE_NAMES = [
+  "package.json",
+  "pyproject.toml",
+  "requirements.txt",
+  "go.mod",
+  "Cargo.toml",
+  "pubspec.yaml",
+  "Gemfile",
+  "composer.json",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+];
+const MANIFEST_CONTENT_LIMIT = 4;
 const DEV_CACHE_DIR = path.join(process.cwd(), ".cache", "gitfolio", "github");
 const GRAPHQL_PINNED_QUERY = `
   query GitFolioPinnedRepos($login: String!) {
@@ -485,6 +508,48 @@ async function fetchRepoRecentCommitMessages(
   }
 }
 
+async function fetchRepoFileContent(
+  username: string,
+  repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
+  filePath: string,
+  forceFresh?: boolean,
+) {
+  try {
+    const response = await githubJson<GitHubReadmeResponse>(
+      `/repos/${username}/${repo.name}/contents/${encodeURIComponent(filePath)}?ref=${repo.defaultBranch}`,
+      { forceFresh },
+    );
+
+    return sanitizeReadme(decodeReadme(response));
+  } catch {
+    return null;
+  }
+}
+
+function getRepoManifestTargets(rootFiles: string[]) {
+  return rootFiles
+    .filter((file) => ROOT_MANIFEST_FILE_NAMES.includes(file))
+    .slice(0, MANIFEST_CONTENT_LIMIT);
+}
+
+async function fetchRepoManifestContents(
+  username: string,
+  repo: Pick<GitHubRepoSnapshot, "name" | "defaultBranch">,
+  rootFiles: string[],
+  forceFresh?: boolean,
+) {
+  const targets = getRepoManifestTargets(rootFiles);
+  if (targets.length === 0) {
+    return [];
+  }
+
+  const contents = await Promise.all(
+    targets.map(async (target) => fetchRepoFileContent(username, repo, target, forceFresh)),
+  );
+
+  return contents.filter((content): content is string => Boolean(content));
+}
+
 function recencyScore(updatedAt: string) {
   const diffDays = Math.max(
     0,
@@ -507,10 +572,13 @@ function readmeScore(readme: string | null) {
 }
 
 function buildTechSignals(repo: {
+  description: string | null;
+  identity?: RepoIdentity;
   language: string | null;
-  topics: string[];
+  manifestContents?: string[];
   readme: string | null;
   rootFiles?: string[];
+  topics: string[];
 }) {
   const signals = new Set<string>();
 
@@ -519,6 +587,27 @@ function buildTechSignals(repo: {
   }
 
   repo.topics.slice(0, 5).forEach((topic) => signals.add(topic));
+
+  repo.identity?.frameworks.forEach((item) => signals.add(item.label));
+  repo.identity?.domains.forEach((item) => signals.add(item.label));
+
+  (repo.manifestContents ?? []).forEach((content) => {
+    const normalized = content.toLowerCase();
+    [
+      ["next", "Next.js"],
+      ["react", "React"],
+      ["vite", "Vite"],
+      ["tailwind", "Tailwind CSS"],
+      ["fastapi", "FastAPI"],
+      ["django", "Django"],
+      ["gin", "Gin"],
+      ["clap", "clap"],
+    ].forEach(([keyword, label]) => {
+      if (normalized.includes(keyword)) {
+        signals.add(label);
+      }
+    });
+  });
 
   if (repo.readme) {
     const lowercaseReadme = repo.readme.toLowerCase();
@@ -546,6 +635,21 @@ function buildTechSignals(repo: {
       signals.add("Playwright");
     }
   });
+
+  if (repo.description) {
+    const lowercaseDescription = repo.description.toLowerCase();
+    const descriptionKeywords = new Map([
+      ["openai", "OpenAI"],
+      ["llm", "LLM"],
+      ["rag", "RAG"],
+      ["agent", "agent"],
+    ]);
+    descriptionKeywords.forEach((label, keyword) => {
+      if (lowercaseDescription.includes(keyword)) {
+        signals.add(label);
+      }
+    });
+  }
 
   return [...signals].slice(0, 6);
 }
@@ -627,13 +731,25 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
   const languageMap = new Map<string, { repoCount: number; score: number }>();
 
   repos
-    .filter((repo) => repo.language && !repo.archived)
+    .filter((repo) => !repo.archived)
     .forEach((repo) => {
-      const language = repo.language as string;
-      const existing = languageMap.get(language) ?? { repoCount: 0, score: 0 };
-      existing.repoCount += 1;
-      existing.score += 4 + Math.min(repo.stars, 20) * 0.6 + (repo.isPinned ? 2 : 0);
-      languageMap.set(language, existing);
+      const rankedLanguages =
+        repo.identity?.languages.length
+          ? repo.identity.languages
+          : repo.language
+            ? [{ label: repo.language, score: 1 }]
+            : [];
+
+      rankedLanguages.slice(0, 2).forEach((language, index) => {
+        const existing = languageMap.get(language.label) ?? { repoCount: 0, score: 0 };
+        existing.repoCount += index === 0 ? 1 : 0;
+        existing.score +=
+          language.score * 0.8 +
+          4 +
+          Math.min(repo.stars, 20) * 0.6 +
+          (repo.isPinned ? 2 : 0);
+        languageMap.set(language.label, existing);
+      });
     });
 
   return [...languageMap.entries()]
@@ -644,11 +760,24 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
 
 function buildEvidenceSignals(
   locale: Locale,
-  source: Pick<GitHubSourceData, "activity" | "representativeRepos" | "topLanguages" | "account">,
+  source: Pick<
+    GitHubSourceData,
+    "activity" | "representativeRepos" | "topLanguages" | "account" | "stackSummary"
+  >,
 ) {
   const signals: string[] = [];
 
-  if (source.topLanguages.length > 0) {
+  if ((source.stackSummary?.coreStack.length ?? 0) > 0) {
+    signals.push(
+      locale === "ko"
+        ? `핵심 스택은 ${source.stackSummary!.coreStack
+            .slice(0, 3)
+            .join(", ")} 순으로 나타났습니다.`
+        : `The clearest stack signals appear in the order of ${source.stackSummary!.coreStack
+            .slice(0, 3)
+            .join(", ")}.`,
+    );
+  } else if (source.topLanguages.length > 0) {
     signals.push(
       locale === "ko"
         ? `주요 언어는 ${source.topLanguages
@@ -709,6 +838,7 @@ function buildMockSource(
     account,
     activity,
     cacheKey: `${mockGitHubProfile.cacheKey}::${overrides?.cacheKeySuffix ?? "fixture"}`,
+    stackSummary: summarizeRepoStack(mockGitHubProfile.representativeRepos),
   };
 
   return {
@@ -717,6 +847,7 @@ function buildMockSource(
       account: source.account,
       activity: source.activity,
       representativeRepos: source.representativeRepos,
+      stackSummary: source.stackSummary,
       topLanguages: source.topLanguages,
     }),
   };
@@ -765,6 +896,12 @@ function buildDevelopmentFallbackSource(
     pinnedRepoNames: [],
     representativeRepos: [],
     repos: [],
+    stackSummary: {
+      averageConfidence: 0,
+      coreStack: [],
+      topLanguages: [],
+      topSurfaces: [],
+    },
     topLanguages: [],
   };
 }
@@ -808,9 +945,11 @@ async function fetchGitHubSourceInternal(
       description: repo.description,
       forks: repo.forks_count,
       homepageUrl: sanitizeExternalUrl(repo.homepage ?? ""),
+      identity: undefined,
       isFork: repo.fork,
       isPinned: pinnedNames.has(repo.name.toLowerCase()),
       language: repo.language,
+      manifestContents: [],
       name: repo.name,
       openIssuesCount: repo.open_issues_count,
       pushedAt: repo.pushed_at,
@@ -853,9 +992,21 @@ async function fetchGitHubSourceInternal(
             : (pinnedFromGraph?.topics ?? []).slice(0, 8),
       };
 
+      const identity = inferRepoIdentity({
+        description: mergedRepo.description,
+        githubLanguage: mergedRepo.language,
+        manifestContents: mergedRepo.manifestContents ?? [],
+        name: mergedRepo.name,
+        readme: mergedRepo.readme,
+        recentCommitMessages: mergedRepo.recentCommitMessages,
+        rootFiles: mergedRepo.rootFiles,
+        topics: mergedRepo.topics,
+      });
+
       return {
         ...mergedRepo,
-        techSignals: buildTechSignals(mergedRepo),
+        identity,
+        techSignals: buildTechSignals({ ...mergedRepo, identity }),
         score: 0,
       };
     });
@@ -883,16 +1034,35 @@ async function fetchGitHubSourceInternal(
           fetchRepoRootFiles(username, repo, forceFresh),
           fetchRepoRecentCommitMessages(username, repo, forceFresh),
         ]);
+        const manifestContents = await fetchRepoManifestContents(
+          username,
+          repo,
+          rootFiles,
+          forceFresh,
+        );
 
         const enrichedRepo: GitHubRepoSnapshot = {
           ...repo,
+          manifestContents,
           recentCommitMessages,
           rootFiles,
         };
 
+        const identity = inferRepoIdentity({
+          description: enrichedRepo.description,
+          githubLanguage: enrichedRepo.language,
+          manifestContents: enrichedRepo.manifestContents ?? [],
+          name: enrichedRepo.name,
+          readme: enrichedRepo.readme,
+          recentCommitMessages: enrichedRepo.recentCommitMessages,
+          rootFiles: enrichedRepo.rootFiles,
+          topics: enrichedRepo.topics,
+        });
+
         return {
           ...enrichedRepo,
-          techSignals: buildTechSignals(enrichedRepo),
+          identity,
+          techSignals: buildTechSignals({ ...enrichedRepo, identity }),
         };
       }),
     );
@@ -908,6 +1078,7 @@ async function fetchGitHubSourceInternal(
     const recentRepoCount = repos.filter((repo) => recencyScore(repo.updatedAt) >= 8).length;
     const activityNote = formatActivityNote(locale, lastActiveAt, recentRepoCount);
     const topLanguages = buildTopLanguages(scoredReposWithDetails);
+    const stackSummary = summarizeRepoStack(scoredReposWithDetails);
 
     const source: GitHubSourceData = {
       account: {
@@ -940,6 +1111,7 @@ async function fetchGitHubSourceInternal(
       pinnedRepoNames: pinnedRepos.map((repo) => repo.name),
       representativeRepos,
       repos: scoredReposWithDetails,
+      stackSummary,
       topLanguages,
     };
 

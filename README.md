@@ -121,9 +121,11 @@ GitFolio는 다음 항목을 단정하지 않습니다:
 | `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes |
 | `components/templates/` | Document templates for `brief`, `profile`, and `insight` |
 | `lib/github.ts` | GitHub collection, caching, fixture mode, and representative repository selection |
+| `lib/repo-identity.ts` | Contributor-editable repository identity inference driven by JSON rules |
 | `lib/analyze.ts` | AI analysis and fallback orchestration |
 | `lib/profile-features.ts` | Feature extraction from raw GitHub source data |
 | `data/signals/` | Signal definitions for languages, topics, files, and commit patterns |
+| `data/repo-identity/` | JSON rules for contributor-editable stack, framework, and project-type inference |
 | `data/rules/` | Scoring rules for orientation, working style, strengths, and role fit |
 | `lib/benchmark.ts` | Cohort benchmark comparison |
 | `lib/seo.ts` | Canonical metadata, alternates, sitemap, and robots rules |
@@ -155,6 +157,17 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 Production is available at [gitfolio-seven.vercel.app](https://gitfolio-seven.vercel.app).
+
+## Contributor Rule Editing
+
+Repository identity inference is intentionally data-driven.
+
+- Edit [`data/repo-identity/rules.json`](./data/repo-identity/rules.json) to add or refine stack-detection rules.
+- Keep rules declarative: match public repo signals and emit languages, frameworks, surfaces, domains, flags, or confidence adjustments.
+- Available signal sources include repository name, GitHub primary language, description, topics, root file names, root manifest contents, README text, and recent commit messages.
+- The execution engine lives in [`lib/repo-identity.ts`](./lib/repo-identity.ts); contributors should not need to modify code for routine rule additions.
+- Rule validation happens through Zod parsing in [`lib/schemas/repo-identity.ts`](./lib/schemas/repo-identity.ts).
+- Run `npm run quality:regress` after editing rules to verify core stack inference and existing profile-scoring behavior.
 
 ### Environment Variables
 

@@ -41,6 +41,7 @@ export const analysisSchema = z.object({
     summary: z.string().min(1),
   }),
   facts: z.object({
+    coreStack: z.array(z.string().min(1)).min(1).max(6),
     topLanguages: z.array(z.string().min(1)).min(1).max(6),
     publicRepoCount: z.number().int().nonnegative(),
     followers: z.number().int().nonnegative(),

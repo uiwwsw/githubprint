@@ -1,6 +1,7 @@
 import { getDictionary } from "@/lib/i18n";
 import { BenchmarkSnapshotBlock, ChipList, DocumentFooter, EvidenceList, FactGrid, ProjectList, PublicDataScope, SectionBlock } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
+import { composeProfileTemplateView } from "@/lib/template-composers";
 import { formatDate } from "@/lib/utils";
 import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 
@@ -20,6 +21,7 @@ export function ProfileTemplate({
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
+  const view = composeProfileTemplateView(analysis, benchmark, locale);
 
   return (
     <DocumentShell
@@ -39,12 +41,12 @@ export function ProfileTemplate({
       <header className="border-b border-black/[0.08] pb-8">
         <div className="flex flex-col gap-8">
           <div className="min-w-0 max-w-none">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.profile.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-[clamp(2.8rem,6.5vw,4.1rem)] leading-[1.04] text-neutral-950">
-              {analysis.profile.headline}
-            </h1>
-            <p className="mt-5 text-[17px] leading-8 text-neutral-700">{analysis.profile.summary}</p>
-          </div>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.profile.eyebrow}</p>
+              <h1 className="mt-3 font-serif text-[clamp(2.8rem,6.5vw,4.1rem)] leading-[1.04] text-neutral-950">
+                {analysis.profile.headline}
+              </h1>
+              <p className="mt-5 text-[17px] leading-8 text-neutral-700">{view.summary}</p>
+            </div>
           <div className="w-full max-w-[27rem] self-start rounded-[1.8rem] border border-black/[0.08] bg-black/[0.025] p-5">
             <div className="flex min-w-0 items-center gap-4">
               <img
@@ -75,24 +77,42 @@ export function ProfileTemplate({
             <p>{analysis.inferred.developerType}</p>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.workingStyle} eyebrow={dict.templates.profile.sections.workingStyle}>
-            <p>{analysis.inferred.workingStyle}</p>
+            <div className="space-y-4">
+              <p>{analysis.inferred.workingStyle}</p>
+              <p className="text-sm leading-7 text-neutral-500">{analysis.facts.activityNote}</p>
+            </div>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.projects} eyebrow={dict.templates.profile.sections.projects}>
-            <ProjectList analysis={analysis} locale={locale} />
+            <div className="space-y-4">
+              <p>{view.projectLead}</p>
+              <ProjectList analysis={analysis} locale={locale} />
+            </div>
           </SectionBlock>
         </div>
         <div className="min-w-0 space-y-6">
           <SectionBlock title={dict.templates.profile.sections.tech} eyebrow={dict.templates.profile.sections.tech}>
-            <ChipList items={analysis.facts.topLanguages} />
+            <div className="space-y-4">
+              <p>{view.techNarrative}</p>
+              <ChipList items={analysis.facts.coreStack} />
+            </div>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.benchmark} eyebrow={dict.templates.profile.sections.benchmark}>
-            <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} />
+            <div className="space-y-4">
+              <p>{view.benchmarkNarrative}</p>
+              <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} showInsight={false} />
+            </div>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.strengths} eyebrow={dict.templates.profile.sections.strengths}>
-            <ChipList items={analysis.inferred.strengths} />
+            <div className="space-y-4">
+              <p>{view.strengthsLead}</p>
+              <ChipList items={analysis.inferred.strengths} />
+            </div>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.bestFit} eyebrow={dict.templates.profile.sections.bestFit}>
-            <ChipList items={analysis.inferred.bestFitRoles} />
+            <div className="space-y-4">
+              <p>{view.roleLead}</p>
+              <ChipList items={analysis.inferred.bestFitRoles} />
+            </div>
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.evidence} eyebrow={dict.templates.profile.sections.evidence}>
             <EvidenceList analysis={analysis} />

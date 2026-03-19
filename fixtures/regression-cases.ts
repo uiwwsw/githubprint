@@ -9,6 +9,7 @@ export type RegressionExpectation = {
   minProjectCount?: number;
   minWorkingStyleScore?: number;
   primaryOrientation?: string;
+  requiredCoreStack?: string[];
   requiredRoleIds?: string[];
   requiredSignalIds?: string[];
   requiredWorkingStyles?: string[];
@@ -595,6 +596,45 @@ const generalistSource = buildSource({
   username: "generalist-sketches",
 });
 
+const manifestDrivenFrontendSource = buildSource({
+  bio: "Builds lightweight product surfaces and frontend experiments around fast web iteration.",
+  followers: 18,
+  name: "Manifest Driven UI",
+  publicRepoCount: 5,
+  recentRepoCount: 1,
+  representativeRepos: [
+    makeRepo({
+      description:
+        "A lightweight web app shell used to validate product ideas without much extra repository metadata.",
+      isPinned: true,
+      language: "TypeScript",
+      manifestContents: [
+        JSON.stringify({
+          dependencies: {
+            next: "16.0.0",
+            react: "19.0.0",
+            tailwindcss: "4.0.0",
+          },
+        }),
+      ],
+      name: "manifest-web",
+      readme: "A small product-facing web experiment.",
+      recentCommitMessages: [
+        "feat: ship initial app shell",
+        "fix: polish landing copy",
+      ],
+      rootFiles: ["app", "components", "package.json", "tsconfig.json", ".github"],
+      score: 71,
+      size: 980,
+      stars: 5,
+      techSignals: ["TypeScript"],
+      topics: ["react", "frontend"],
+      updatedAt: isoDaysAgo(20),
+    }),
+  ],
+  username: "manifest-driven-ui",
+});
+
 export const regressionCases: RegressionCase[] = [
   {
     description: "Frontend-heavy product and design-system work should read as frontend with visible prototyping and shipping signals.",
@@ -611,6 +651,7 @@ export const regressionCases: RegressionCase[] = [
         "file:next-config",
         "meta:multiple-demos",
       ],
+      requiredCoreStack: ["Next.js", "TypeScript"],
       requiredWorkingStyles: ["prototyping", "shipping", "documentation"],
     },
     id: "frontend-product",
@@ -631,6 +672,7 @@ export const regressionCases: RegressionCase[] = [
         "file:go-mod",
         "file:docker",
       ],
+      requiredCoreStack: ["Go", "Python"],
       requiredWorkingStyles: ["structure", "iteration", "quality"],
     },
     id: "backend-platform",
@@ -651,6 +693,7 @@ export const regressionCases: RegressionCase[] = [
         "keyword:ai-domain",
         "file:python-manifest",
       ],
+      requiredCoreStack: ["Python", "AI"],
       requiredWorkingStyles: ["prototyping", "shipping", "quality"],
     },
     id: "ai-application",
@@ -671,6 +714,7 @@ export const regressionCases: RegressionCase[] = [
         "file:mobile-dir",
         "meta:has-demo",
       ],
+      requiredCoreStack: ["Flutter", "Dart"],
       requiredWorkingStyles: ["prototyping", "shipping"],
     },
     id: "mobile-product",
@@ -691,10 +735,25 @@ export const regressionCases: RegressionCase[] = [
         "keyword:tooling",
         "file:cargo",
       ],
+      requiredCoreStack: ["Rust"],
       requiredWorkingStyles: ["structure", "quality", "documentation"],
     },
     id: "devtools-toolsmith",
     source: devtoolsSource,
+  },
+  {
+    description: "Manifest dependency strings alone should be enough to surface Next.js-based frontend stack signals.",
+    expectation: {
+      cohortId: "frontend",
+      minConfidence: 45,
+      minPrimaryOrientationScore: 45,
+      minProjectCount: 1,
+      primaryOrientation: "frontend",
+      requiredCoreStack: ["Next.js", "TypeScript"],
+      requiredSignalIds: ["topic:react", "file:package-json", "file:app-dir"],
+    },
+    id: "manifest-driven-frontend",
+    source: manifestDrivenFrontendSource,
   },
   {
     description: "Sparse mixed-signal repositories should stay conservative and land in the generalist cohort.",

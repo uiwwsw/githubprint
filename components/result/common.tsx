@@ -52,7 +52,7 @@ export function FactGrid({
   const dict = getDictionary(locale);
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <FactCard label={dict.common.factTech} value={analysis.facts.topLanguages.slice(0, 3).join(", ")} />
+      <FactCard label={dict.common.factTech} value={analysis.facts.coreStack.slice(0, 3).join(", ")} />
       <FactCard
         label={dict.common.factRepos}
         value={`${formatNumber(analysis.facts.publicRepoCount, locale)}${dict.common.repoUnit}`}
@@ -68,9 +68,11 @@ export function FactGrid({
 export function BenchmarkSnapshotBlock({
   benchmark,
   locale,
+  showInsight = true,
 }: {
   benchmark: BenchmarkSnapshot;
   locale: Locale;
+  showInsight?: boolean;
 }) {
   const dict = getDictionary(locale);
 
@@ -95,7 +97,7 @@ export function BenchmarkSnapshotBlock({
           value={formatNumber(benchmark.sampleSize, locale)}
         />
       </div>
-      <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p>
+      {showInsight ? <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p> : null}
       <div className="space-y-3">
         {benchmark.metrics.map((metric) => (
           <div

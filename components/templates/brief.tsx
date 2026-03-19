@@ -1,7 +1,8 @@
 import { getDictionary } from "@/lib/i18n";
-import { BenchmarkSnapshotBlock, DocumentFooter, EvidenceList, FactGrid, ProjectList, PublicDataScope, SectionBlock, ChipList } from "@/components/result/common";
+import { DocumentFooter, FactGrid, ProjectList, PublicDataScope, SectionBlock } from "@/components/result/common";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
+import { composeBriefTemplateView } from "@/lib/template-composers";
 import { type BenchmarkSnapshot, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 
 export function BriefTemplate({
@@ -20,6 +21,7 @@ export function BriefTemplate({
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
+  const view = composeBriefTemplateView(analysis, benchmark, locale);
 
   return (
     <DocumentShell
@@ -48,7 +50,7 @@ export function BriefTemplate({
                 {analysis.profile.name}
               </h1>
               <p className="mt-2 truncate text-sm text-neutral-500">@{analysis.profile.username}</p>
-              <p className="mt-4 text-lg leading-8 text-neutral-800">{analysis.profile.headline}</p>
+              <p className="mt-4 text-lg leading-8 text-neutral-800">{view.headline}</p>
             </div>
           </div>
 
@@ -58,10 +60,10 @@ export function BriefTemplate({
 
           <div className="mt-7 space-y-6">
             <SectionBlock title={dict.templates.brief.sections.summary} eyebrow={dict.templates.brief.sections.summary}>
-              <p>{analysis.profile.summary}</p>
+              <p>{view.summary}</p>
             </SectionBlock>
             <SectionBlock title={dict.templates.brief.sections.strengths} eyebrow={dict.templates.brief.sections.strengths}>
-              <ChipList items={analysis.inferred.strengths} />
+              <BriefSignalList items={view.highlights} />
             </SectionBlock>
             <SectionBlock title={dict.templates.brief.sections.projects} eyebrow={dict.templates.brief.sections.projects}>
               <ProjectList analysis={analysis} locale={locale} variant="compact" />
@@ -70,20 +72,11 @@ export function BriefTemplate({
         </div>
 
         <div className="min-w-0 space-y-6">
-          <SectionBlock title={dict.templates.brief.sections.type} eyebrow={dict.templates.brief.sections.type}>
-            <p>{analysis.inferred.developerType}</p>
-          </SectionBlock>
-          <SectionBlock title={dict.templates.brief.sections.workingStyle} eyebrow={dict.templates.brief.sections.workingStyle}>
-            <p>{analysis.inferred.workingStyle}</p>
+          <SectionBlock title={dict.templates.brief.sections.activity} eyebrow={dict.templates.brief.sections.activity}>
+            <p>{view.activityNote}</p>
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.benchmark} eyebrow={dict.templates.brief.sections.benchmark}>
-            <BenchmarkSnapshotBlock benchmark={benchmark} locale={locale} />
-          </SectionBlock>
-          <SectionBlock title={dict.templates.brief.sections.bestFit} eyebrow={dict.templates.brief.sections.bestFit}>
-            <ChipList items={analysis.inferred.bestFitRoles} />
-          </SectionBlock>
-          <SectionBlock title={dict.templates.brief.sections.evidence} eyebrow={dict.templates.brief.sections.evidence}>
-            <EvidenceList analysis={analysis} />
+            <BriefBenchmarkSnapshot benchmark={benchmark} topMetrics={view.topMetrics} locale={locale} />
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.dataScope} eyebrow={dict.templates.brief.sections.dataScope}>
             <PublicDataScope locale={locale} />
@@ -97,5 +90,44 @@ export function BriefTemplate({
       </div>
       <DocumentFooter disclaimer={analysis.disclaimer} />
     </DocumentShell>
+  );
+}
+
+function BriefSignalList({ items }: { items: string[] }) {
+  return (
+    <ul className="space-y-3">
+      {items.map((item) => (
+        <li className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] px-4 py-3 text-sm leading-6 text-neutral-700" key={item}>
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function BriefBenchmarkSnapshot({
+  benchmark,
+  topMetrics,
+  locale,
+}: {
+  benchmark: BenchmarkSnapshot;
+  topMetrics: BenchmarkSnapshot["metrics"];
+  locale: Locale;
+}) {
+  return (
+    <div className="space-y-4">
+      <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {topMetrics.map((metric) => (
+          <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" key={metric.id}>
+            <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">{metric.label}</p>
+            <p className="mt-2 text-base font-medium text-neutral-900">
+              {locale === "ko" ? `상위 ${metric.percentile}%` : `Top ${metric.percentile}%`}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">{metric.note}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

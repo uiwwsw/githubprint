@@ -1,0 +1,698 @@
+[
+  {
+    "id": "language:typescript:tsconfig",
+    "description": "tsconfig files are strong signals that the repository is TypeScript-based.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["tsconfig.json", "tsconfig.base.json", "tsconfig.app.json"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "TypeScript", "weight": 6 }]
+    }
+  },
+  {
+    "id": "language:typescript:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence TypeScript fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["TypeScript"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "TypeScript", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "language:javascript:package-json",
+    "description": "package.json without TypeScript config usually indicates JavaScript-first projects.",
+    "when": {
+      "all": [
+        {
+          "source": "rootFiles",
+          "patterns": ["package.json"],
+          "matchMode": "exact"
+        }
+      ],
+      "none": [
+        {
+          "source": "rootFiles",
+          "patterns": ["tsconfig.json", "tsconfig.base.json", "tsconfig.app.json"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "JavaScript", "weight": 3.8 }]
+    }
+  },
+  {
+    "id": "language:javascript:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence JavaScript fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["JavaScript"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "JavaScript", "weight": 2.2 }]
+    }
+  },
+  {
+    "id": "language:python:manifest",
+    "description": "Python manifests are strong signals for Python repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["pyproject.toml", "requirements.txt"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Python", "weight": 6 }]
+    }
+  },
+  {
+    "id": "language:python:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence Python fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Python"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Python", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "language:go:manifest",
+    "description": "go.mod is a strong signal for Go repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["go.mod"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Go", "weight": 6 }]
+    }
+  },
+  {
+    "id": "language:go:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence Go fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Go"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Go", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "language:rust:manifest",
+    "description": "Cargo.toml is a strong signal for Rust repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["Cargo.toml"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Rust", "weight": 6 }]
+    }
+  },
+  {
+    "id": "language:rust:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence Rust fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Rust"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Rust", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "language:dart:flutter",
+    "description": "pubspec or Flutter mobile structure usually indicates Dart projects.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["pubspec.yaml"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "topics",
+          "patterns": ["flutter"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Dart", "weight": 5.8 }]
+    }
+  },
+  {
+    "id": "language:dart:github-language",
+    "description": "GitHub language metadata can be used as a low-confidence Dart fallback.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Dart"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Dart", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "language:swift:mobile",
+    "description": "iOS project structure or Swift metadata often indicates Swift projects.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Swift"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "rootFiles",
+          "patterns": ["ios", "Package.swift"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Swift", "weight": 4.4 }]
+    }
+  },
+  {
+    "id": "language:mdx:docs",
+    "description": "GitHub MDX metadata is a useful signal for docs-oriented repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["MDX"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "MDX", "weight": 3.2 }]
+    }
+  },
+  {
+    "id": "language:shell:automation",
+    "description": "Shell language metadata plus scripts or automation patterns indicate shell-heavy repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "githubLanguage",
+          "patterns": ["Shell"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "topics",
+          "patterns": ["shell", "bash"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "languages": [{ "label": "Shell", "weight": 3.2 }]
+    }
+  },
+  {
+    "id": "framework:nextjs",
+    "description": "Next.js config or metadata signals that the repository uses Next.js.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["next.config.js", "next.config.ts", "next.config.mjs"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "manifestContents",
+          "patterns": ["\"next\""],
+          "matchMode": "includes"
+        },
+        {
+          "source": "topics",
+          "patterns": ["nextjs"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["next.js"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Next.js", "weight": 5.2 }],
+      "surfaces": [{ "label": "frontend", "weight": 2.2 }]
+    }
+  },
+  {
+    "id": "framework:react",
+    "description": "React topics or README references indicate React-based repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "topics",
+          "patterns": ["react"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "manifestContents",
+          "patterns": ["\"react\""],
+          "matchMode": "includes"
+        },
+        {
+          "source": "readme",
+          "patterns": ["react"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "React", "weight": 3.5 }],
+      "surfaces": [{ "label": "frontend", "weight": 1.5 }]
+    }
+  },
+  {
+    "id": "framework:vite",
+    "description": "Vite config usually indicates Vite-based frontends.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["vite.config.js", "vite.config.ts", "vite.config.mjs"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "manifestContents",
+          "patterns": ["\"vite\""],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Vite", "weight": 4.2 }],
+      "surfaces": [{ "label": "frontend", "weight": 1.4 }]
+    }
+  },
+  {
+    "id": "framework:tailwind",
+    "description": "Tailwind config or README references indicate Tailwind CSS usage.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["tailwind.config.js", "tailwind.config.ts"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "manifestContents",
+          "patterns": ["\"tailwindcss\""],
+          "matchMode": "includes"
+        },
+        {
+          "source": "readme",
+          "patterns": ["tailwind"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Tailwind CSS", "weight": 3.4 }]
+    }
+  },
+  {
+    "id": "framework:storybook",
+    "description": "Storybook folders are useful signals for UI component work.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": [".storybook", "storybook"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Storybook", "weight": 3 }],
+      "surfaces": [{ "label": "frontend", "weight": 0.8 }]
+    }
+  },
+  {
+    "id": "framework:flutter",
+    "description": "Flutter topics or mobile directory structure indicate Flutter usage.",
+    "when": {
+      "all": [
+        {
+          "source": "rootFiles",
+          "patterns": ["ios", "android"],
+          "matchMode": "exact"
+        }
+      ],
+      "any": [
+        {
+          "source": "topics",
+          "patterns": ["flutter"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["flutter"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Flutter", "weight": 5.2 }],
+      "surfaces": [{ "label": "mobile", "weight": 2.4 }]
+    }
+  },
+  {
+    "id": "surface:frontend:structure",
+    "description": "app/components/pages folders plus package.json usually indicate frontend app structure.",
+    "when": {
+      "all": [
+        {
+          "source": "rootFiles",
+          "patterns": ["package.json"],
+          "matchMode": "exact"
+        }
+      ],
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["app", "components", "pages", "public"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "surfaces": [{ "label": "frontend", "weight": 3.6 }]
+    }
+  },
+  {
+    "id": "surface:backend:structure",
+    "description": "API-oriented folders, Docker, or backend keywords usually indicate backend repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["cmd", "internal", "api", "server", "Dockerfile"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "topics",
+          "patterns": ["backend", "api", "server", "postgres", "redis"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["backend", "api", "database", "postgres", "redis"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "surfaces": [{ "label": "backend", "weight": 3.8 }]
+    }
+  },
+  {
+    "id": "framework:fastapi",
+    "description": "FastAPI dependency references indicate FastAPI-based backends.",
+    "when": {
+      "any": [
+        {
+          "source": "manifestContents",
+          "patterns": ["fastapi"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "FastAPI", "weight": 4.5 }],
+      "surfaces": [{ "label": "backend", "weight": 1.6 }]
+    }
+  },
+  {
+    "id": "framework:django",
+    "description": "Django dependency references indicate Django-based backends.",
+    "when": {
+      "any": [
+        {
+          "source": "manifestContents",
+          "patterns": ["django"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Django", "weight": 4.4 }],
+      "surfaces": [{ "label": "backend", "weight": 1.5 }]
+    }
+  },
+  {
+    "id": "framework:gin",
+    "description": "Gin dependency references indicate Gin-based Go services.",
+    "when": {
+      "any": [
+        {
+          "source": "manifestContents",
+          "patterns": ["github.com/gin-gonic/gin"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Gin", "weight": 4.3 }],
+      "surfaces": [{ "label": "backend", "weight": 1.4 }]
+    }
+  },
+  {
+    "id": "framework:clap",
+    "description": "clap dependency references indicate Rust CLI tooling.",
+    "when": {
+      "any": [
+        {
+          "source": "manifestContents",
+          "patterns": ["clap"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "clap", "weight": 3.7 }],
+      "surfaces": [{ "label": "devtools", "weight": 1.2 }]
+    }
+  },
+  {
+    "id": "surface:mobile:structure",
+    "description": "ios/android directories or mobile topics are strong mobile signals.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["ios", "android"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "topics",
+          "patterns": ["mobile", "ios", "android"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "surfaces": [{ "label": "mobile", "weight": 4.4 }]
+    }
+  },
+  {
+    "id": "surface:devtools",
+    "description": "CLI, tooling, workflow, and automation signals usually indicate developer-tooling repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "topics",
+          "patterns": ["cli", "tooling", "automation", "workflow", "plugin"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "description",
+          "patterns": ["cli", "tooling", "workflow", "automation"],
+          "matchMode": "includes"
+        },
+        {
+          "source": "readme",
+          "patterns": ["cli", "tooling", "workflow", "automation"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "surfaces": [{ "label": "devtools", "weight": 3.5 }]
+    }
+  },
+  {
+    "id": "surface:docs",
+    "description": "docs folders and markdown-heavy metadata indicate documentation-oriented repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["docs"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "topics",
+          "patterns": ["docs", "documentation", "markdown"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["documentation", "markdown"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "surfaces": [{ "label": "docs", "weight": 2.8 }]
+    }
+  },
+  {
+    "id": "domain:ai",
+    "description": "OpenAI, LLM, RAG, and agent signals indicate AI-oriented repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "topics",
+          "patterns": ["openai", "llm", "rag", "agent", "ai", "machine-learning"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["openai", "llm", "rag", "agent", "embedding"],
+          "matchMode": "includes"
+        },
+        {
+          "source": "description",
+          "patterns": ["llm", "rag", "agent", "ai"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "domains": [{ "label": "AI", "weight": 3.6 }]
+    }
+  },
+  {
+    "id": "domain:automation",
+    "description": "Workflow and deployment wording indicates automation-oriented repositories.",
+    "when": {
+      "any": [
+        {
+          "source": "topics",
+          "patterns": ["automation", "workflow", "deploy"],
+          "matchMode": "exact"
+        },
+        {
+          "source": "readme",
+          "patterns": ["automation", "workflow", "deployment"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "domains": [{ "label": "Automation", "weight": 2.8 }]
+    }
+  },
+  {
+    "id": "flag:monorepo",
+    "description": "apps/packages/workspace metadata indicate a monorepo layout.",
+    "when": {
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["apps", "packages", "pnpm-workspace.yaml", "turbo.json"],
+          "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "flags": ["monorepo"],
+      "confidenceDelta": 0.04
+    }
+  },
+  {
+    "id": "flag:template",
+    "description": "Template or starter wording means the repository may overstate the author's product-specific implementation surface.",
+    "when": {
+      "any": [
+        {
+          "source": "repoName",
+          "patterns": ["starter", "template", "boilerplate", "example", "scaffold"],
+          "matchMode": "includes"
+        },
+        {
+          "source": "description",
+          "patterns": ["starter", "template", "boilerplate", "example", "scaffold"],
+          "matchMode": "includes"
+        },
+        {
+          "source": "readme",
+          "patterns": ["starter", "template", "boilerplate", "example", "scaffold"],
+          "matchMode": "includes"
+        }
+      ]
+    },
+    "emit": {
+      "flags": ["template"],
+      "confidenceDelta": -0.16
+    }
+  }
+]

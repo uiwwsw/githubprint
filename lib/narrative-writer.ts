@@ -3,6 +3,7 @@ import "server-only";
 import { localizeText } from "@/lib/data-loader";
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
 import type { RepoFeature } from "@/lib/profile-features";
+import { buildRepoTechStack, summarizeRepoStack } from "@/lib/repo-identity";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
 import { analysisSchema, type GitFolioAnalysis, type Locale } from "@/lib/schemas";
 import type { ProfileEngineConfig } from "@/lib/schemas/rule-config";
@@ -61,6 +62,10 @@ function joinReadable(values: string[], locale: Locale) {
   return locale === "ko" ? `${head}, ${tail}` : `${head}, and ${tail}`;
 }
 
+function getStackSummary(source: GitHubSourceData) {
+  return source.stackSummary ?? summarizeRepoStack(source.repos);
+}
+
 function buildDeveloperTypeText(
   scoring: ProfileScoringResult,
   config: ProfileEngineConfig,
@@ -113,10 +118,14 @@ function buildSummaryText(
     locale,
   );
   const projectNames = source.representativeRepos.slice(0, 2).map((repo) => repo.name);
+  const stackSummary = getStackSummary(source);
 
   return fillTemplate(template, {
     languages: joinReadable(
-      source.topLanguages.slice(0, 3).map((item) => item.name),
+      (stackSummary.coreStack.length > 0
+        ? stackSummary.coreStack
+        : source.topLanguages.slice(0, 3).map((item) => item.name)
+      ).slice(0, 3),
       locale,
     ),
     name: source.account.name ?? source.account.username,
@@ -137,7 +146,8 @@ function buildSummaryText(
 
 function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   const strengths: string[] = [];
-  const primaryLanguage = source.topLanguages[0]?.name;
+  const stackSummary = getStackSummary(source);
+  const primaryLanguage = stackSummary.topLanguages[0] ?? source.topLanguages[0]?.name;
 
   if (primaryLanguage) {
     strengths.push(
@@ -259,13 +269,17 @@ function buildProjects(
       stars: repo.stars,
       tech:
         (() => {
-          const tech = [
-            ...new Set([
-              ...repo.techSignals,
-              ...repo.topics,
-              ...(repo.language ? [repo.language] : []),
-            ]),
-          ].slice(0, 8);
+          const tech = buildRepoTechStack({
+            description: repo.description,
+            githubLanguage: repo.language,
+            identity: repo.identity,
+            manifestContents: repo.manifestContents,
+            name: repo.name,
+            readme: repo.readme,
+            recentCommitMessages: repo.recentCommitMessages,
+            rootFiles: repo.rootFiles,
+            topics: repo.topics,
+          });
 
           return tech.length > 0 ? tech : ["GitHub"];
         })(),
@@ -300,7 +314,17 @@ export function buildRuleBasedAnalysis(
     ...buildFallbackStrengths(source, locale),
   ].slice(0, 4);
   const roles = [...scoring.roles, ...buildFallbackRoles(scoring, locale)].slice(0, 4);
-  const topLanguages = source.topLanguages.map((item) => item.name).slice(0, 6);
+  const stackSummary = getStackSummary(source);
+  const topLanguages =
+    stackSummary.topLanguages.length > 0
+      ? stackSummary.topLanguages.slice(0, 6)
+      : source.topLanguages.map((item) => item.name).slice(0, 6);
+  const coreStack =
+    stackSummary.coreStack.length > 0
+      ? stackSummary.coreStack.slice(0, 6)
+      : topLanguages.length > 0
+        ? topLanguages
+        : ["GitHub"];
   const headline =
     scoring.primaryOrientation && scoring.primaryOrientation.score >= 45
       ? scoring.primaryOrientation.headline
@@ -354,6 +378,7 @@ export function buildRuleBasedAnalysis(
     evidence: evidence.slice(0, 6),
     facts: {
       activityNote: source.activity.note,
+      coreStack,
       followers: source.account.followers,
       publicRepoCount: source.account.publicRepoCount,
       topLanguages: topLanguages.length > 0 ? topLanguages : ["GitHub"],
