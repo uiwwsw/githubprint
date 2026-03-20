@@ -1,0 +1,26 @@
+[
+  {
+    "id": "prefer:flutter",
+    "description": "When Flutter is inferred, show Flutter instead of wrapper implementation languages.",
+    "priority": 100,
+    "when": {
+      "frameworksAny": ["Flutter"]
+    },
+    "transform": {
+      "aliasLabels": [
+        {
+          "from": [
+            "Dart",
+            "Swift",
+            "Kotlin",
+            "Java",
+            "Objective-C",
+            "Objective-C++"
+          ],
+          "to": "Flutter"
+        }
+      ],
+      "preferLabels": ["Flutter"]
+    }
+  }
+]

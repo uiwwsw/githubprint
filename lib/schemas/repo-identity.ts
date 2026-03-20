@@ -52,8 +52,67 @@ export const repoIdentityRuleSchema = z.object({
 
 export const repoIdentityRuleSetSchema = z.array(repoIdentityRuleSchema);
 
+const presentationLabelListSchema = z.array(z.string().min(1)).default([]);
+
+export const repoIdentityPresentationConditionSchema = z
+  .object({
+    domainsAll: presentationLabelListSchema,
+    domainsAny: presentationLabelListSchema,
+    frameworksAll: presentationLabelListSchema,
+    frameworksAny: presentationLabelListSchema,
+    githubLanguagesAll: presentationLabelListSchema,
+    githubLanguagesAny: presentationLabelListSchema,
+    languagesAll: presentationLabelListSchema,
+    languagesAny: presentationLabelListSchema,
+    rootFilesAll: presentationLabelListSchema,
+    rootFilesAny: presentationLabelListSchema,
+    surfacesAll: presentationLabelListSchema,
+    surfacesAny: presentationLabelListSchema,
+    topicsAll: presentationLabelListSchema,
+    topicsAny: presentationLabelListSchema,
+  })
+  .refine(
+    (value) => Object.values(value).some((items) => items.length > 0),
+    {
+      message: "At least one presentation matcher must be configured.",
+    },
+  );
+
+const repoIdentityPresentationAliasSchema = z.object({
+  from: z.array(z.string().min(1)).min(1),
+  to: z.string().min(1),
+});
+
+export const repoIdentityPresentationRuleSchema = z.object({
+  description: z.string().min(1),
+  id: z.string().min(1),
+  priority: z.number().int().min(0).default(0),
+  transform: z
+    .object({
+      aliasLabels: z.array(repoIdentityPresentationAliasSchema).default([]),
+      preferLabels: z.array(z.string().min(1)).default([]),
+    })
+    .refine(
+      (value) => value.aliasLabels.length > 0 || value.preferLabels.length > 0,
+      {
+        message: "At least one presentation transform must be configured.",
+      },
+    ),
+  when: repoIdentityPresentationConditionSchema,
+});
+
+export const repoIdentityPresentationRuleSetSchema = z.array(
+  repoIdentityPresentationRuleSchema,
+);
+
 export type RepoIdentityRule = z.infer<typeof repoIdentityRuleSchema>;
 export type RepoIdentityRuleSet = z.infer<typeof repoIdentityRuleSetSchema>;
+export type RepoIdentityPresentationRule = z.infer<
+  typeof repoIdentityPresentationRuleSchema
+>;
+export type RepoIdentityPresentationRuleSet = z.infer<
+  typeof repoIdentityPresentationRuleSetSchema
+>;
 export type RepoIdentitySignalSource = z.infer<
   typeof repoIdentitySignalSourceSchema
 >;

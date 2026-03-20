@@ -1,4 +1,5 @@
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
+import { buildRepoDisplayLanguages } from "@/lib/repo-identity";
 
 export type RegressionExpectation = {
   cohortId: string;
@@ -31,25 +32,32 @@ function isoDaysAgo(days: number) {
 function buildTopLanguages(
   repos: GitHubRepoSnapshot[],
 ): GitHubSourceData["topLanguages"] {
-  const counts = new Map<string, number>();
+  const scores = new Map<string, { repoCount: number; score: number }>();
 
   repos.forEach((repo) => {
-    if (!repo.language) {
-      return;
-    }
+    const rankedLanguages = buildRepoDisplayLanguages({
+      description: repo.description,
+      githubLanguage: repo.language,
+      identity: repo.identity,
+      manifestContents: repo.manifestContents,
+      name: repo.name,
+      readme: repo.readme,
+      recentCommitMessages: repo.recentCommitMessages,
+      rootFiles: repo.rootFiles,
+      topics: repo.topics,
+    });
 
-    counts.set(repo.language, (counts.get(repo.language) ?? 0) + 1);
+    rankedLanguages.slice(0, 2).forEach((language, index) => {
+      const existing = scores.get(language.label) ?? { repoCount: 0, score: 0 };
+      existing.repoCount += index === 0 ? 1 : 0;
+      existing.score += language.score * 0.8 + 4 + Math.min(repo.stars, 20) * 0.6;
+      scores.set(language.label, existing);
+    });
   });
 
-  const total = Math.max(repos.length, 1);
-
-  return [...counts.entries()]
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
-    .map(([name, repoCount]) => ({
-      name,
-      repoCount,
-      score: Number(((repoCount / total) * 100).toFixed(1)),
-    }));
+  return [...scores.entries()]
+    .map(([name, value]) => ({ name, ...value }))
+    .sort((left, right) => right.score - left.score || left.name.localeCompare(right.name));
 }
 
 function makeRepo(
@@ -723,7 +731,7 @@ export const regressionCases: RegressionCase[] = [
         "file:mobile-dir",
         "meta:has-demo",
       ],
-      requiredCoreStack: ["Flutter", "Dart"],
+      requiredCoreStack: ["Flutter"],
       requiredWorkingStyles: ["prototyping", "shipping"],
     },
     id: "mobile-product",

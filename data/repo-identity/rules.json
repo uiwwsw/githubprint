@@ -205,7 +205,7 @@
   },
   {
     "id": "language:swift:mobile",
-    "description": "iOS project structure or Swift metadata often indicates Swift projects.",
+    "description": "Swift metadata or Package.swift is a stronger Swift signal than a generic iOS folder.",
     "when": {
       "any": [
         {
@@ -215,7 +215,7 @@
         },
         {
           "source": "rootFiles",
-          "patterns": ["ios", "Package.swift"],
+          "patterns": ["Package.swift"],
           "matchMode": "exact"
         }
       ]
@@ -386,26 +386,43 @@
     }
   },
   {
-    "id": "framework:flutter",
-    "description": "Flutter topics or mobile directory structure indicate Flutter usage.",
+    "id": "framework:flutter:topic",
+    "description": "Flutter topics are a strong signal that the repository is positioned as Flutter-based.",
     "when": {
-      "all": [
-        {
-          "source": "rootFiles",
-          "patterns": ["ios", "android"],
-          "matchMode": "exact"
-        }
-      ],
       "any": [
         {
           "source": "topics",
           "patterns": ["flutter"],
           "matchMode": "exact"
+        }
+      ]
+    },
+    "emit": {
+      "frameworks": [{ "label": "Flutter", "weight": 4.8 }],
+      "surfaces": [{ "label": "mobile", "weight": 2.2 }]
+    }
+  },
+  {
+    "id": "framework:flutter:structure",
+    "description": "pubspec plus mobile app structure usually indicates Flutter usage.",
+    "when": {
+      "all": [
+        {
+          "source": "rootFiles",
+          "patterns": ["pubspec.yaml"],
+          "matchMode": "exact"
         },
         {
-          "source": "readme",
-          "patterns": ["flutter"],
-          "matchMode": "includes"
+          "source": "rootFiles",
+          "patterns": ["lib"],
+          "matchMode": "exact"
+        }
+      ],
+      "any": [
+        {
+          "source": "rootFiles",
+          "patterns": ["ios", "android"],
+          "matchMode": "exact"
         }
       ]
     },
