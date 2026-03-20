@@ -15,12 +15,27 @@ export type ContributionSummary = {
   totalPullRequestContributions: number;
   totalPullRequestReviewContributions: number;
 };
+export type AuthorizedPrivateRepoHighlight = {
+  description: string;
+  name: string;
+  repoUrl: string;
+  tech: string[];
+  updatedAt: string;
+  whyItStandsOut: string;
+};
 export type AuthorizedPrivateInsights = {
   authorizedRepoCount: number;
+  automatedPrivateRepoCount: number;
+  documentedPrivateRepoCount: number;
   hiddenRepresentativeCount: number;
   privateRepoCount: number;
+  privateShowcaseRepos: AuthorizedPrivateRepoHighlight[];
+  privateOnlyStack: string[];
   recentPrivateRepoCount: number;
+  topPrivateDomains: string[];
   topPrivateStack: string[];
+  topPrivateSurfaces: string[];
+  verifiedPrivateRepoCount: number;
 };
 
 export const resultSearchParamsSchema = z.object({

@@ -119,6 +119,18 @@ function buildRepoWeight(repo: GitHubRepoSnapshot, maxScore: number) {
   return Math.min(1.15, Math.max(0.4, enriched));
 }
 
+function getSignalRepos(source: GitHubSourceData) {
+  if (source.signalRepos?.length) {
+    return source.signalRepos;
+  }
+
+  if (source.representativeRepos.length > 0) {
+    return source.representativeRepos;
+  }
+
+  return source.repos.slice(0, 8);
+}
+
 function collectRepoSignals(
   repo: GitHubRepoSnapshot,
   weight: number,
@@ -166,17 +178,14 @@ function collectRepoSignals(
 
 function collectGlobalSignals(source: GitHubSourceData, config: ProfileEngineConfig) {
   const triggeredIds = new Set<string>();
-  const representativeRepos =
-    source.representativeRepos.length > 0
-      ? source.representativeRepos
-      : source.repos.slice(0, 5);
+  const signalRepos = getSignalRepos(source);
 
-  const demoCount = representativeRepos.filter((repo) => Boolean(repo.homepageUrl)).length;
-  const pinnedCount = representativeRepos.filter((repo) => repo.isPinned).length;
-  const richReadmeCount = representativeRepos.filter(
+  const demoCount = signalRepos.filter((repo) => Boolean(repo.homepageUrl)).length;
+  const pinnedCount = signalRepos.filter((repo) => repo.isPinned).length;
+  const richReadmeCount = signalRepos.filter(
     (repo) => (repo.readme?.length ?? 0) >= 700,
   ).length;
-  const recentRepresentativeCount = representativeRepos.filter((repo) => {
+  const recentRepresentativeCount = signalRepos.filter((repo) => {
     const age = Date.now() - new Date(repo.updatedAt).getTime();
     return age <= 1000 * 60 * 60 * 24 * 90;
   }).length;
@@ -194,7 +203,7 @@ function collectGlobalSignals(source: GitHubSourceData, config: ProfileEngineCon
   } else if (source.activity.recentRepoCount >= 2) {
     triggeredIds.add("meta:steady-activity");
   }
-  if (source.account.publicRepoCount >= 12 || representativeRepos.length >= 4) {
+  if (source.account.publicRepoCount >= 12 || signalRepos.length >= 4) {
     triggeredIds.add("meta:portfolio-depth");
   }
 
@@ -207,12 +216,9 @@ export function extractProfileFeatures(
   source: GitHubSourceData,
   config: ProfileEngineConfig,
 ): ProfileFeatureSet {
-  const representativeRepos =
-    source.representativeRepos.length > 0
-      ? source.representativeRepos
-      : source.repos.slice(0, 5);
-  const maxScore = Math.max(...representativeRepos.map((repo) => repo.score), 1);
-  const repoFeatures = representativeRepos.map((repo) => {
+  const signalRepos = getSignalRepos(source);
+  const maxScore = Math.max(...signalRepos.map((repo) => repo.score), 1);
+  const repoFeatures = signalRepos.map((repo) => {
     const weight = buildRepoWeight(repo, maxScore);
     return {
       matchedSignals: collectRepoSignals(repo, weight, config),

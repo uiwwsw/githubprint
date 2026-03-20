@@ -16,6 +16,29 @@ import type {
 import { formatDate, formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
+function localizePrivateFacet(value: string, locale: Locale) {
+  if (locale === "ko") {
+    if (value === "frontend") return "프론트엔드";
+    if (value === "backend") return "백엔드";
+    if (value === "mobile") return "모바일";
+    if (value === "devtools") return "개발툴";
+    if (value === "docs") return "문서";
+    if (value === "Automation") return "자동화";
+  }
+
+  if (value === "devtools") {
+    return locale === "ko" ? "개발툴" : "developer tooling";
+  }
+  if (value === "docs") {
+    return locale === "ko" ? "문서" : "documentation";
+  }
+  if (value === "Automation") {
+    return locale === "ko" ? "자동화" : "automation";
+  }
+
+  return value;
+}
+
 export function SectionBlock({
   title,
   eyebrow,
@@ -299,7 +322,7 @@ function AuthorizedPrivateInsightsCard({
       <p className="mt-2 text-sm leading-6 text-neutral-600">
         {dict.common.privateInsightsHint}
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <FactCard
           label={dict.common.factAuthorizedRepos}
           value={formatNumber(authorizedPrivateInsights.authorizedRepoCount, locale)}
@@ -315,6 +338,27 @@ function AuthorizedPrivateInsightsCard({
             locale,
           )}
         />
+        <FactCard
+          label={dict.common.factDocumentedPrivateRepos}
+          value={formatNumber(
+            authorizedPrivateInsights.documentedPrivateRepoCount,
+            locale,
+          )}
+        />
+        <FactCard
+          label={dict.common.factVerifiedPrivateRepos}
+          value={formatNumber(
+            authorizedPrivateInsights.verifiedPrivateRepoCount,
+            locale,
+          )}
+        />
+        <FactCard
+          label={dict.common.factAutomatedPrivateRepos}
+          value={formatNumber(
+            authorizedPrivateInsights.automatedPrivateRepoCount,
+            locale,
+          )}
+        />
       </div>
       {authorizedPrivateInsights.topPrivateStack.length > 0 ? (
         <div className="mt-4 space-y-2">
@@ -322,6 +366,89 @@ function AuthorizedPrivateInsightsCard({
             {dict.common.privateInsightsTopStack}
           </p>
           <ChipList items={authorizedPrivateInsights.topPrivateStack} />
+        </div>
+      ) : null}
+      {authorizedPrivateInsights.privateOnlyStack.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-neutral-900">
+            {dict.common.privateInsightsAdditionalStack}
+          </p>
+          <ChipList items={authorizedPrivateInsights.privateOnlyStack} />
+        </div>
+      ) : null}
+      {authorizedPrivateInsights.topPrivateSurfaces.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-neutral-900">
+            {dict.common.privateInsightsTopSurfaces}
+          </p>
+          <ChipList
+            items={authorizedPrivateInsights.topPrivateSurfaces.map((item) =>
+              localizePrivateFacet(item, locale),
+            )}
+          />
+        </div>
+      ) : null}
+      {authorizedPrivateInsights.topPrivateDomains.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-neutral-900">
+            {dict.common.privateInsightsTopDomains}
+          </p>
+          <ChipList
+            items={authorizedPrivateInsights.topPrivateDomains.map((item) =>
+              localizePrivateFacet(item, locale),
+            )}
+          />
+        </div>
+      ) : null}
+      {privateExposureMode === "include" &&
+      authorizedPrivateInsights.privateShowcaseRepos.length > 0 ? (
+        <div className="mt-5 space-y-3">
+          <div>
+            <p className="text-sm font-medium text-neutral-900">
+              {dict.common.privateInsightsShowcase}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-neutral-500">
+              {dict.common.privateInsightsShowcaseHint}
+            </p>
+          </div>
+          <div className="space-y-3">
+            {authorizedPrivateInsights.privateShowcaseRepos.map((repo) => (
+              <article
+                className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+                key={repo.repoUrl}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-neutral-900">{repo.name}</p>
+                    <p className="mt-2 text-sm leading-6 text-neutral-600">
+                      {repo.description}
+                    </p>
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    {formatDate(repo.updatedAt, locale)}
+                  </p>
+                </div>
+                {repo.tech.length > 0 ? (
+                  <div className="mt-4">
+                    <ChipList items={repo.tech} />
+                  </div>
+                ) : null}
+                <p className="mt-4 text-sm leading-6 text-neutral-500">
+                  {repo.whyItStandsOut}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
+                  <a
+                    className="break-all underline decoration-black/20 underline-offset-4"
+                    href={repo.repoUrl}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {dict.common.repoLink}
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       ) : null}
       <p className="mt-4 text-sm leading-6 text-neutral-500">{visibilityNote}</p>

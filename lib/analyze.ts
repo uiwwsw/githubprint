@@ -29,6 +29,18 @@ export type AnalysisResult = {
 
 const ANALYSIS_CACHE_SECONDS = 60 * 15;
 
+function getAnalysisRepos(source: GitHubSourceData) {
+  if (source.signalRepos?.length) {
+    return source.signalRepos;
+  }
+
+  if (source.representativeRepos.length > 0) {
+    return source.representativeRepos;
+  }
+
+  return source.repos.slice(0, 8);
+}
+
 function repoSignalText(repo: GitHubRepoSnapshot, locale: Locale) {
   const parts = [
     `${repo.stars} stars`,
@@ -56,9 +68,10 @@ function repoSignalText(repo: GitHubRepoSnapshot, locale: Locale) {
 }
 
 function detectOrientation(source: GitHubSourceData) {
+  const analysisRepos = getAnalysisRepos(source);
   const text = [
     source.account.bio ?? "",
-    ...source.representativeRepos.flatMap((repo) => [
+    ...analysisRepos.flatMap((repo) => [
       repo.name,
       repo.description ?? "",
       repo.topics.join(" "),
@@ -126,8 +139,9 @@ function buildHeadline(source: GitHubSourceData, locale: Locale) {
 }
 
 function buildWorkingStyle(source: GitHubSourceData, locale: Locale) {
-  const hasDemos = source.representativeRepos.some((repo) => repo.homepageUrl);
-  const strongDocs = source.representativeRepos.some(
+  const analysisRepos = getAnalysisRepos(source);
+  const hasDemos = analysisRepos.some((repo) => repo.homepageUrl);
+  const strongDocs = analysisRepos.some(
     (repo) => repo.readme && repo.readme.length > 700,
   );
   const recentSignals = source.activity.recentRepoCount >= 3;
@@ -160,6 +174,7 @@ function buildWorkingStyle(source: GitHubSourceData, locale: Locale) {
 }
 
 function buildStrengths(source: GitHubSourceData, locale: Locale) {
+  const analysisRepos = getAnalysisRepos(source);
   const strengths = new Set<string>();
   const primaryLanguage = source.topLanguages[0]?.name;
 
@@ -170,7 +185,7 @@ function buildStrengths(source: GitHubSourceData, locale: Locale) {
         : `Implementation experience around ${primaryLanguage} appears consistently across repositories.`,
     );
   }
-  if (source.representativeRepos.some((repo) => repo.homepageUrl)) {
+  if (analysisRepos.some((repo) => repo.homepageUrl)) {
     strengths.add(
       locale === "ko"
         ? "실행해 볼 수 있는 결과물이나 데모 링크가 있는 프로젝트가 있습니다."
@@ -178,7 +193,7 @@ function buildStrengths(source: GitHubSourceData, locale: Locale) {
     );
   }
   if (
-    source.representativeRepos.filter((repo) => repo.readme && repo.readme.length > 400)
+    analysisRepos.filter((repo) => repo.readme && repo.readme.length > 400)
       .length >= 2
   ) {
     strengths.add(
@@ -194,7 +209,7 @@ function buildStrengths(source: GitHubSourceData, locale: Locale) {
         : "Recent repository updates suggest a continued working rhythm rather than one-off activity.",
     );
   }
-  if (source.representativeRepos.some((repo) => repo.stars >= 10 || repo.isPinned)) {
+  if (analysisRepos.some((repo) => repo.stars >= 10 || repo.isPinned)) {
     strengths.add(
       locale === "ko"
         ? "대표작 후보가 비교적 선명해 포트폴리오 메시지를 빠르게 전달하기 좋습니다."
@@ -275,9 +290,11 @@ function buildBestFitRoles(source: GitHubSourceData, locale: Locale) {
 }
 
 function buildSummary(source: GitHubSourceData, locale: Locale) {
+  const showcaseRepos =
+    source.representativeRepos.length > 0 ? source.representativeRepos : getAnalysisRepos(source);
   const name = source.account.name ?? source.account.username;
   const topLanguages = source.topLanguages.slice(0, 3).map((item) => item.name);
-  const projects = source.representativeRepos.slice(0, 2).map((repo) => repo.name);
+  const projects = showcaseRepos.slice(0, 2).map((repo) => repo.name);
   const isPrivateEnriched = source.dataMode === "private_enriched";
 
   if (locale === "ko") {
@@ -309,7 +326,32 @@ function buildFallbackAnalysis(
 }
 
 function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
-  const stackSummary = source.stackSummary ?? summarizeRepoStack(source.representativeRepos);
+  const analysisRepos = getAnalysisRepos(source);
+  const stackSummary = source.stackSummary ?? summarizeRepoStack(analysisRepos);
+  const privateInsights = source.authorizedPrivateInsights
+    ? {
+        authorizedRepoCount: source.authorizedPrivateInsights.authorizedRepoCount,
+        automatedPrivateRepoCount:
+          source.authorizedPrivateInsights.automatedPrivateRepoCount,
+        documentedPrivateRepoCount:
+          source.authorizedPrivateInsights.documentedPrivateRepoCount,
+        hiddenRepresentativeCount:
+          source.authorizedPrivateInsights.hiddenRepresentativeCount,
+        privateOnlyStack: source.authorizedPrivateInsights.privateOnlyStack,
+        privateRepoCount: source.authorizedPrivateInsights.privateRepoCount,
+        privateShowcaseRepos:
+          source.privateExposureMode === "include"
+            ? source.authorizedPrivateInsights.privateShowcaseRepos
+            : [],
+        recentPrivateRepoCount:
+          source.authorizedPrivateInsights.recentPrivateRepoCount,
+        topPrivateDomains: source.authorizedPrivateInsights.topPrivateDomains,
+        topPrivateStack: source.authorizedPrivateInsights.topPrivateStack,
+        topPrivateSurfaces: source.authorizedPrivateInsights.topPrivateSurfaces,
+        verifiedPrivateRepoCount:
+          source.authorizedPrivateInsights.verifiedPrivateRepoCount,
+      }
+    : null;
 
   return {
     account: {
@@ -317,7 +359,42 @@ function getAnalysisPayload(source: GitHubSourceData, locale: Locale) {
       name: source.account.name ?? source.account.username,
     },
     activity: source.activity,
+    privateInsights,
+    privateExposureMode: source.privateExposureMode,
     pinnedRepoNames: source.pinnedRepoNames,
+    signalProjects: analysisRepos.map((repo) => ({
+      description:
+        source.dataMode === "private_enriched" &&
+        source.privateExposureMode !== "include" &&
+        repo.visibility === "private"
+          ? null
+          : repo.description,
+      identity: repo.identity
+        ? {
+            confidence: repo.identity.confidence,
+            domains: repo.identity.domains,
+            frameworks: repo.identity.frameworks,
+            languages: repo.identity.languages,
+            surfaces: repo.identity.surfaces,
+          }
+        : null,
+      isPinned: repo.isPinned,
+      language: repo.language,
+      name:
+        source.dataMode === "private_enriched" &&
+        source.privateExposureMode !== "include" &&
+        repo.visibility === "private"
+          ? "authorized-private-repo"
+          : repo.name,
+      readmePreview:
+        source.dataMode === "private_enriched" &&
+        source.privateExposureMode !== "include" &&
+        repo.visibility === "private"
+          ? null
+          : repo.readme,
+      updatedAt: repo.updatedAt,
+      visibility: repo.visibility,
+    })),
     representativeProjects: source.representativeRepos.map((repo) => ({
       commitMessages: repo.recentCommitMessages,
       name: repo.name,
@@ -405,6 +482,15 @@ async function analyzeGitHubSourceInternal(
                   : source.dataMode === "private_enriched"
                     ? "Do not assert tenure, leadership, collaboration quality, or business impact unless there is GitHub evidence."
                     : "Do not assert tenure, leadership, collaboration quality, or business impact unless there is public evidence.",
+                source.dataMode === "private_enriched"
+                  ? locale === "ko"
+                    ? source.privateExposureMode === "include"
+                      ? "privateExposureMode가 include일 때만 승인된 비공개 저장소 이름이나 설명을 프로젝트와 근거에 직접 쓸 수 있다."
+                      : "privateExposureMode가 aggregate이면 비공개 저장소 이름, 링크, 설명을 결과에 직접 쓰지 말고 집계형 차이만 요약하라."
+                    : source.privateExposureMode === "include"
+                      ? "Only when privateExposureMode is include may you directly mention names or descriptions from authorized private repositories."
+                      : "When privateExposureMode is aggregate, do not directly expose private-repository names, links, or descriptions; summarize only the aggregate differences."
+                  : null,
                 locale === "ko"
                   ? "추론은 가능하지만 해석이나 추정의 어조를 유지하라."
                   : "Inference is allowed, but keep the wording interpretive and careful rather than absolute.",
@@ -425,6 +511,9 @@ async function analyzeGitHubSourceInternal(
                   : source.dataMode === "private_enriched"
                     ? "Select three to five representative projects and write evidence items around specific GitHub signals."
                     : "Select three to five representative projects and write evidence items around specific public signals.",
+                locale === "ko"
+                  ? "representativeProjects는 문서에 직접 보여줄 쇼케이스 저장소이고, signalProjects는 반복 패턴을 읽기 위한 보조 신호 저장소다."
+                  : "Use representativeProjects as showcase repositories for the document, and use signalProjects as supporting repositories for recurring-pattern inference.",
                 locale === "ko"
                   ? "문장 톤은 차분하고 읽기 쉬운 전달 문서 스타일로 유지하라."
                   : "Keep the tone calm, readable, and appropriate for a shareable document.",

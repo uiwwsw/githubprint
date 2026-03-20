@@ -2,6 +2,7 @@ import "server-only";
 
 import { existsSync, readFileSync } from "fs";
 import benchmarkCohortsJson from "@/data/benchmarks/cohorts.json";
+import repoIdentityPresentationRulesJson from "@/data/repo-identity/presentation-rules.json";
 import repoIdentityRulesJson from "@/data/repo-identity/rules.json";
 import commitSignals from "@/data/signals/commits.json";
 import fileSignals from "@/data/signals/files.json";
@@ -21,7 +22,10 @@ import {
   profileEngineConfigSchema,
   type LocalizedText,
 } from "@/lib/schemas/rule-config";
-import { repoIdentityRuleSetSchema } from "@/lib/schemas/repo-identity";
+import {
+  repoIdentityPresentationRuleSetSchema,
+  repoIdentityRuleSetSchema,
+} from "@/lib/schemas/repo-identity";
 
 export const profileEngineConfig = profileEngineConfigSchema.parse({
   signals: {
@@ -44,6 +48,11 @@ export const profileEngineConfig = profileEngineConfigSchema.parse({
 export const repoIdentityRules = repoIdentityRuleSetSchema.parse(
   repoIdentityRulesJson,
 );
+
+export const repoIdentityPresentationRules =
+  repoIdentityPresentationRuleSetSchema.parse(
+    repoIdentityPresentationRulesJson,
+  );
 
 function loadBenchmarkCohorts() {
   const overridePath = readEnv(

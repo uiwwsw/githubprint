@@ -7,12 +7,16 @@ import { mockGitHubProfile } from "@/fixtures/mock-profile";
 import { PRODUCT_NAME, PRODUCT_SLUG, LEGACY_PRODUCT_SLUG } from "@/lib/brand";
 import { readEnv } from "@/lib/env";
 import {
+  buildRepoDisplayLanguages,
+  buildRepoTechStack,
   inferRepoIdentity,
+  normalizeRepoDisplayLabel,
   summarizeRepoStack,
   type RepoIdentity,
   type RepoStackSummary,
 } from "@/lib/repo-identity";
 import type {
+  AuthorizedPrivateRepoHighlight,
   AuthorizedPrivateInsights,
   ContributionSummary,
   DataMode,
@@ -183,6 +187,7 @@ export type GitHubSourceData = {
   privateExposureMode: PrivateExposureMode;
   representativeRepos: GitHubRepoSnapshot[];
   repos: GitHubRepoSnapshot[];
+  signalRepos?: GitHubRepoSnapshot[];
   stackSummary?: RepoStackSummary;
   topLanguages: Array<{
     name: string;
@@ -220,9 +225,13 @@ export type GitHubSourceAuthContext = {
 
 const GITHUB_API_BASE = "https://api.github.com";
 const CACHE_WINDOW_SECONDS = 60 * 15;
+const MAX_GITHUB_PAGINATION_PAGES = 20;
 const README_CANDIDATE_LIMIT = 8;
+const PRIVATE_README_CANDIDATE_LIMIT = 12;
 const LIGHT_MODE_README_CANDIDATE_LIMIT = 3;
 const REPRESENTATIVE_REPO_LIMIT = 5;
+const PRIVATE_SHOWCASE_LIMIT = 2;
+const SIGNAL_REPO_LIMIT = 12;
 const LIGHT_MODE_REPRESENTATIVE_DETAIL_LIMIT = 2;
 const ROOT_MANIFEST_FILE_NAMES = [
   "package.json",
@@ -296,10 +305,12 @@ function isLightGitHubMode() {
   return isLocalDevelopment() && !readEnv("GITHUB_TOKEN");
 }
 
-function getReadmeCandidateLimit() {
+function getReadmeCandidateLimit(usePrivateRepoScope = false) {
   return isLightGitHubMode()
     ? LIGHT_MODE_README_CANDIDATE_LIMIT
-    : README_CANDIDATE_LIMIT;
+    : usePrivateRepoScope
+      ? PRIVATE_README_CANDIDATE_LIMIT
+      : README_CANDIDATE_LIMIT;
 }
 
 function getRepresentativeDetailLimit() {
@@ -445,6 +456,70 @@ async function githubJson<T>(
 ) {
   const response = await githubRequest(path, options);
   return (await response.json()) as T;
+}
+
+function getNextGitHubPagePath(linkHeader: string | null) {
+  if (!linkHeader) {
+    return null;
+  }
+
+  const nextPart = linkHeader
+    .split(",")
+    .map((part) => part.trim())
+    .find((part) => part.includes('rel="next"'));
+
+  if (!nextPart) {
+    return null;
+  }
+
+  const match = nextPart.match(/<([^>]+)>/);
+  if (!match?.[1]) {
+    return null;
+  }
+
+  try {
+    const url = new URL(match[1]);
+    if (url.origin !== GITHUB_API_BASE) {
+      return null;
+    }
+
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return null;
+  }
+}
+
+async function githubJsonPaginated<T>(
+  path: string,
+  options?: {
+    accept?: string;
+    accessToken?: string;
+    disableCache?: boolean;
+    forceFresh?: boolean;
+    init?: RequestInit;
+  },
+) {
+  const items: T[] = [];
+  let nextPath: string | null = path;
+  let pageCount = 0;
+
+  while (nextPath && pageCount < MAX_GITHUB_PAGINATION_PAGES) {
+    const response = await githubRequest(nextPath, options);
+    const pageItems = (await response.json()) as T[];
+
+    if (!Array.isArray(pageItems)) {
+      throw new GitHubFetchError(
+        "api_error",
+        "GitHub pagination response was not an array.",
+      );
+    }
+
+    items.push(...pageItems);
+    nextPath = getNextGitHubPagePath(response.headers.get("link"));
+    pageCount += 1;
+  }
+
+  return items;
 }
 
 async function fetchPinnedRepos(
@@ -748,15 +823,33 @@ function buildTechSignals(repo: {
   topics: string[];
 }) {
   const signals = new Set<string>();
+  const addSignal = (label: string) =>
+    signals.add(
+      normalizeRepoDisplayLabel(
+        {
+          description: repo.description,
+          githubLanguage: repo.language,
+          identity: repo.identity,
+          manifestContents: repo.manifestContents,
+          name: "",
+          readme: repo.readme,
+          recentCommitMessages: [],
+          rootFiles: repo.rootFiles ?? [],
+          topics: repo.topics,
+        },
+        label,
+        repo.identity,
+      ),
+    );
 
   if (repo.language) {
-    signals.add(repo.language);
+    addSignal(repo.language);
   }
 
-  repo.topics.slice(0, 5).forEach((topic) => signals.add(topic));
+  repo.topics.slice(0, 5).forEach((topic) => addSignal(topic));
 
-  repo.identity?.frameworks.forEach((item) => signals.add(item.label));
-  repo.identity?.domains.forEach((item) => signals.add(item.label));
+  repo.identity?.frameworks.forEach((item) => addSignal(item.label));
+  repo.identity?.domains.forEach((item) => addSignal(item.label));
 
   (repo.manifestContents ?? []).forEach((content) => {
     const normalized = content.toLowerCase();
@@ -771,7 +864,7 @@ function buildTechSignals(repo: {
       ["clap", "clap"],
     ].forEach(([keyword, label]) => {
       if (normalized.includes(keyword)) {
-        signals.add(label);
+        addSignal(label);
       }
     });
   });
@@ -781,7 +874,7 @@ function buildTechSignals(repo: {
     ["next.js", "react", "typescript", "tailwind", "node", "docker"].forEach(
       (keyword) => {
         if (lowercaseReadme.includes(keyword)) {
-          signals.add(keyword);
+          addSignal(keyword);
         }
       },
     );
@@ -790,16 +883,16 @@ function buildTechSignals(repo: {
   (repo.rootFiles ?? []).forEach((file) => {
     const normalized = file.toLowerCase();
     if (normalized.includes("next.config")) {
-      signals.add("Next.js");
+      addSignal("Next.js");
     }
     if (normalized.includes("tailwind.config")) {
-      signals.add("Tailwind CSS");
+      addSignal("Tailwind CSS");
     }
     if (normalized === "dockerfile" || normalized.includes("docker-compose")) {
-      signals.add("Docker");
+      addSignal("Docker");
     }
     if (normalized.includes("playwright")) {
-      signals.add("Playwright");
+      addSignal("Playwright");
     }
   });
 
@@ -813,7 +906,7 @@ function buildTechSignals(repo: {
     ]);
     descriptionKeywords.forEach((label, keyword) => {
       if (lowercaseDescription.includes(keyword)) {
-        signals.add(label);
+        addSignal(label);
       }
     });
   }
@@ -821,19 +914,239 @@ function buildTechSignals(repo: {
   return [...signals].slice(0, 6);
 }
 
-function scoreRepo(repo: GitHubRepoSnapshot) {
+function normalizedRepoText(repo: GitHubRepoSnapshot) {
+  return [
+    repo.description ?? "",
+    repo.readme ?? "",
+    repo.topics.join(" "),
+    repo.rootFiles.join(" "),
+    repo.recentCommitMessages.join(" "),
+    (repo.manifestContents ?? []).join(" "),
+    repo.techSignals.join(" "),
+  ]
+    .join("\n")
+    .toLowerCase();
+}
+
+function hasDocumentationSignal(repo: GitHubRepoSnapshot) {
+  return (
+    (repo.readme?.length ?? 0) >= 250 ||
+    repo.rootFiles.some((file) => file.toLowerCase() === "docs") ||
+    repo.topics.some((topic) => {
+      const normalized = topic.toLowerCase();
+      return normalized === "docs" || normalized === "documentation";
+    }) ||
+    repo.identity?.surfaces.some((item) => item.label === "docs") === true
+  );
+}
+
+function hasVerificationSignal(repo: GitHubRepoSnapshot) {
+  const text = normalizedRepoText(repo);
+  return (
+    repo.rootFiles.some((file) =>
+      /playwright|vitest|jest|cypress|pytest|spec|test/i.test(file),
+    ) ||
+    repo.techSignals.some((signal) =>
+      ["Playwright", "Vitest", "Jest", "Cypress", "pytest"].includes(signal),
+    ) ||
+    /(^|[^a-z])(test|tests|testing|e2e|vitest|jest|playwright|cypress|pytest|coverage)(?=$|[^a-z])/i.test(
+      text,
+    )
+  );
+}
+
+function hasAutomationSignal(repo: GitHubRepoSnapshot) {
+  const text = normalizedRepoText(repo);
+  return (
+    repo.rootFiles.some((file) => file === ".github") ||
+    repo.identity?.domains.some((item) => item.label === "Automation") === true ||
+    /(^|[^a-z])(workflow|workflows|deploy|deployment|ci|cd|actions)(?=$|[^a-z])/i.test(
+      text,
+    )
+  );
+}
+
+function repoIdentitySignalScore(repo: GitHubRepoSnapshot) {
+  const identity = repo.identity;
+  if (!identity) {
+    return 0;
+  }
+
+  return (
+    identity.confidence * 16 +
+    Math.min(identity.frameworks.length * 1.8, 5.4) +
+    Math.min(identity.domains.length * 1.4, 2.8) +
+    Math.min(identity.surfaces.length * 1.7, 3.4)
+  );
+}
+
+function scoreReadmeCandidate(repo: GitHubRepoSnapshot) {
+  return (
+    recencyScore(repo.updatedAt) +
+    (repo.description ? 8 : 0) +
+    Math.min(repo.topics.length * 1.4, 7) +
+    (repo.language ? 3 : 0) +
+    Math.min(repo.size / 500, 4) +
+    (repo.visibility === "private" ? 4 : 0) +
+    (repo.isFork ? -8 : 0) +
+    (repo.archived ? -20 : 0)
+  );
+}
+
+function scorePrivateShowcaseRepo(repo: GitHubRepoSnapshot) {
+  return (
+    recencyScore(repo.updatedAt) * 1.1 +
+    readmeScore(repo.readme) * 1.3 +
+    repoIdentitySignalScore(repo) +
+    (repo.description ? 8 : 0) +
+    Math.min(repo.topics.length * 1.4, 7) +
+    (repo.homepageUrl ? 3 : 0) +
+    (repo.rootFiles.length > 0 ? 4 : 0) +
+    (repo.recentCommitMessages.length > 0 ? 2 : 0) +
+    (repo.isFork ? -10 : 0) +
+    (repo.archived ? -20 : 0)
+  );
+}
+
+function scoreRepo(repo: GitHubRepoSnapshot, dataMode: DataMode) {
+  const privateContextBoost =
+    dataMode === "private_enriched" && repo.visibility === "private"
+      ? 10 +
+        (repo.readme ? 4 : 0) +
+        Math.min(repo.topics.length * 0.7, 3.5) +
+        (repo.description ? 2 : 0)
+      : 0;
+
   return (
     Math.min(repo.stars * 3, 30) +
     recencyScore(repo.updatedAt) +
     readmeScore(repo.readme) +
+    repoIdentitySignalScore(repo) +
     (repo.isPinned ? 18 : 0) +
     (repo.description ? 8 : 0) +
     (repo.homepageUrl ? 4 : 0) +
     Math.min(repo.topics.length * 1.2, 6) +
     (repo.language ? 3 : 0) +
+    privateContextBoost +
     (repo.isFork ? -12 : 0) +
     (repo.archived ? -20 : 0)
   );
+}
+
+function sortByUpdatedAtDesc(
+  left: Pick<GitHubRepoSnapshot, "score" | "updatedAt">,
+  right: Pick<GitHubRepoSnapshot, "score" | "updatedAt">,
+) {
+  return (
+    new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime() ||
+    right.score - left.score
+  );
+}
+
+function dedupeRepos(
+  groups: GitHubRepoSnapshot[][],
+  limit: number,
+) {
+  const pool = new Map<string, GitHubRepoSnapshot>();
+
+  groups.forEach((group) => {
+    group.forEach((repo) => {
+      if (!pool.has(repo.name.toLowerCase())) {
+        pool.set(repo.name.toLowerCase(), repo);
+      }
+    });
+  });
+
+  return [...pool.values()].slice(0, limit);
+}
+
+function scoreRecentShowcaseRepo(repo: GitHubRepoSnapshot) {
+  return (
+    recencyScore(repo.updatedAt) * 1.7 +
+    readmeScore(repo.readme) +
+    repoIdentitySignalScore(repo) +
+    (repo.description ? 6 : 0) +
+    Math.min(repo.topics.length * 1.2, 5) +
+    (repo.homepageUrl ? 2 : 0) +
+    (repo.rootFiles.length > 0 ? 3 : 0) +
+    (repo.recentCommitMessages.length > 0 ? 2 : 0) +
+    (repo.isFork ? -10 : 0) +
+    (repo.archived ? -20 : 0)
+  );
+}
+
+function buildSignalRepoPool(
+  repos: GitHubRepoSnapshot[],
+  pinnedRepos: Array<{ name: string }>,
+  dataMode: DataMode,
+) {
+  const allowedRepos = repos.filter(
+    (repo) => !repo.archived && (dataMode === "private_enriched" || repo.visibility === "public"),
+  );
+  const allowedRepoMap = new Map(
+    allowedRepos.map((repo) => [repo.name.toLowerCase(), repo] as const),
+  );
+  const pinnedCandidates = pinnedRepos
+    .map((repo) => allowedRepoMap.get(repo.name.toLowerCase()))
+    .filter((repo): repo is GitHubRepoSnapshot => Boolean(repo));
+  const topScored = [...allowedRepos]
+    .sort((left, right) => right.score - left.score)
+    .slice(0, SIGNAL_REPO_LIMIT);
+  const recent = [...allowedRepos]
+    .sort(sortByUpdatedAtDesc)
+    .slice(0, SIGNAL_REPO_LIMIT);
+  const documented = [...allowedRepos]
+    .filter((repo) => repo.readme || repo.description || repo.topics.length > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, SIGNAL_REPO_LIMIT);
+
+  return dedupeRepos(
+    [pinnedCandidates, topScored, recent, documented],
+    SIGNAL_REPO_LIMIT,
+  );
+}
+
+function buildPublicShowcaseRepos(
+  repos: GitHubRepoSnapshot[],
+  pinnedRepos: Array<{ name: string }>,
+) {
+  const publicRepos = repos.filter(
+    (repo) => !repo.archived && repo.visibility === "public",
+  );
+  const publicRepoMap = new Map(
+    publicRepos.map((repo) => [repo.name.toLowerCase(), repo] as const),
+  );
+  const pinnedCandidates = pinnedRepos
+    .map((repo) => publicRepoMap.get(repo.name.toLowerCase()))
+    .filter((repo): repo is GitHubRepoSnapshot => Boolean(repo));
+  const fallback = publicRepos
+    .filter((repo) => !repo.isPinned)
+    .sort((left, right) => right.score - left.score || sortByUpdatedAtDesc(left, right))
+    .slice(0, REPRESENTATIVE_REPO_LIMIT);
+
+  return dedupeRepos(
+    [pinnedCandidates, fallback],
+    REPRESENTATIVE_REPO_LIMIT,
+  );
+}
+
+function buildRecentShowcaseRepos(
+  repos: GitHubRepoSnapshot[],
+  privateExposureMode: PrivateExposureMode,
+) {
+  const allowedRepos = repos.filter(
+    (repo) =>
+      !repo.archived &&
+      (privateExposureMode === "include" || repo.visibility === "public"),
+  );
+
+  return [...allowedRepos]
+    .sort(
+      (left, right) =>
+        scoreRecentShowcaseRepo(right) - scoreRecentShowcaseRepo(left) ||
+        sortByUpdatedAtDesc(left, right),
+    )
+    .slice(0, REPRESENTATIVE_REPO_LIMIT);
 }
 
 function formatActivityNote(
@@ -872,9 +1185,12 @@ function formatActivityNote(
     : "Recent public activity is older, so current working patterns are only partially visible.";
 }
 
-function getRepoPoolForReadmes(repos: GitHubRepoSnapshot[]) {
+function getRepoPoolForReadmes(
+  repos: GitHubRepoSnapshot[],
+  usePrivateRepoScope = false,
+) {
   const pool = new Map<string, GitHubRepoSnapshot>();
-  const candidateLimit = getReadmeCandidateLimit();
+  const candidateLimit = getReadmeCandidateLimit(usePrivateRepoScope);
 
   repos
     .filter((repo) => !repo.archived)
@@ -884,6 +1200,14 @@ function getRepoPoolForReadmes(repos: GitHubRepoSnapshot[]) {
 
   repos
     .filter((repo) => !repo.archived)
+    .slice(0, candidateLimit)
+    .forEach((repo) => pool.set(repo.name, repo));
+
+  repos
+    .filter((repo) => !repo.archived)
+    .sort(
+      (left, right) => scoreReadmeCandidate(right) - scoreReadmeCandidate(left),
+    )
     .slice(0, candidateLimit)
     .forEach((repo) => pool.set(repo.name, repo));
 
@@ -900,12 +1224,17 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
   repos
     .filter((repo) => !repo.archived)
     .forEach((repo) => {
-      const rankedLanguages =
-        repo.identity?.languages.length
-          ? repo.identity.languages
-          : repo.language
-            ? [{ label: repo.language, score: 1 }]
-            : [];
+      const rankedLanguages = buildRepoDisplayLanguages({
+        description: repo.description,
+        githubLanguage: repo.language,
+        identity: repo.identity,
+        manifestContents: repo.manifestContents,
+        name: repo.name,
+        readme: repo.readme,
+        recentCommitMessages: repo.recentCommitMessages,
+        rootFiles: repo.rootFiles,
+        topics: repo.topics,
+      });
 
       rankedLanguages.slice(0, 2).forEach((language, index) => {
         const existing = languageMap.get(language.label) ?? { repoCount: 0, score: 0 };
@@ -925,30 +1254,194 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
     .slice(0, 6);
 }
 
+function rankIdentityLabels(
+  repos: GitHubRepoSnapshot[],
+  pick: (repo: GitHubRepoSnapshot) => Array<{ label: string; score: number }>,
+  limit: number,
+) {
+  const scores = new Map<string, number>();
+
+  repos
+    .filter((repo) => !repo.archived)
+    .forEach((repo) => {
+      const weight =
+        1 +
+        Math.min(repo.score, 100) * 0.004 +
+        (repo.readme ? 0.18 : 0) +
+        (repo.visibility === "private" ? 0.08 : 0);
+
+      pick(repo)
+        .slice(0, 2)
+        .forEach((entry, index) => {
+          scores.set(
+            entry.label,
+            (scores.get(entry.label) ?? 0) +
+              entry.score * weight * (index === 0 ? 1 : 0.8),
+          );
+        });
+    });
+
+  return [...scores.entries()]
+    .map(([label, score]) => ({ label, score }))
+    .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label))
+    .slice(0, limit)
+    .map((item) => item.label);
+}
+
+function formatPrivateSurfaceLabel(label: string, locale: Locale) {
+  if (locale === "ko") {
+    if (label === "frontend") return "프론트엔드";
+    if (label === "backend") return "백엔드";
+    if (label === "mobile") return "모바일";
+    if (label === "devtools") return "개발툴";
+    if (label === "docs") return "문서";
+  }
+
+  if (label === "devtools") {
+    return locale === "ko" ? "개발툴" : "developer tooling";
+  }
+  if (label === "docs") {
+    return locale === "ko" ? "문서" : "documentation";
+  }
+  if (label === "Automation") {
+    return locale === "ko" ? "자동화" : "automation";
+  }
+
+  return label;
+}
+
+function buildPrivateShowcaseReason(
+  repo: GitHubRepoSnapshot,
+  locale: Locale,
+) {
+  const signals: string[] = [];
+  const topFramework = repo.identity?.frameworks[0]?.label;
+  const topSurface = repo.identity?.surfaces[0]?.label;
+
+  if (topFramework) {
+    signals.push(
+      locale === "ko"
+        ? `${topFramework} 중심 신호가 비교적 선명합니다.`
+        : `${topFramework} signals are comparatively clear.`,
+    );
+  }
+  if (topSurface) {
+    signals.push(
+      locale === "ko"
+        ? `${formatPrivateSurfaceLabel(topSurface, locale)} 성격이 드러납니다.`
+        : `It reads clearly as ${formatPrivateSurfaceLabel(topSurface, locale)} work.`,
+    );
+  }
+  if (hasVerificationSignal(repo)) {
+    signals.push(
+      locale === "ko"
+        ? "테스트나 검증 흔적이 보입니다."
+        : "Testing or verification traces are visible.",
+    );
+  }
+  if (hasAutomationSignal(repo)) {
+    signals.push(
+      locale === "ko"
+        ? "자동화나 배포 관련 단서가 보입니다."
+        : "Automation or deployment clues are visible.",
+    );
+  }
+  if (hasDocumentationSignal(repo)) {
+    signals.push(
+      locale === "ko"
+        ? "README나 문서 흔적이 비교적 남아 있습니다."
+        : "README or documentation traces are relatively visible.",
+    );
+  }
+
+  if (signals.length === 0) {
+    return locale === "ko"
+      ? "최근 작업 흐름과 저장소 구조를 기준으로 private 쪽에서 의미 있는 후보로 읽힙니다."
+      : "Recent activity and repository structure make this a meaningful private-side highlight.";
+  }
+
+  return signals.slice(0, 2).join(" ");
+}
+
+function buildPrivateShowcaseRepos(
+  privateRepos: GitHubRepoSnapshot[],
+  locale: Locale,
+) {
+  return privateRepos
+    .filter((repo) => !repo.archived)
+    .sort(
+      (left, right) =>
+        scorePrivateShowcaseRepo(right) - scorePrivateShowcaseRepo(left),
+    )
+    .slice(0, PRIVATE_SHOWCASE_LIMIT)
+    .map((repo) => ({
+      description:
+        repo.description ??
+        (locale === "ko"
+          ? "설명이 짧아 기술 스택과 구조 단서 중심으로 해석했습니다."
+          : "The description is limited, so this reading relies mostly on stack and structural clues."),
+      name: repo.name,
+      repoUrl: repo.repoUrl,
+      tech: buildRepoTechStack({
+        description: repo.description,
+        githubLanguage: repo.language,
+        identity: repo.identity,
+        manifestContents: repo.manifestContents,
+        name: repo.name,
+        readme: repo.readme,
+        recentCommitMessages: repo.recentCommitMessages,
+        rootFiles: repo.rootFiles,
+        topics: repo.topics,
+      }).slice(0, 4),
+      updatedAt: repo.updatedAt,
+      whyItStandsOut: buildPrivateShowcaseReason(repo, locale),
+    }) satisfies AuthorizedPrivateRepoHighlight);
+}
+
 function buildAuthorizedPrivateInsights(
   repos: GitHubRepoSnapshot[],
   hiddenRepresentativeCount: number,
+  locale: Locale,
 ) {
   const privateRepos = repos.filter((repo) => repo.visibility === "private");
   if (privateRepos.length === 0) {
     return null;
   }
 
+  const publicRepos = repos.filter((repo) => repo.visibility === "public");
   const privateStackSummary = summarizeRepoStack(privateRepos);
+  const publicStackSummary =
+    publicRepos.length > 0 ? summarizeRepoStack(publicRepos) : null;
+  const publicStackSet = new Set(
+    (publicStackSummary?.coreStack ?? []).map((item) => item.toLowerCase()),
+  );
 
   return {
     authorizedRepoCount: repos.length,
+    automatedPrivateRepoCount: privateRepos.filter(hasAutomationSignal).length,
+    documentedPrivateRepoCount: privateRepos.filter(hasDocumentationSignal).length,
     hiddenRepresentativeCount,
     privateRepoCount: privateRepos.length,
+    privateOnlyStack: privateStackSummary.coreStack
+      .filter((item) => !publicStackSet.has(item.toLowerCase()))
+      .slice(0, 4),
+    privateShowcaseRepos: buildPrivateShowcaseRepos(privateRepos, locale),
     recentPrivateRepoCount: privateRepos.filter(
       (repo) => recencyScore(repo.updatedAt) >= 8,
     ).length,
+    topPrivateDomains: rankIdentityLabels(
+      privateRepos,
+      (repo) => repo.identity?.domains ?? [],
+      3,
+    ),
     topPrivateStack:
       privateStackSummary.coreStack.length > 0
         ? privateStackSummary.coreStack.slice(0, 4)
         : buildTopLanguages(privateRepos)
             .map((item) => item.name)
             .slice(0, 4),
+    topPrivateSurfaces: privateStackSummary.topSurfaces.slice(0, 3),
+    verifiedPrivateRepoCount: privateRepos.filter(hasVerificationSignal).length,
   } satisfies AuthorizedPrivateInsights;
 }
 
@@ -994,6 +1487,50 @@ function buildEvidenceSignals(
         : locale === "ko"
           ? `승인된 비공개 저장소 ${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)}개를 분석에 반영했지만, 기본 공유 모드에서는 상세를 숨깁니다.`
           : `${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)} authorized private repositories inform the analysis, while details stay hidden in the default sharing mode.`,
+    );
+  }
+
+  if (
+    source.dataMode === "private_enriched" &&
+    source.authorizedPrivateInsights?.privateOnlyStack.length
+  ) {
+    signals.push(
+      locale === "ko"
+        ? `비공개 저장소를 함께 보면 공개 결과에 덜 드러나던 ${source.authorizedPrivateInsights.privateOnlyStack
+            .slice(0, 3)
+            .join(", ")} 같은 스택이 추가로 보입니다.`
+        : `Including private repositories reveals additional stack signals such as ${source.authorizedPrivateInsights.privateOnlyStack
+            .slice(0, 3)
+            .join(", ")} that are less visible in public work.`,
+    );
+  } else if (
+    source.dataMode === "private_enriched" &&
+    source.authorizedPrivateInsights?.topPrivateSurfaces.length
+  ) {
+    signals.push(
+      locale === "ko"
+        ? `비공개 쪽에서는 ${source.authorizedPrivateInsights.topPrivateSurfaces
+            .slice(0, 2)
+            .map((item) => formatPrivateSurfaceLabel(item, locale))
+            .join(", ")} 성격이 조금 더 선명하게 드러납니다.`
+        : `Private work makes ${source.authorizedPrivateInsights.topPrivateSurfaces
+            .slice(0, 2)
+            .map((item) => formatPrivateSurfaceLabel(item, locale))
+            .join(", ")} surfaces a bit clearer.`,
+    );
+  }
+
+  if (
+    source.dataMode === "private_enriched" &&
+    source.authorizedPrivateInsights &&
+    (source.authorizedPrivateInsights.documentedPrivateRepoCount > 0 ||
+      source.authorizedPrivateInsights.verifiedPrivateRepoCount > 0 ||
+      source.authorizedPrivateInsights.automatedPrivateRepoCount > 0)
+  ) {
+    signals.push(
+      locale === "ko"
+        ? `비공개 저장소 기준으로 문서 흔적 ${formatLocaleNumber(source.authorizedPrivateInsights.documentedPrivateRepoCount, locale)}개, 검증 흔적 ${formatLocaleNumber(source.authorizedPrivateInsights.verifiedPrivateRepoCount, locale)}개, 자동화 흔적 ${formatLocaleNumber(source.authorizedPrivateInsights.automatedPrivateRepoCount, locale)}개가 보수적으로 확인됩니다.`
+        : `Across private repositories, ${formatLocaleNumber(source.authorizedPrivateInsights.documentedPrivateRepoCount, locale)} show documentation traces, ${formatLocaleNumber(source.authorizedPrivateInsights.verifiedPrivateRepoCount, locale)} show validation traces, and ${formatLocaleNumber(source.authorizedPrivateInsights.automatedPrivateRepoCount, locale)} show automation traces by conservative reading.`,
     );
   }
 
@@ -1087,7 +1624,10 @@ function buildMockSource(
     cacheKey: `${mockGitHubProfile.cacheKey}::${overrides?.cacheKeySuffix ?? "fixture"}`,
     dataMode: "public",
     privateExposureMode: "aggregate",
-    stackSummary: summarizeRepoStack(mockGitHubProfile.representativeRepos),
+    signalRepos: mockGitHubProfile.repos.slice(0, SIGNAL_REPO_LIMIT),
+    stackSummary: summarizeRepoStack(
+      mockGitHubProfile.repos.slice(0, SIGNAL_REPO_LIMIT),
+    ),
   };
 
   return {
@@ -1155,6 +1695,7 @@ function buildDevelopmentFallbackSource(
     privateExposureMode: "aggregate",
     representativeRepos: [],
     repos: [],
+    signalRepos: [],
     stackSummary: {
       averageConfidence: 0,
       coreStack: [],
@@ -1211,7 +1752,7 @@ async function fetchGitHubSourceInternal(
       );
     }
 
-    const reposResponse = await githubJson<GitHubRepoResponse[]>(
+    const reposResponse = await githubJsonPaginated<GitHubRepoResponse>(
       usePrivateRepoScope
         ? "/user/repos?per_page=100&sort=updated&direction=desc&visibility=all&affiliation=owner"
         : `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`,
@@ -1266,7 +1807,7 @@ async function fetchGitHubSourceInternal(
       visibility: repo.private ? "private" : "public",
     }));
 
-    const readmeTargetRepos = getRepoPoolForReadmes(repos);
+    const readmeTargetRepos = getRepoPoolForReadmes(repos, usePrivateRepoScope);
     const readmes = await Promise.all(
       readmeTargetRepos.map(async (repo) => [
         repo.name,
@@ -1319,93 +1860,116 @@ async function fetchGitHubSourceInternal(
     });
 
     const scoredRepos = reposWithSignals
-      .map((repo) => ({ ...repo, score: scoreRepo(repo) }))
+      .map((repo) => ({ ...repo, score: scoreRepo(repo, dataMode) }))
       .sort((left, right) => right.score - left.score);
 
-    const allRepresentativeRepoCandidates = scoredRepos
-      .filter((repo) => !repo.archived)
-      .slice(0, REPRESENTATIVE_REPO_LIMIT);
+    const privateShowcaseCandidateNames = new Set<string>(
+      dataMode === "private_enriched"
+        ? scoredRepos
+            .filter(
+              (repo) => repo.visibility === "private" && !repo.archived,
+            )
+            .sort(
+              (left, right) =>
+                scorePrivateShowcaseRepo(right) - scorePrivateShowcaseRepo(left),
+            )
+            .slice(0, PRIVATE_SHOWCASE_LIMIT)
+            .map((repo) => repo.name.toLowerCase())
+        : [],
+    );
+
+    const includeShowcaseCandidates =
+      dataMode === "private_enriched"
+        ? buildRecentShowcaseRepos(scoredRepos, "include")
+        : [];
     const hiddenRepresentativeCount =
       dataMode === "private_enriched" && privateExposureMode === "aggregate"
-        ? allRepresentativeRepoCandidates.filter(
+        ? includeShowcaseCandidates.filter(
             (repo) => repo.visibility === "private",
           ).length
         : 0;
-    const representativeRepoCandidates = scoredRepos
-      .filter(
-        (repo) =>
-          !repo.archived &&
-          (privateExposureMode === "include" || repo.visibility === "public"),
-      )
-      .slice(0, REPRESENTATIVE_REPO_LIMIT);
-    const detailTargetNames = new Set(
-      representativeRepoCandidates
+    const representativeRepoCandidates =
+      dataMode === "private_enriched" && privateExposureMode === "include"
+        ? buildRecentShowcaseRepos(scoredRepos, privateExposureMode)
+        : buildPublicShowcaseRepos(scoredRepos, pinnedRepos);
+    const signalRepoCandidates = buildSignalRepoPool(
+      scoredRepos,
+      pinnedRepos,
+      dataMode,
+    );
+    const detailTargetNames = new Set<string>([
+      ...representativeRepoCandidates
         .slice(0, getRepresentativeDetailLimit())
         .map((repo) => repo.name.toLowerCase()),
-    );
-
-    const representativeRepos = await Promise.all(
-      representativeRepoCandidates.map(async (repo) => {
-        if (!detailTargetNames.has(repo.name.toLowerCase())) {
-          return repo;
-        }
-
-        const [rootFiles, recentCommitMessages] = await Promise.all([
-          fetchRepoRootFiles(
+      ...signalRepoCandidates.map((repo) => repo.name.toLowerCase()),
+      ...privateShowcaseCandidateNames,
+    ]);
+    const detailedRepos = await Promise.all(
+      scoredRepos
+        .filter((repo) => detailTargetNames.has(repo.name.toLowerCase()))
+        .map(async (repo) => {
+          const [rootFiles, recentCommitMessages] = await Promise.all([
+            fetchRepoRootFiles(
+              username,
+              repo,
+              forceFresh,
+              authAccessToken,
+              disableCache,
+            ),
+            fetchRepoRecentCommitMessages(
+              username,
+              repo,
+              forceFresh,
+              authAccessToken,
+              disableCache,
+            ),
+          ]);
+          const manifestContents = await fetchRepoManifestContents(
             username,
             repo,
+            rootFiles,
             forceFresh,
             authAccessToken,
             disableCache,
-          ),
-          fetchRepoRecentCommitMessages(
-            username,
-            repo,
-            forceFresh,
-            authAccessToken,
-            disableCache,
-          ),
-        ]);
-        const manifestContents = await fetchRepoManifestContents(
-          username,
-          repo,
-          rootFiles,
-          forceFresh,
-          authAccessToken,
-          disableCache,
-        );
+          );
 
-        const enrichedRepo: GitHubRepoSnapshot = {
-          ...repo,
-          manifestContents,
-          recentCommitMessages,
-          rootFiles,
-        };
+          const enrichedRepo: GitHubRepoSnapshot = {
+            ...repo,
+            manifestContents,
+            recentCommitMessages,
+            rootFiles,
+          };
 
-        const identity = inferRepoIdentity({
-          description: enrichedRepo.description,
-          githubLanguage: enrichedRepo.language,
-          manifestContents: enrichedRepo.manifestContents ?? [],
-          name: enrichedRepo.name,
-          readme: enrichedRepo.readme,
-          recentCommitMessages: enrichedRepo.recentCommitMessages,
-          rootFiles: enrichedRepo.rootFiles,
-          topics: enrichedRepo.topics,
-        });
+          const identity = inferRepoIdentity({
+            description: enrichedRepo.description,
+            githubLanguage: enrichedRepo.language,
+            manifestContents: enrichedRepo.manifestContents ?? [],
+            name: enrichedRepo.name,
+            readme: enrichedRepo.readme,
+            recentCommitMessages: enrichedRepo.recentCommitMessages,
+            rootFiles: enrichedRepo.rootFiles,
+            topics: enrichedRepo.topics,
+          });
 
-        return {
-          ...enrichedRepo,
-          identity,
-          techSignals: buildTechSignals({ ...enrichedRepo, identity }),
-        };
-      }),
+          return {
+            ...enrichedRepo,
+            identity,
+            techSignals: buildTechSignals({ ...enrichedRepo, identity }),
+          };
+        }),
     );
 
-    const representativeRepoMap = new Map(
-      representativeRepos.map((repo) => [repo.name.toLowerCase(), repo] as const),
+    const detailedRepoMap = new Map(
+      detailedRepos.map((repo) => [repo.name.toLowerCase(), repo] as const),
+    );
+    const representativeRepos = representativeRepoCandidates.map(
+      (repo) => detailedRepoMap.get(repo.name.toLowerCase()) ?? repo,
+    );
+    const signalRepos = signalRepoCandidates.map(
+      (repo) => detailedRepoMap.get(repo.name.toLowerCase()) ?? repo,
     );
     const scoredReposWithDetails = scoredRepos.map(
-      (repo) => representativeRepoMap.get(repo.name.toLowerCase()) ?? repo,
+      (repo) => detailedRepoMap.get(repo.name.toLowerCase()) ?? repo,
     );
 
     const lastActiveAt = repos[0]?.updatedAt ?? null;
@@ -1418,6 +1982,7 @@ async function fetchGitHubSourceInternal(
         ? buildAuthorizedPrivateInsights(
             scoredReposWithDetails,
             hiddenRepresentativeCount,
+            locale,
           )
         : null;
 
@@ -1458,6 +2023,7 @@ async function fetchGitHubSourceInternal(
           : "no-contributions",
         lastActiveAt ?? "none",
         representativeRepos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|"),
+        signalRepos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|"),
       ].join("::"),
       dataMode,
       evidenceSignals: [],
@@ -1465,6 +2031,7 @@ async function fetchGitHubSourceInternal(
       privateExposureMode,
       representativeRepos,
       repos: scoredReposWithDetails,
+      signalRepos,
       stackSummary,
       topLanguages,
     };

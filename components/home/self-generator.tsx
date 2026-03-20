@@ -1,27 +1,132 @@
 "use client";
 
-import { startTransition, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getDictionary, getLocalizedResultPath } from "@/lib/i18n";
 import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
+import {
+  parseStoredPrivatePreference,
+  parseStoredTemplatePreference,
+  SELF_GENERATOR_PRIVATE_KEY,
+  SELF_GENERATOR_TEMPLATE_KEY,
+} from "@/lib/self-generator-preferences";
 import { getTemplateMeta } from "@/lib/templates";
 import { type Locale, type TemplateId } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
+function readStoredTemplate() {
+  try {
+    return parseStoredTemplatePreference(
+      window.localStorage.getItem(SELF_GENERATOR_TEMPLATE_KEY),
+    );
+  } catch {
+    // localStorage is best-effort only.
+  }
+
+  return null;
+}
+
+function readStoredPrivateToggle() {
+  try {
+    return parseStoredPrivatePreference(
+      window.localStorage.getItem(SELF_GENERATOR_PRIVATE_KEY),
+    );
+  } catch {
+    // localStorage is best-effort only.
+  }
+
+  return null;
+}
+
+function storeTemplatePreference(template: TemplateId) {
+  try {
+    window.localStorage.setItem(SELF_GENERATOR_TEMPLATE_KEY, template);
+  } catch {
+    // localStorage is best-effort only.
+  }
+}
+
+function storePrivatePreference(includePrivate: boolean) {
+  try {
+    window.localStorage.setItem(
+      SELF_GENERATOR_PRIVATE_KEY,
+      includePrivate ? "1" : "0",
+    );
+  } catch {
+    // localStorage is best-effort only.
+  }
+}
+
+function storeTemplateCookie(template: TemplateId) {
+  try {
+    document.cookie = `${SELF_GENERATOR_TEMPLATE_KEY}=${encodeURIComponent(template)}; Max-Age=31536000; Path=/; SameSite=Lax`;
+  } catch {
+    // Cookie persistence is best-effort only.
+  }
+}
+
+function storePrivateCookie(includePrivate: boolean) {
+  try {
+    document.cookie = `${SELF_GENERATOR_PRIVATE_KEY}=${includePrivate ? "1" : "0"}; Max-Age=31536000; Path=/; SameSite=Lax`;
+  } catch {
+    // Cookie persistence is best-effort only.
+  }
+}
+
 export function SelfGenerator({
+  hasStoredPreferences,
+  initialIncludePrivate,
+  initialTemplate,
   locale,
   username,
 }: {
+  hasStoredPreferences: boolean;
+  initialIncludePrivate: boolean;
+  initialTemplate: TemplateId;
   locale: Locale;
   username: string;
 }) {
   const router = useRouter();
   const dict = getDictionary(locale);
-  const [includePrivate, setIncludePrivate] = useState(false);
+  const [includePrivate, setIncludePrivate] = useState(initialIncludePrivate);
   const [isPending, setIsPending] = useState(false);
   const [selectedTemplate, setSelectedTemplate] =
-    useState<TemplateId>("profile");
+    useState<TemplateId>(initialTemplate);
+  const [isPreferenceReady, setIsPreferenceReady] =
+    useState(hasStoredPreferences);
+
+  useEffect(() => {
+    if (hasStoredPreferences) {
+      storeTemplatePreference(initialTemplate);
+      storePrivatePreference(initialIncludePrivate);
+      return;
+    }
+
+    const storedTemplate = readStoredTemplate() ?? initialTemplate;
+    const storedPrivate = readStoredPrivateToggle() ?? initialIncludePrivate;
+
+    setSelectedTemplate(storedTemplate);
+    setIncludePrivate(storedPrivate);
+    storeTemplatePreference(storedTemplate);
+    storePrivatePreference(storedPrivate);
+    storeTemplateCookie(storedTemplate);
+    storePrivateCookie(storedPrivate);
+    setIsPreferenceReady(true);
+  }, [
+    hasStoredPreferences,
+    initialIncludePrivate,
+    initialTemplate,
+  ]);
+
+  useEffect(() => {
+    if (!hasStoredPreferences) {
+      return;
+    }
+
+    storeTemplateCookie(initialTemplate);
+    storePrivateCookie(initialIncludePrivate);
+  }, [hasStoredPreferences, initialIncludePrivate, initialTemplate]);
 
   const templateCards = useMemo(() => {
     const templateMap = getTemplateMeta(locale);
@@ -50,8 +155,26 @@ export function SelfGenerator({
     });
   }
 
+  function handleTemplateSelect(template: TemplateId) {
+    setSelectedTemplate(template);
+    storeTemplatePreference(template);
+    storeTemplateCookie(template);
+  }
+
+  function handlePrivateToggle(nextValue: boolean) {
+    setIncludePrivate(nextValue);
+    storePrivatePreference(nextValue);
+    storePrivateCookie(nextValue);
+  }
+
   return (
-    <section className="mx-auto mt-6 w-full max-w-4xl rounded-[2rem] border border-black/[0.08] bg-white/[0.72] p-6 shadow-[0_30px_80px_-48px_rgba(0,0,0,0.45)] backdrop-blur xl:p-8">
+    <section
+      aria-hidden={!isPreferenceReady}
+      className={cn(
+        "mx-auto mt-6 w-full max-w-4xl rounded-[2rem] border border-black/[0.08] bg-white/[0.72] p-6 shadow-[0_30px_80px_-48px_rgba(0,0,0,0.45)] backdrop-blur xl:p-8",
+        !isPreferenceReady && "invisible",
+      )}
+    >
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
@@ -94,7 +217,7 @@ export function SelfGenerator({
             <input
               checked={includePrivate}
               className="sr-only"
-              onChange={(event) => setIncludePrivate(event.target.checked)}
+              onChange={(event) => handlePrivateToggle(event.target.checked)}
               type="checkbox"
             />
           </label>
@@ -134,7 +257,7 @@ export function SelfGenerator({
                     : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
                 )}
                 key={template.id}
-                onClick={() => setSelectedTemplate(template.id)}
+                onClick={() => handleTemplateSelect(template.id)}
                 type="button"
               >
                 <div className="flex items-start justify-between gap-4">

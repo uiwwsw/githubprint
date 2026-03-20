@@ -66,6 +66,29 @@ function joinReadable(values: string[], locale: Locale) {
   return locale === "ko" ? `${head}, ${tail}` : `${head}, and ${tail}`;
 }
 
+function localizePrivateFacet(value: string, locale: Locale) {
+  if (locale === "ko") {
+    if (value === "frontend") return "프론트엔드";
+    if (value === "backend") return "백엔드";
+    if (value === "mobile") return "모바일";
+    if (value === "devtools") return "개발툴";
+    if (value === "docs") return "문서";
+    if (value === "Automation") return "자동화";
+  }
+
+  if (value === "devtools") {
+    return locale === "ko" ? "개발툴" : "developer tooling";
+  }
+  if (value === "docs") {
+    return locale === "ko" ? "문서" : "documentation";
+  }
+  if (value === "Automation") {
+    return locale === "ko" ? "자동화" : "automation";
+  }
+
+  return value;
+}
+
 function getStackSummary(source: GitHubSourceData) {
   return source.stackSummary ?? summarizeRepoStack(source.repos);
 }
@@ -132,7 +155,7 @@ function buildSummaryText(
         ? "주요 공개 저장소"
         : "visible public repositories";
 
-  return fillTemplate(template, {
+  const base = fillTemplate(template, {
     languages: joinReadable(
       (stackSummary.coreStack.length > 0
         ? stackSummary.coreStack
@@ -152,6 +175,49 @@ function buildSummaryText(
         ? joinReadable(projectNames, locale)
         : projectFallback,
   });
+
+  if (
+    source.dataMode !== "private_enriched" ||
+    !source.authorizedPrivateInsights
+  ) {
+    return base;
+  }
+
+  const insights = source.authorizedPrivateInsights;
+
+  if (insights.privateOnlyStack.length > 0) {
+    return `${base} ${
+      locale === "ko"
+        ? `비공개 쪽에서는 ${joinReadable(
+            insights.privateOnlyStack.slice(0, 2),
+            locale,
+          )} 같은 추가 스택도 보입니다.`
+        : `Private work also adds stack signals around ${joinReadable(
+            insights.privateOnlyStack.slice(0, 2),
+            locale,
+          )}.`
+    }`;
+  }
+
+  if (insights.topPrivateSurfaces.length > 0) {
+    return `${base} ${
+      locale === "ko"
+        ? `비공개 저장소를 함께 보면 ${joinReadable(
+            insights.topPrivateSurfaces
+              .slice(0, 2)
+              .map((item) => localizePrivateFacet(item, locale)),
+            locale,
+          )} 성격이 조금 더 분명해집니다.`
+        : `Private repositories also make ${joinReadable(
+            insights.topPrivateSurfaces
+              .slice(0, 2)
+              .map((item) => localizePrivateFacet(item, locale)),
+            locale,
+          )} surfaces a bit clearer.`
+    }`;
+  }
+
+  return base;
 }
 
 function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
@@ -309,6 +375,112 @@ function buildProjects(
   });
 }
 
+function buildPrivateEvidenceEntries(
+  source: GitHubSourceData,
+  locale: Locale,
+) {
+  if (
+    source.dataMode !== "private_enriched" ||
+    !source.authorizedPrivateInsights
+  ) {
+    return [];
+  }
+
+  const insights = source.authorizedPrivateInsights;
+  const entries: Array<{ detail: string; label: string }> = [];
+
+  if (
+    insights.privateOnlyStack.length > 0 ||
+    insights.topPrivateSurfaces.length > 0 ||
+    insights.topPrivateDomains.length > 0
+  ) {
+    entries.push({
+      detail:
+        insights.privateOnlyStack.length > 0
+          ? locale === "ko"
+            ? `비공개 저장소를 함께 읽으면 공개 결과에 덜 드러나던 ${joinReadable(
+                insights.privateOnlyStack.slice(0, 3),
+                locale,
+              )} 같은 스택이 추가로 보입니다.`
+            : `Including private repositories reveals additional stack signals such as ${joinReadable(
+                insights.privateOnlyStack.slice(0, 3),
+                locale,
+              )} that are less visible in public work.`
+          : locale === "ko"
+            ? insights.topPrivateSurfaces.length > 0 &&
+              insights.topPrivateDomains.length > 0
+              ? `비공개 저장소를 함께 보면 ${joinReadable(
+                  insights.topPrivateSurfaces
+                    .slice(0, 2)
+                    .map((item) => localizePrivateFacet(item, locale)),
+                  locale,
+                )} 성격과 ${joinReadable(
+                  insights.topPrivateDomains
+                    .slice(0, 2)
+                    .map((item) => localizePrivateFacet(item, locale)),
+                  locale,
+                )} 도메인이 조금 더 선명해집니다.`
+              : insights.topPrivateSurfaces.length > 0
+                ? `비공개 저장소를 함께 보면 ${joinReadable(
+                    insights.topPrivateSurfaces
+                      .slice(0, 2)
+                      .map((item) => localizePrivateFacet(item, locale)),
+                    locale,
+                  )} 성격이 조금 더 선명해집니다.`
+                : `비공개 저장소를 함께 보면 ${joinReadable(
+                    insights.topPrivateDomains
+                      .slice(0, 2)
+                      .map((item) => localizePrivateFacet(item, locale)),
+                    locale,
+                  )} 도메인이 조금 더 선명해집니다.`
+            : insights.topPrivateSurfaces.length > 0 &&
+                insights.topPrivateDomains.length > 0
+              ? `Private repositories make ${joinReadable(
+                  insights.topPrivateSurfaces
+                    .slice(0, 2)
+                    .map((item) => localizePrivateFacet(item, locale)),
+                  locale,
+                )} surfaces and ${joinReadable(
+                  insights.topPrivateDomains
+                    .slice(0, 2)
+                    .map((item) => localizePrivateFacet(item, locale)),
+                  locale,
+                )} domains a bit clearer.`
+              : insights.topPrivateSurfaces.length > 0
+                ? `Private repositories make ${joinReadable(
+                    insights.topPrivateSurfaces
+                      .slice(0, 2)
+                      .map((item) => localizePrivateFacet(item, locale)),
+                    locale,
+                  )} surfaces a bit clearer.`
+                : `Private repositories make ${joinReadable(
+                    insights.topPrivateDomains
+                      .slice(0, 2)
+                      .map((item) => localizePrivateFacet(item, locale)),
+                    locale,
+                  )} domains a bit clearer.`,
+      label: locale === "ko" ? "비공개 추가 패턴" : "Private additions",
+    });
+  }
+
+  if (
+    insights.documentedPrivateRepoCount > 0 ||
+    insights.verifiedPrivateRepoCount > 0 ||
+    insights.automatedPrivateRepoCount > 0
+  ) {
+    entries.push({
+      detail:
+        locale === "ko"
+          ? `비공개 저장소 기준으로 문서 흔적 ${insights.documentedPrivateRepoCount}개, 검증 흔적 ${insights.verifiedPrivateRepoCount}개, 자동화 흔적 ${insights.automatedPrivateRepoCount}개가 보수적으로 확인됩니다.`
+          : `Across private repositories, ${insights.documentedPrivateRepoCount} show documentation traces, ${insights.verifiedPrivateRepoCount} show validation traces, and ${insights.automatedPrivateRepoCount} show automation traces by conservative reading.`,
+      label:
+        locale === "ko" ? "비공개 구현 단서" : "Private implementation signals",
+    });
+  }
+
+  return entries;
+}
+
 export function buildRuleBasedAnalysis(
   source: GitHubSourceData,
   scoring: ProfileScoringResult,
@@ -362,6 +534,7 @@ export function buildRuleBasedAnalysis(
           : "Working style is inferred from README quality, activity patterns, configuration files, and commit messages."),
       label: localizeText(config.templates.evidenceLabels.workingStyle, locale),
     },
+    ...buildPrivateEvidenceEntries(source, locale),
     {
       detail:
         source.representativeRepos.length > 0

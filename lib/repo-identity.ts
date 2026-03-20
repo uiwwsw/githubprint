@@ -1,7 +1,13 @@
 import "server-only";
 
-import { repoIdentityRules } from "@/lib/data-loader";
-import type { RepoIdentitySignalSource } from "@/lib/schemas/repo-identity";
+import {
+  repoIdentityPresentationRules,
+  repoIdentityRules,
+} from "@/lib/data-loader";
+import type {
+  RepoIdentityPresentationRule,
+  RepoIdentitySignalSource,
+} from "@/lib/schemas/repo-identity";
 
 export type RepoIdentityInput = {
   description: string | null;
@@ -47,7 +53,7 @@ export type RepoStackSummary = {
   topSurfaces: string[];
 };
 
-type RepoIdentityCapable = {
+export type RepoIdentityCapable = {
   description: string | null;
   githubLanguage?: string | null;
   identity?: RepoIdentity;
@@ -373,6 +379,283 @@ function accumulateRankedLabels(
   });
 }
 
+function canonicalizeDisplayLabel(label: string) {
+  const trimmed = label.trim();
+  const normalized = trimmed.toLowerCase();
+
+  if (normalized === "flutter") {
+    return "Flutter";
+  }
+
+  if (normalized === "ios") {
+    return "iOS";
+  }
+
+  if (normalized === "objective-c") {
+    return "Objective-C";
+  }
+
+  if (normalized === "objective-c++") {
+    return "Objective-C++";
+  }
+
+  return trimmed;
+}
+
+function normalizeDisplayLookupValue(label: string) {
+  return normalizeText(canonicalizeDisplayLabel(label));
+}
+
+type RepoPresentationContext = {
+  domains: Set<string>;
+  frameworks: Set<string>;
+  githubLanguages: Set<string>;
+  languages: Set<string>;
+  rootFiles: Set<string>;
+  surfaces: Set<string>;
+  topics: Set<string>;
+};
+
+type RepoPresentationTransform = {
+  aliasLabels: Map<string, string>;
+  preferLabels: string[];
+};
+
+function buildPresentationContext(
+  repo: RepoIdentityCapable,
+  identity: RepoIdentity,
+): RepoPresentationContext {
+  const githubLanguage = repo.githubLanguage ?? repo.language;
+
+  return {
+    domains: new Set(identity.domains.map((item) => normalizeDisplayLookupValue(item.label))),
+    frameworks: new Set(
+      identity.frameworks.map((item) => normalizeDisplayLookupValue(item.label)),
+    ),
+    githubLanguages: new Set(
+      githubLanguage ? [normalizeDisplayLookupValue(githubLanguage)] : [],
+    ),
+    languages: new Set(
+      identity.languages.map((item) => normalizeDisplayLookupValue(item.label)),
+    ),
+    rootFiles: new Set(repo.rootFiles.map((file) => normalizeText(file))),
+    surfaces: new Set(
+      identity.surfaces.map((item) => normalizeDisplayLookupValue(item.label)),
+    ),
+    topics: new Set(repo.topics.map((topic) => normalizeDisplayLookupValue(topic))),
+  };
+}
+
+function setMatchesCondition(
+  values: Set<string>,
+  all: string[],
+  any: string[],
+  normalizeConditionValue: (value: string) => string,
+) {
+  const allSatisfied = all.every((value) => values.has(normalizeConditionValue(value)));
+  const anySatisfied =
+    any.length === 0 || any.some((value) => values.has(normalizeConditionValue(value)));
+
+  return allSatisfied && anySatisfied;
+}
+
+function matchesPresentationRule(
+  context: RepoPresentationContext,
+  rule: RepoIdentityPresentationRule,
+) {
+  return (
+    setMatchesCondition(
+      context.frameworks,
+      rule.when.frameworksAll,
+      rule.when.frameworksAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.languages,
+      rule.when.languagesAll,
+      rule.when.languagesAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.domains,
+      rule.when.domainsAll,
+      rule.when.domainsAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.surfaces,
+      rule.when.surfacesAll,
+      rule.when.surfacesAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.topics,
+      rule.when.topicsAll,
+      rule.when.topicsAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.githubLanguages,
+      rule.when.githubLanguagesAll,
+      rule.when.githubLanguagesAny,
+      normalizeDisplayLookupValue,
+    ) &&
+    setMatchesCondition(
+      context.rootFiles,
+      rule.when.rootFilesAll,
+      rule.when.rootFilesAny,
+      normalizeText,
+    )
+  );
+}
+
+function buildRepoPresentationTransform(
+  repo: RepoIdentityCapable,
+  identity: RepoIdentity,
+): RepoPresentationTransform {
+  const context = buildPresentationContext(repo, identity);
+  const aliasLabels = new Map<string, string>();
+  const preferLabels: string[] = [];
+
+  [...repoIdentityPresentationRules]
+    .sort((left, right) => right.priority - left.priority)
+    .filter((rule) => matchesPresentationRule(context, rule))
+    .forEach((rule) => {
+      rule.transform.aliasLabels.forEach((entry) => {
+        const target = canonicalizeDisplayLabel(entry.to);
+        entry.from.forEach((source) => {
+          const key = normalizeDisplayLookupValue(source);
+          if (!aliasLabels.has(key)) {
+            aliasLabels.set(key, target);
+          }
+        });
+      });
+
+      rule.transform.preferLabels.forEach((label) => {
+        const canonical = canonicalizeDisplayLabel(label);
+        if (!preferLabels.includes(canonical)) {
+          preferLabels.push(canonical);
+        }
+      });
+    });
+
+  return {
+    aliasLabels,
+    preferLabels,
+  };
+}
+
+function applyDisplayAliases(label: string, transform: RepoPresentationTransform) {
+  let current = canonicalizeDisplayLabel(label);
+  const seen = new Set<string>();
+
+  while (true) {
+    const key = normalizeDisplayLookupValue(current);
+    const next = transform.aliasLabels.get(key);
+    if (!next || seen.has(key)) {
+      return current;
+    }
+
+    seen.add(key);
+    current = canonicalizeDisplayLabel(next);
+  }
+}
+
+function applyPreferredLabelOrder<T>(
+  items: T[],
+  getLabel: (item: T) => string,
+  preferLabels: string[],
+) {
+  if (preferLabels.length === 0) {
+    return items;
+  }
+
+  const preferOrder = new Map(
+    preferLabels.map((label, index) => [normalizeDisplayLookupValue(label), index] as const),
+  );
+
+  return [...items].sort((left, right) => {
+    const leftRank =
+      preferOrder.get(normalizeDisplayLookupValue(getLabel(left))) ??
+      Number.MAX_SAFE_INTEGER;
+    const rightRank =
+      preferOrder.get(normalizeDisplayLookupValue(getLabel(right))) ??
+      Number.MAX_SAFE_INTEGER;
+
+    return leftRank - rightRank;
+  });
+}
+
+function collapseDisplayLabels(
+  labels: string[],
+  preferLabels: string[] = [],
+) {
+  const deduped = new Map<string, string>();
+
+  labels.forEach((label) => {
+    const canonical = canonicalizeDisplayLabel(label);
+    const key = normalizeDisplayLookupValue(canonical);
+
+    if (!deduped.has(key)) {
+      deduped.set(key, canonical);
+    }
+  });
+
+  return applyPreferredLabelOrder(
+    [...deduped.values()],
+    (label) => label,
+    preferLabels,
+  );
+}
+
+function collapseRankedLabelsForDisplay(
+  labels: RepoIdentityRankedLabel[],
+  transform: RepoPresentationTransform,
+) {
+  const scores = new Map<string, number>();
+
+  labels.forEach((entry) => {
+    const label = applyDisplayAliases(entry.label, transform);
+    scores.set(label, (scores.get(label) ?? 0) + entry.score);
+  });
+
+  return applyPreferredLabelOrder(
+    sortRankedLabels(scores),
+    (entry) => entry.label,
+    transform.preferLabels,
+  );
+}
+
+export function normalizeRepoDisplayLabel(
+  repo: RepoIdentityCapable,
+  label: string,
+  identityOverride?: RepoIdentity,
+) {
+  const identity = identityOverride ?? repo.identity ?? inferRepoIdentity(toIdentityInput(repo));
+
+  return applyDisplayAliases(
+    label,
+    buildRepoPresentationTransform(repo, identity),
+  );
+}
+
+export function buildRepoDisplayLanguages(
+  repo: RepoIdentityCapable,
+) {
+  const identity = repo.identity ?? inferRepoIdentity(toIdentityInput(repo));
+  const rankedLanguages =
+    identity.languages.length > 0
+      ? identity.languages
+      : repo.githubLanguage ?? repo.language
+      ? [{ label: repo.githubLanguage ?? repo.language!, score: 1 }]
+        : [];
+
+  return collapseRankedLabelsForDisplay(
+    rankedLanguages,
+    buildRepoPresentationTransform(repo, identity),
+  );
+}
+
 export function summarizeRepoStack(repos: SummaryRepoLike[]): RepoStackSummary {
   const activeRepos = repos.filter((repo) => !repo.archived);
   const languageScores = new Map<string, number>();
@@ -384,8 +667,9 @@ export function summarizeRepoStack(repos: SummaryRepoLike[]): RepoStackSummary {
   activeRepos.forEach((repo) => {
     const identity = repo.identity ?? inferRepoIdentity(toIdentityInput(repo));
     const weight = repoWeight(repo);
+    const displayLanguages = buildRepoDisplayLanguages({ ...repo, identity });
 
-    accumulateRankedLabels(languageScores, identity.languages, weight, 2);
+    accumulateRankedLabels(languageScores, displayLanguages, weight, 2);
     accumulateRankedLabels(frameworkScores, identity.frameworks, weight, 3);
     accumulateRankedLabels(surfaceScores, identity.surfaces, weight, 2);
     accumulateRankedLabels(domainScores, identity.domains, weight, 2);
@@ -421,16 +705,28 @@ export function buildRepoTechStack(
   repo: RepoIdentityCapable,
 ) {
   const identity = repo.identity ?? inferRepoIdentity(toIdentityInput(repo));
+  const presentationTransform = buildRepoPresentationTransform(repo, identity);
 
-  return [
-    ...new Set([
-      ...identity.frameworks.map((item) => item.label),
-      ...identity.languages.map((item) => item.label),
-      ...identity.domains.map((item) => item.label),
-      ...repo.topics,
-      ...(repo.githubLanguage ?? repo.language
-        ? [repo.githubLanguage ?? repo.language!]
-        : []),
-    ]),
-  ].slice(0, 8);
+  return collapseDisplayLabels([
+    ...identity.frameworks.map((item) =>
+      applyDisplayAliases(item.label, presentationTransform),
+    ),
+    ...identity.languages.map((item) =>
+      applyDisplayAliases(item.label, presentationTransform),
+    ),
+    ...identity.domains.map((item) =>
+      applyDisplayAliases(item.label, presentationTransform),
+    ),
+    ...repo.topics.map((item) =>
+      applyDisplayAliases(item, presentationTransform),
+    ),
+    ...(repo.githubLanguage ?? repo.language
+      ? [
+          applyDisplayAliases(
+            repo.githubLanguage ?? repo.language!,
+            presentationTransform,
+          ),
+        ]
+      : []),
+  ], presentationTransform.preferLabels).slice(0, 8);
 }

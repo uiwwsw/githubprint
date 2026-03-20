@@ -5,11 +5,27 @@ import { LanguageToggle } from "@/components/ui/language-toggle";
 import { LocaleSync } from "@/components/ui/locale-sync";
 import { getGitHubSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
+import {
+  DEFAULT_SELF_GENERATOR_TEMPLATE,
+  parseStoredPrivatePreference,
+  parseStoredTemplatePreference,
+  SELF_GENERATOR_PRIVATE_KEY,
+  SELF_GENERATOR_TEMPLATE_KEY,
+} from "@/lib/self-generator-preferences";
 import type { Locale } from "@/lib/schemas";
+import { cookies } from "next/headers";
 
 export async function HomePageContent({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const session = await getGitHubSession();
+  const cookieStore = await cookies();
+  const storedTemplate = parseStoredTemplatePreference(
+    cookieStore.get(SELF_GENERATOR_TEMPLATE_KEY)?.value,
+  );
+  const storedPrivate = parseStoredPrivatePreference(
+    cookieStore.get(SELF_GENERATOR_PRIVATE_KEY)?.value,
+  );
+  const hasStoredPreferences = storedTemplate !== null || storedPrivate !== null;
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
@@ -40,7 +56,15 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
         </div>
         {session ? (
           <div className="w-full">
-            <SelfGenerator locale={locale} username={session.user.login} />
+            <SelfGenerator
+              hasStoredPreferences={hasStoredPreferences}
+              initialIncludePrivate={storedPrivate ?? false}
+              initialTemplate={
+                storedTemplate ?? DEFAULT_SELF_GENERATOR_TEMPLATE
+              }
+              locale={locale}
+              username={session.user.login}
+            />
           </div>
         ) : null}
       </div>

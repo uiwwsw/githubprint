@@ -105,6 +105,9 @@ type Dictionary = {
     factAuthorizedRepos: string;
     factPrivateRepos: string;
     factRecentPrivateRepos: string;
+    factDocumentedPrivateRepos: string;
+    factVerifiedPrivateRepos: string;
+    factAutomatedPrivateRepos: string;
     benchmarkOverall: string;
     confidenceLabel: string;
     cohortLabel: string;
@@ -113,6 +116,11 @@ type Dictionary = {
     privateInsightsTitle: string;
     privateInsightsHint: string;
     privateInsightsTopStack: string;
+    privateInsightsAdditionalStack: string;
+    privateInsightsTopSurfaces: string;
+    privateInsightsTopDomains: string;
+    privateInsightsShowcase: string;
+    privateInsightsShowcaseHint: string;
     signedInActivityTitle: string;
     signedInActivityHint: string;
     signedInActivityWindow: string;
@@ -324,6 +332,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       factAuthorizedRepos: "읽은 전체 저장소",
       factPrivateRepos: "비공개 저장소",
       factRecentPrivateRepos: "최근 비공개 업데이트",
+      factDocumentedPrivateRepos: "문서 흔적 있는 비공개",
+      factVerifiedPrivateRepos: "검증 흔적 있는 비공개",
+      factAutomatedPrivateRepos: "자동화 흔적 있는 비공개",
       benchmarkOverall: "유사한 개발자군 비교",
       confidenceLabel: "분석 신뢰도",
       cohortLabel: "비교 집단",
@@ -331,8 +342,14 @@ const dictionaries: Record<Locale, Dictionary> = {
       followerUnit: "명",
       privateInsightsTitle: "승인된 비공개 저장소 신호",
       privateInsightsHint:
-        "로그인한 본인 계정에서만 계산되는 비공개 저장소 집계 신호입니다.",
+        "로그인한 본인 계정에서만 계산되는 비공개 저장소 집계 신호입니다. 공개 결과와 달라지는 추가 스택, 작업 표면, 검증/자동화 흔적을 보수적으로 요약합니다.",
       privateInsightsTopStack: "비공개 쪽에서 추가로 보이는 스택",
+      privateInsightsAdditionalStack: "공개 결과에 덜 드러난 추가 스택",
+      privateInsightsTopSurfaces: "비공개 쪽에서 더 선명한 작업 표면",
+      privateInsightsTopDomains: "비공개 쪽에서 더 선명한 도메인",
+      privateInsightsShowcase: "비공개 하이라이트 저장소",
+      privateInsightsShowcaseHint:
+        "비공개 상세 포함 모드에서만 이름과 설명을 직접 노출합니다.",
       signedInActivityTitle: "승인된 활동 스냅샷",
       signedInActivityHint:
         "로그인한 본인 계정일 때만 읽을 수 있는 최근 1년 GitHub 활동 통계입니다.",
@@ -554,6 +571,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       factAuthorizedRepos: "Authorized repos",
       factPrivateRepos: "Private repos",
       factRecentPrivateRepos: "Recent private updates",
+      factDocumentedPrivateRepos: "Documented private repos",
+      factVerifiedPrivateRepos: "Verified private repos",
+      factAutomatedPrivateRepos: "Automated private repos",
       benchmarkOverall: "Peer benchmark",
       confidenceLabel: "Confidence",
       cohortLabel: "Cohort",
@@ -561,8 +581,14 @@ const dictionaries: Record<Locale, Dictionary> = {
       followerUnit: "",
       privateInsightsTitle: "Authorized private-repo signals",
       privateInsightsHint:
-        "These aggregate private-repository signals are calculated only for the signed-in user's own account.",
+        "These aggregate private-repository signals are calculated only for the signed-in user's own account. They summarize added stack, surface, validation, and automation signals conservatively.",
       privateInsightsTopStack: "Additional stack signals from private work",
+      privateInsightsAdditionalStack: "Stack that is less visible in public work",
+      privateInsightsTopSurfaces: "Work surfaces that become clearer in private work",
+      privateInsightsTopDomains: "Domains that become clearer in private work",
+      privateInsightsShowcase: "Private highlights",
+      privateInsightsShowcaseHint:
+        "Names and descriptions appear only when private details are explicitly included.",
       signedInActivityTitle: "Authorized activity snapshot",
       signedInActivityHint:
         "These last-12-month GitHub activity counts are available only for the signed-in user's own account.",
