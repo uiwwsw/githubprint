@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   buildGitHubLoginPath,
   buildGitHubLogoutPath,
@@ -16,9 +15,6 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const session = await getGitHubSession();
   const redirectTo = getLocalizedPathname("/", locale);
-  const selfResultHref = session
-    ? `${getLocalizedPathname("/result", locale)}?url=${encodeURIComponent(session.user.login)}&template=profile`
-    : null;
 
   if (!session) {
     return (
@@ -33,12 +29,12 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
               {dict.home.authDescription}
             </p>
           </div>
-          <Link
+          <a
             className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800"
             href={buildGitHubLoginPath(redirectTo)}
           >
             {dict.home.authSignIn}
-          </Link>
+          </a>
         </div>
       </div>
     );
@@ -63,20 +59,9 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
             <p className="text-sm leading-7 text-neutral-600">
               {dict.home.authReadyMessage}
             </p>
-            <p className="text-sm leading-7 text-neutral-500">
-              {dict.home.authReadyHint}
-            </p>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          {selfResultHref ? (
-            <Link
-              className="inline-flex h-11 items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800"
-              href={selfResultHref}
-            >
-              {dict.home.authGenerateSelf}
-            </Link>
-          ) : null}
           <a
             className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
             href={session.user.profileUrl}
@@ -85,12 +70,12 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
           >
             GitHub
           </a>
-          <Link
+          <a
             className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] px-5 text-sm font-medium text-neutral-700 transition hover:bg-white/80"
             href={buildGitHubLogoutPath(redirectTo)}
           >
             {dict.home.authSignOut}
-          </Link>
+          </a>
         </div>
       </div>
     </div>

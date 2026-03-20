@@ -7,7 +7,12 @@ export async function GET(request: NextRequest) {
   );
   const response = NextResponse.redirect(new URL(redirectTo, request.url));
 
-  response.cookies.delete(GITHUB_SESSION_COOKIE_NAME);
+  response.cookies.set({
+    name: GITHUB_SESSION_COOKIE_NAME,
+    value: "",
+    maxAge: 0,
+    path: "/",
+  });
 
   return response;
 }

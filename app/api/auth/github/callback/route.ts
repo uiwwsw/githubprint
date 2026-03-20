@@ -9,18 +9,9 @@ import {
   readGitHubAuthState,
   sanitizeRedirectPath,
 } from "@/lib/auth";
-import {
-  detectLocaleFromPathname,
-  getLocalizedPathname,
-} from "@/lib/i18n";
 
 function buildRedirectUrl(request: NextRequest, redirectTo?: string | null) {
   return new URL(sanitizeRedirectPath(redirectTo), request.url);
-}
-
-function shouldAutoOpenSelfResult(redirectTo?: string | null) {
-  const normalized = sanitizeRedirectPath(redirectTo);
-  return normalized === "/" || normalized === "/en";
 }
 
 export async function GET(request: NextRequest) {
@@ -34,26 +25,29 @@ export async function GET(request: NextRequest) {
 
   if (!hasGitHubOAuthConfig() || error || !code || !state || !savedState) {
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.delete(GITHUB_STATE_COOKIE_NAME);
+    response.cookies.set({
+      name: GITHUB_STATE_COOKIE_NAME,
+      value: "",
+      maxAge: 0,
+      path: "/",
+    });
     return response;
   }
 
   if (savedState.state !== state) {
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.delete(GITHUB_STATE_COOKIE_NAME);
+    response.cookies.set({
+      name: GITHUB_STATE_COOKIE_NAME,
+      value: "",
+      maxAge: 0,
+      path: "/",
+    });
     return response;
   }
 
   try {
     const session = await exchangeGitHubCodeForSession(code);
-    const locale = detectLocaleFromPathname(savedState.redirectTo ?? "/");
-    const finalRedirectUrl = shouldAutoOpenSelfResult(savedState.redirectTo)
-      ? new URL(
-          `${getLocalizedPathname("/result", locale)}?url=${encodeURIComponent(session.user.login)}&template=profile`,
-          request.url,
-        )
-      : redirectUrl;
-    const response = NextResponse.redirect(finalRedirectUrl);
+    const response = NextResponse.redirect(redirectUrl);
 
     response.cookies.set({
       name: GITHUB_SESSION_COOKIE_NAME,
@@ -64,13 +58,28 @@ export async function GET(request: NextRequest) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
-    response.cookies.delete(GITHUB_STATE_COOKIE_NAME);
+    response.cookies.set({
+      name: GITHUB_STATE_COOKIE_NAME,
+      value: "",
+      maxAge: 0,
+      path: "/",
+    });
 
     return response;
   } catch {
     const response = NextResponse.redirect(redirectUrl);
-    response.cookies.delete(GITHUB_STATE_COOKIE_NAME);
-    response.cookies.delete(GITHUB_SESSION_COOKIE_NAME);
+    response.cookies.set({
+      name: GITHUB_STATE_COOKIE_NAME,
+      value: "",
+      maxAge: 0,
+      path: "/",
+    });
+    response.cookies.set({
+      name: GITHUB_SESSION_COOKIE_NAME,
+      value: "",
+      maxAge: 0,
+      path: "/",
+    });
     return response;
   }
 }

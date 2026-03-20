@@ -25,6 +25,7 @@ export const mockGitHubProfile: GitHubSourceData = {
     note: "최근 한 달 안에도 여러 저장소가 갱신되어 활동성이 꾸준히 보입니다.",
     recentRepoCount: 6,
   },
+  authorizedPrivateInsights: null,
   cacheKey: "mockdeveloper::2026-03-10::2026-03-08::githubprint-web:2026-03-08",
   dataMode: "public",
   evidenceSignals: [
@@ -33,6 +34,7 @@ export const mockGitHubProfile: GitHubSourceData = {
     "대표 프로젝트 중 실행 가능한 demo 혹은 외부 링크가 연결된 사례가 있습니다.",
   ],
   pinnedRepoNames: ["githubprint-web", "proto-kit", "doc-polish"],
+  privateExposureMode: "aggregate",
   representativeRepos: [
     {
       archived: false,
@@ -69,6 +71,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["TypeScript", "Next.js", "OpenAI", "tailwind"],
       topics: ["nextjs", "openai", "portfolio", "pdf"],
       updatedAt: "2026-03-08T15:10:00.000Z",
+      visibility: "public",
     },
     {
       archived: false,
@@ -105,6 +108,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["TypeScript", "React", "design-system"],
       topics: ["react", "ui", "prototype", "component-library"],
       updatedAt: "2026-02-21T09:30:00.000Z",
+      visibility: "public",
     },
     {
       archived: false,
@@ -138,6 +142,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["MDX", "documentation", "content"],
       topics: ["docs", "markdown", "content-design"],
       updatedAt: "2026-01-30T20:00:00.000Z",
+      visibility: "public",
     },
   ],
   repos: [
@@ -176,6 +181,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["TypeScript", "Next.js", "OpenAI", "tailwind"],
       topics: ["nextjs", "openai", "portfolio", "pdf"],
       updatedAt: "2026-03-08T15:10:00.000Z",
+      visibility: "public",
     },
     {
       archived: false,
@@ -212,6 +218,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["TypeScript", "React", "design-system"],
       topics: ["react", "ui", "prototype", "component-library"],
       updatedAt: "2026-02-21T09:30:00.000Z",
+      visibility: "public",
     },
     {
       archived: false,
@@ -245,6 +252,7 @@ export const mockGitHubProfile: GitHubSourceData = {
       techSignals: ["MDX", "documentation", "content"],
       topics: ["docs", "markdown", "content-design"],
       updatedAt: "2026-01-30T20:00:00.000Z",
+      visibility: "public",
     },
   ],
   topLanguages: [

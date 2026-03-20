@@ -8,29 +8,35 @@ import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
 import { composeInsightTemplateView } from "@/lib/template-composers";
 import {
+  type AuthorizedPrivateInsights,
   type BenchmarkSnapshot,
   type ContributionSummary,
   type DataMode,
   type GitHubPrintAnalysis,
   type Locale,
+  type PrivateExposureMode,
 } from "@/lib/schemas";
 
 export function InsightTemplate({
   analysis,
+  authorizedPrivateInsights,
   benchmark,
   contributionSummary,
   dataMode,
   generatedAt,
   mode,
+  privateExposureMode = "aggregate",
   profileUrl,
   locale,
 }: {
   analysis: GitHubPrintAnalysis;
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   benchmark: BenchmarkSnapshot;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
   mode: "openai" | "fallback";
+  privateExposureMode?: PrivateExposureMode;
   profileUrl: string;
   locale: Locale;
 }) {
@@ -69,23 +75,22 @@ export function InsightTemplate({
           </div>
         </div>
         <div className="mt-7">
-          <FactGrid analysis={analysis} locale={locale} />
+          <FactGrid
+            analysis={analysis}
+            authorizedPrivateInsights={authorizedPrivateInsights}
+            dataMode={dataMode}
+            locale={locale}
+          />
         </div>
       </header>
 
-      <div className="mt-8 space-y-6">
-        <div className="document-grid-insight-top">
+      <div className="document-grid-stack document-grid-stack-insight mt-8">
+        <div className="min-w-0 space-y-6">
           <SectionBlock className="bg-white" title={dict.templates.insight.sections.type} eyebrow={dict.templates.insight.sections.type}>
             <div className="space-y-4">
               <p>{view.opening}</p>
             </div>
           </SectionBlock>
-          <SectionBlock className="bg-white" title={dict.templates.insight.sections.workingStyle} eyebrow={dict.templates.insight.sections.workingStyle}>
-            <p>{view.patternReading}</p>
-          </SectionBlock>
-        </div>
-
-        <div className="document-grid-insight-middle">
           <SectionBlock title={dict.templates.insight.sections.fit} eyebrow={dict.templates.insight.sections.fit}>
             <div className="space-y-4">
               <p>{view.fitNarrative}</p>
@@ -99,14 +104,20 @@ export function InsightTemplate({
               </div>
             </div>
           </SectionBlock>
-          <SectionBlock title={dict.templates.insight.sections.projectReading} eyebrow={dict.templates.insight.sections.projectReading}>
-            <InsightProjectReadings readings={view.projectReadings} locale={locale} />
+          <SectionBlock title={dict.templates.insight.sections.benchmark} eyebrow={dict.templates.insight.sections.benchmark}>
+            <InsightBenchmarkReading benchmark={benchmark} narrative={view.benchmarkNarrative} locale={locale} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.insight.sections.evidence} eyebrow={dict.templates.insight.sections.evidence}>
+            <EvidenceList analysis={analysis} />
           </SectionBlock>
         </div>
 
-        <div className="document-grid-insight-bottom">
-          <SectionBlock title={dict.templates.insight.sections.benchmark} eyebrow={dict.templates.insight.sections.benchmark}>
-            <InsightBenchmarkReading benchmark={benchmark} narrative={view.benchmarkNarrative} locale={locale} />
+        <div className="min-w-0 space-y-6">
+          <SectionBlock className="bg-white" title={dict.templates.insight.sections.workingStyle} eyebrow={dict.templates.insight.sections.workingStyle}>
+            <p>{view.patternReading}</p>
+          </SectionBlock>
+          <SectionBlock title={dict.templates.insight.sections.projectReading} eyebrow={dict.templates.insight.sections.projectReading}>
+            <InsightProjectReadings readings={view.projectReadings} locale={locale} />
           </SectionBlock>
           <SectionBlock title={dict.templates.insight.sections.tech} eyebrow={dict.templates.insight.sections.tech}>
             <div className="space-y-4">
@@ -114,14 +125,13 @@ export function InsightTemplate({
               <ChipList items={analysis.facts.coreStack} />
             </div>
           </SectionBlock>
-          <SectionBlock title={dict.templates.insight.sections.evidence} eyebrow={dict.templates.insight.sections.evidence}>
-            <EvidenceList analysis={analysis} />
-          </SectionBlock>
           <SectionBlock title={dict.templates.insight.sections.dataScope} eyebrow={dict.templates.insight.sections.dataScope}>
             <PublicDataScope
+              authorizedPrivateInsights={authorizedPrivateInsights}
               contributionSummary={contributionSummary}
               dataMode={dataMode}
               locale={locale}
+              privateExposureMode={privateExposureMode}
             />
           </SectionBlock>
         </div>

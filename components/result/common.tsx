@@ -5,11 +5,13 @@ import {
 } from "@/lib/benchmark-presentation";
 import { getDictionary } from "@/lib/i18n";
 import type {
+  AuthorizedPrivateInsights,
   BenchmarkSnapshot,
   ContributionSummary,
   DataMode,
   GitHubPrintAnalysis,
   Locale,
+  PrivateExposureMode,
 } from "@/lib/schemas";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -53,19 +55,34 @@ export function ChipList({ items }: { items: string[] }) {
 
 export function FactGrid({
   analysis,
+  authorizedPrivateInsights,
+  dataMode = "public",
   locale,
 }: {
   analysis: GitHubPrintAnalysis;
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
+  dataMode?: DataMode;
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
+  const repoFact =
+    dataMode === "private_enriched" && authorizedPrivateInsights
+      ? {
+          label: dict.common.factAuthorizedRepos,
+          value:
+            locale === "ko"
+              ? `${formatNumber(authorizedPrivateInsights.authorizedRepoCount, locale)}${dict.common.repoUnit} (공개 ${formatNumber(analysis.facts.publicRepoCount, locale)}${dict.common.repoUnit} / 비공개 ${formatNumber(authorizedPrivateInsights.privateRepoCount, locale)}${dict.common.repoUnit})`
+              : `${formatNumber(authorizedPrivateInsights.authorizedRepoCount, locale)} total (public ${formatNumber(analysis.facts.publicRepoCount, locale)} / private ${formatNumber(authorizedPrivateInsights.privateRepoCount, locale)})`,
+        }
+      : {
+          label: dict.common.factRepos,
+          value: `${formatNumber(analysis.facts.publicRepoCount, locale)}${dict.common.repoUnit}`,
+        };
+
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       <FactCard label={dict.common.factTech} value={analysis.facts.coreStack.slice(0, 3).join(", ")} />
-      <FactCard
-        label={dict.common.factRepos}
-        value={`${formatNumber(analysis.facts.publicRepoCount, locale)}${dict.common.repoUnit}`}
-      />
+      <FactCard label={repoFact.label} value={repoFact.value} />
       <FactCard
         label={dict.common.factFollowers}
         value={`${formatNumber(analysis.facts.followers, locale)}${dict.common.followerUnit}`}
@@ -149,13 +166,17 @@ export function BenchmarkSnapshotBlock({
 }
 
 export function PublicDataScope({
+  authorizedPrivateInsights,
   contributionSummary,
   locale,
   dataMode = "public",
+  privateExposureMode = "aggregate",
 }: {
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   contributionSummary?: ContributionSummary | null;
   locale: Locale;
   dataMode?: DataMode;
+  privateExposureMode?: PrivateExposureMode;
 }) {
   const dict = getDictionary(locale);
   const items =
@@ -177,6 +198,13 @@ export function PublicDataScope({
         <SignedInActivitySnapshot
           contributionSummary={contributionSummary}
           locale={locale}
+        />
+      ) : null}
+      {dataMode === "private_enriched" && authorizedPrivateInsights ? (
+        <AuthorizedPrivateInsightsCard
+          authorizedPrivateInsights={authorizedPrivateInsights}
+          locale={locale}
+          privateExposureMode={privateExposureMode}
         />
       ) : null}
     </div>
@@ -236,6 +264,67 @@ function SignedInActivitySnapshot({
           )}
         />
       </div>
+    </div>
+  );
+}
+
+function AuthorizedPrivateInsightsCard({
+  authorizedPrivateInsights,
+  locale,
+  privateExposureMode,
+}: {
+  authorizedPrivateInsights: AuthorizedPrivateInsights;
+  locale: Locale;
+  privateExposureMode: PrivateExposureMode;
+}) {
+  const dict = getDictionary(locale);
+  const visibilityNote =
+    privateExposureMode === "include"
+      ? locale === "ko"
+        ? "현재 결과에는 승인된 비공개 저장소의 이름과 설명이 직접 포함될 수 있습니다."
+        : "This result may directly include names and descriptions from authorized private repositories."
+      : authorizedPrivateInsights.hiddenRepresentativeCount > 0
+        ? locale === "ko"
+          ? `상위 후보였던 비공개 저장소 ${formatNumber(authorizedPrivateInsights.hiddenRepresentativeCount, locale)}개는 분석에 반영되지만, 기본 공유 모드에서는 이름과 링크를 숨깁니다.`
+          : `${formatNumber(authorizedPrivateInsights.hiddenRepresentativeCount, locale)} private repositories were strong enough to be representative candidates, but their names and links stay hidden in the default sharing mode.`
+        : locale === "ko"
+          ? "비공개 저장소 신호는 집계형으로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다."
+          : "Private-repository signals are reflected only in aggregate, while names and links stay hidden in the result.";
+
+  return (
+    <div className="rounded-[1.1rem] border border-black/[0.08] bg-white p-4">
+      <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">
+        {dict.common.privateInsightsTitle}
+      </p>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">
+        {dict.common.privateInsightsHint}
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <FactCard
+          label={dict.common.factAuthorizedRepos}
+          value={formatNumber(authorizedPrivateInsights.authorizedRepoCount, locale)}
+        />
+        <FactCard
+          label={dict.common.factPrivateRepos}
+          value={formatNumber(authorizedPrivateInsights.privateRepoCount, locale)}
+        />
+        <FactCard
+          label={dict.common.factRecentPrivateRepos}
+          value={formatNumber(
+            authorizedPrivateInsights.recentPrivateRepoCount,
+            locale,
+          )}
+        />
+      </div>
+      {authorizedPrivateInsights.topPrivateStack.length > 0 ? (
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-neutral-900">
+            {dict.common.privateInsightsTopStack}
+          </p>
+          <ChipList items={authorizedPrivateInsights.topPrivateStack} />
+        </div>
+      ) : null}
+      <p className="mt-4 text-sm leading-6 text-neutral-500">{visibilityNote}</p>
     </div>
   );
 }
