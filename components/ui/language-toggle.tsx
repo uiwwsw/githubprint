@@ -1,7 +1,12 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
+import {
+  getDictionary,
+  getLocalizedPathname,
+  getLocalizedResultPath,
+  getResultTemplateFromPathname,
+} from "@/lib/i18n";
 import type { Locale } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
 
@@ -20,18 +25,21 @@ export function LanguageToggle({
   function handleChange(nextLocale: Locale) {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("lang");
-
-    const basePath =
-      pathname === "/en"
-        ? "/"
-        : pathname === "/en/result"
-          ? "/result"
-          : pathname === "/result"
-            ? "/result"
-            : "/";
+    const template = getResultTemplateFromPathname(pathname);
 
     const query = params.toString();
-    const nextPath = getLocalizedPathname(basePath, nextLocale);
+    const nextPath = template
+      ? getLocalizedResultPath(template, nextLocale)
+      : getLocalizedPathname(
+          pathname === "/en"
+            ? "/"
+            : pathname === "/en/result"
+              ? "/result"
+              : pathname === "/result"
+                ? "/result"
+                : "/",
+          nextLocale,
+        );
     router.replace(`${nextPath}${query ? `?${query}` : ""}`, { scroll: false });
   }
 

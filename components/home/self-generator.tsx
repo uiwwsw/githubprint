@@ -3,7 +3,7 @@
 import { startTransition, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
+import { getDictionary, getLocalizedResultPath } from "@/lib/i18n";
 import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
 import { getTemplateMeta } from "@/lib/templates";
 import { type Locale, type TemplateId } from "@/lib/schemas";
@@ -35,7 +35,6 @@ export function SelfGenerator({
     setIsPending(true);
     const params = new URLSearchParams({
       template: selectedTemplate,
-      url: `https://github.com/${username}`,
     });
     if (includePrivate) {
       params.set("private", "1");
@@ -43,7 +42,9 @@ export function SelfGenerator({
 
     scrollWindowToTopInstantly();
     startTransition(() => {
-      router.push(`${getLocalizedPathname("/result", locale)}?${params.toString()}`, {
+      const query = params.toString();
+      const resultPath = getLocalizedResultPath(selectedTemplate, locale);
+      router.push(`${resultPath}${query ? `?${query}` : ""}`, {
         scroll: true,
       });
     });

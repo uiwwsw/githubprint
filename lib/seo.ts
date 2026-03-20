@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { buildResultDocumentTitle } from "@/lib/result-document";
 import type { Locale, TemplateId } from "@/lib/schemas";
-import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
+import { getDictionary, getLocalizedPathname, getLocalizedResultPath } from "@/lib/i18n";
 import { getSiteUrl } from "@/lib/site-url";
 
-function localePath(pathname: "/" | "/result", locale: Locale, search?: Record<string, string>) {
+function localePath(
+  pathname: "/" | "/result" | `/result/${TemplateId}`,
+  locale: Locale,
+  search?: Record<string, string>,
+) {
   const url = new URL(pathname, getSiteUrl());
   url.pathname = getLocalizedPathname(pathname, locale);
 
@@ -67,6 +71,11 @@ export function buildResultMetadata(
   options?: { template?: TemplateId; username?: string },
 ): Metadata {
   const dict = getDictionary(locale);
+  const resultPathname: "/" | "/result" | `/result/${TemplateId}` =
+    options?.template ? `/result/${options.template}` : "/result";
+  const localizedCanonicalPath = options?.template
+    ? getLocalizedResultPath(options.template, locale)
+    : getLocalizedPathname("/result", locale);
   const title = buildResultDocumentTitle({
     locale,
     template: options?.template,
@@ -82,10 +91,10 @@ export function buildResultMetadata(
       follow: false,
     },
     alternates: {
-      canonical: getLocalizedPathname("/result", locale),
+      canonical: localizedCanonicalPath,
       languages: {
-        ko: "/result",
-        en: "/en/result",
+        ko: options?.template ? `/result/${options.template}` : "/result",
+        en: options?.template ? `/en/result/${options.template}` : "/en/result",
       },
     },
     openGraph: {
@@ -93,7 +102,7 @@ export function buildResultMetadata(
       siteName: dict.siteName,
       title,
       description,
-      url: localePath("/result", locale),
+      url: localePath(resultPathname, locale),
       locale: locale === "ko" ? "ko_KR" : "en_US",
     },
     twitter: {

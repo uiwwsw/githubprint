@@ -3,7 +3,6 @@ import { buildGitHubLogoutPath, getGitHubSession } from "@/lib/auth";
 import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
-import { GitHubUrlError, normalizeGitHubUrlInput } from "@/lib/github-url";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
 import { buildResultMetadata } from "@/lib/seo";
@@ -12,7 +11,6 @@ import {
   type Locale,
   type PrivateExposureMode,
   type TemplateId,
-  templateSchema,
 } from "@/lib/schemas";
 import { ResultActions } from "@/components/result/result-actions";
 import { RenderTemplate } from "@/components/result/render-template";
@@ -20,7 +18,7 @@ import { ResultState } from "@/components/result/result-state";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { LocaleSync } from "@/components/ui/locale-sync";
 
-export type ResultPageProps = {
+export type ResultPageSearchParams = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -30,13 +28,6 @@ function getFirstValue(value: string | string[] | undefined) {
 
 function getErrorPresentation(error: unknown, locale: Locale) {
   const dict = getDictionary(locale);
-
-  if (error instanceof GitHubUrlError) {
-    return {
-      title: dict.errors.invalidUrlTitle,
-      message: error.message,
-    };
-  }
 
   if (error instanceof GitHubFetchError) {
     if (error.code === "not_found") {
@@ -90,33 +81,24 @@ function getErrorPresentation(error: unknown, locale: Locale) {
 
 export async function generateResultPageMetadata({
   locale,
-  searchParams,
-}: ResultPageProps & { locale: Locale }): Promise<Metadata> {
-  const params = await searchParams;
-  const url = getFirstValue(params.url);
-  const rawTemplate = getFirstValue(params.template);
-  const templateResult = templateSchema.safeParse(rawTemplate);
-  const template = templateResult.success ? templateResult.data : undefined;
+  template,
+}: {
+  locale: Locale;
+  template: TemplateId;
+}): Promise<Metadata> {
+  const session = await getGitHubSession();
 
-  if (!url) {
-    return buildResultMetadata(locale, { template });
-  }
-
-  try {
-    const normalized = normalizeGitHubUrlInput(url, locale);
-    return buildResultMetadata(locale, {
-      template,
-      username: normalized.username,
-    });
-  } catch {
-    return buildResultMetadata(locale, { template });
-  }
+  return buildResultMetadata(locale, {
+    template,
+    username: session?.user.login,
+  });
 }
 
 export async function ResultPageContent({
   locale,
   searchParams,
-}: ResultPageProps & { locale: Locale }) {
+  template,
+}: ResultPageSearchParams & { locale: Locale; template: TemplateId }) {
   const rawParams = await searchParams;
   const dict = getDictionary(locale);
   const homeHref = getLocalizedPathname("/", locale);
@@ -127,15 +109,11 @@ export async function ResultPageContent({
   const requestedPrivateInclude =
     getFirstValue(rawParams.private) === "1" ||
     getFirstValue(rawParams.private) === "true";
-  const parsed = resultSearchParamsSchema.safeParse({
+  const parsed = resultSearchParamsSchema.parse({
     refresh: getFirstValue(rawParams.refresh),
-    template: getFirstValue(rawParams.template),
-    url: getFirstValue(rawParams.url),
   });
 
-  const template: TemplateId = parsed.success ? parsed.data.template : "profile";
-
-  if (!parsed.success) {
+  if (!session) {
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
         <LocaleSync locale={locale} />
@@ -147,14 +125,13 @@ export async function ResultPageContent({
             backHref={homeHref}
             canDownload={false}
             locale={locale}
-            logoutHref={logoutHref}
             mode="fallback"
             template={template}
           />
           <ResultState
             locale={locale}
-            message={dict.errors.invalidSearchMessage}
-            title={dict.errors.invalidSearchTitle}
+            message={dict.errors.authRequiredMessage}
+            title={dict.errors.authRequiredTitle}
           />
         </div>
       </main>
@@ -162,24 +139,19 @@ export async function ResultPageContent({
   }
 
   try {
-    const normalized = normalizeGitHubUrlInput(parsed.data.url, locale);
     const forceFresh =
-      Boolean(parsed.data.refresh) &&
+      Boolean(parsed.refresh) &&
       (process.env.NODE_ENV !== "production" ||
         readEnv("GITHUBPRINT_ALLOW_RESULT_REFRESH", "GITFOLIO_ALLOW_RESULT_REFRESH") === "1");
-    const authContext =
-      session &&
-      session.user.login.toLowerCase() === normalized.username.toLowerCase()
-        ? {
-            accessToken: session.accessToken,
-            scopes: session.scopes,
-            viewerUsername: session.user.login,
-          }
-        : undefined;
     const privateExposureMode: PrivateExposureMode =
-      authContext && requestedPrivateInclude ? "include" : "aggregate";
+      requestedPrivateInclude ? "include" : "aggregate";
+    const authContext = {
+      accessToken: session.accessToken,
+      scopes: session.scopes,
+      viewerUsername: session.user.login,
+    };
     await assertResultRequestAllowed({ forceFresh });
-    const source = await getGitHubSource(normalized.username, {
+    const source = await getGitHubSource(session.user.login, {
       authContext,
       forceFresh,
       locale,
@@ -203,14 +175,14 @@ export async function ResultPageContent({
             dataMode={source.dataMode}
             downloadFileName={{
               generatedAt,
-              template: parsed.data.template,
-              username: normalized.username,
+              template,
+              username: session.user.login,
             }}
             locale={locale}
             logoutHref={logoutHref}
             mode={analysisResult.mode}
             privateExposureMode={source.privateExposureMode}
-            template={parsed.data.template}
+            template={template}
           />
           <RenderTemplate
             analysisResult={analysisResult}
@@ -220,8 +192,8 @@ export async function ResultPageContent({
             generatedAt={generatedAt}
             locale={locale}
             privateExposureMode={source.privateExposureMode}
-            profileUrl={normalized.canonicalProfileUrl}
-            template={parsed.data.template}
+            profileUrl={session.user.profileUrl}
+            template={template}
           />
         </div>
       </main>

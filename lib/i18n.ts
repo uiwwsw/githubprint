@@ -1,7 +1,9 @@
 import type { Locale, TemplateId } from "@/lib/schemas";
-import { localeSchema } from "@/lib/schemas";
+import { localeSchema, templateSchema } from "@/lib/schemas";
 
 export const defaultLocale: Locale = "ko";
+
+type LocalizedPathname = "/" | "/result" | `/result/${TemplateId}`;
 
 type Dictionary = {
   siteName: string;
@@ -36,10 +38,6 @@ type Dictionary = {
     privateToggleLabel: string;
     privateToggleHint: string;
     privateToggleWarning: string;
-    urlLabel: string;
-    urlPlaceholder: string;
-    urlHintPrimary: string;
-    urlHintSecondary: string;
     templateHeading: string;
     templateHint: string;
     selected: string;
@@ -80,9 +78,10 @@ type Dictionary = {
     backHome: string;
   };
   errors: {
+    authRequiredTitle: string;
+    authRequiredMessage: string;
     invalidSearchTitle: string;
     invalidSearchMessage: string;
-    invalidUrlTitle: string;
     notFoundTitle: string;
     notFoundMessage: string;
     organizationTitle: string;
@@ -211,7 +210,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     metadata: {
       homeTitle: "GitHubPrint | GitHub를 전달 가능한 개발자 문서로",
       homeDescription:
-        "공개 GitHub 또는 로그인한 본인 GitHub 데이터를 바탕으로 한국어 또는 영어 개발자 문서를 만드는 GitHubPrint.",
+        "로그인한 본인 GitHub 계정을 바탕으로 한국어 또는 영어 개발자 문서를 만드는 GitHubPrint.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub 포트폴리오",
@@ -247,10 +246,6 @@ const dictionaries: Record<Locale, Dictionary> = {
         "끄면 비공개 저장소는 집계형 신호로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다.",
       privateToggleWarning:
         "켜면 비공개 저장소 이름, 설명, 링크가 문서와 PDF에 직접 포함될 수 있습니다.",
-      urlLabel: "GitHub URL 또는 아이디",
-      urlPlaceholder: "예: https://github.com/username 또는 username",
-      urlHintPrimary: "프로필 URL, 저장소 URL, GitHub 아이디를 모두 입력할 수 있습니다.",
-      urlHintSecondary: "A4 인쇄와 브라우저 PDF 저장에 맞춰 결과가 정리됩니다.",
       templateHeading: "문서 템플릿 선택",
       templateHint: "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
       selected: "선택됨",
@@ -295,18 +290,20 @@ const dictionaries: Record<Locale, Dictionary> = {
       stateStatusValue: "생성 불가",
       stateEyebrow: "결과 문서",
       backToTemplate: "템플릿 다시 선택",
-      backHome: "입력 페이지로 돌아가기",
+      backHome: "홈으로 돌아가기",
     },
     errors: {
+      authRequiredTitle: "로그인이 필요합니다",
+      authRequiredMessage:
+        "결과 문서는 로그인한 본인 계정 기준으로만 생성합니다. 홈으로 돌아가 GitHub로 로그인해 주세요.",
       invalidSearchTitle: "입력 정보가 올바르지 않습니다",
-      invalidSearchMessage: "GitHub URL 또는 아이디와 템플릿 값을 다시 확인해 주세요.",
-      invalidUrlTitle: "입력을 다시 확인해 주세요",
+      invalidSearchMessage: "템플릿 값을 다시 확인한 뒤 다시 시도해 주세요.",
       notFoundTitle: "GitHub 계정을 찾지 못했습니다",
       notFoundMessage:
-        "입력한 URL 또는 아이디에서 추출한 사용자 이름으로 공개 GitHub 계정을 찾지 못했습니다.",
+        "로그인한 GitHub 계정 정보를 다시 확인한 뒤 다시 로그인해 주세요.",
       organizationTitle: "조직 계정은 아직 지원하지 않습니다",
       organizationMessage:
-        "GitHubPrint는 개인 개발자 계정을 문서로 요약합니다. 조직 계정 대신 개인 프로필 URL이나 아이디를 입력해 주세요.",
+        "GitHubPrint는 개인 개발자 계정만 문서로 요약합니다.",
       rateLimitTitle: "잠시 후 다시 시도해 주세요",
       rateLimitMessage:
         "GitHub API 요청 한도에 도달했습니다. 잠시 후 다시 생성하면 정상적으로 불러올 수 있습니다.",
@@ -443,7 +440,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     metadata: {
       homeTitle: "GitHubPrint | Turn GitHub into a shareable developer document",
       homeDescription:
-        "GitHubPrint turns public GitHub data, or your own signed-in GitHub account, into a polished developer document in Korean or English.",
+        "GitHubPrint turns your signed-in GitHub account into a polished developer document in Korean or English.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub portfolio",
@@ -479,10 +476,6 @@ const dictionaries: Record<Locale, Dictionary> = {
         "When off, private repositories contribute only through aggregated signals and their names or links stay hidden in the result.",
       privateToggleWarning:
         "When on, private repository names, descriptions, and links may appear directly in the document and exported PDF.",
-      urlLabel: "GitHub URL or username",
-      urlPlaceholder: "e.g. https://github.com/username or username",
-      urlHintPrimary: "Profile URLs, repository URLs, and GitHub usernames are all accepted.",
-      urlHintSecondary: "The result is optimized for A4 print and browser PDF export.",
       templateHeading: "Choose a document template",
       templateHint: "Templates use the same evidence, but differ in emphasis and reading style.",
       selected: "Selected",
@@ -530,15 +523,17 @@ const dictionaries: Record<Locale, Dictionary> = {
       backHome: "Back to home",
     },
     errors: {
+      authRequiredTitle: "Sign-in required",
+      authRequiredMessage:
+        "Result documents are generated only for the signed-in user's own account. Go back home and sign in with GitHub.",
       invalidSearchTitle: "The input is not valid",
-      invalidSearchMessage: "Please check the GitHub URL or username and template selection.",
-      invalidUrlTitle: "Please check the input",
+      invalidSearchMessage: "Please check the template selection and try again.",
       notFoundTitle: "GitHub account not found",
       notFoundMessage:
-        "We could not find a public GitHub account from the username extracted from the URL or input.",
+        "Please verify the signed-in GitHub account and sign in again.",
       organizationTitle: "Organization accounts are not supported yet",
       organizationMessage:
-        "GitHubPrint currently summarizes individual developer accounts. Please use a personal GitHub profile URL or username instead.",
+        "GitHubPrint currently summarizes individual developer accounts only.",
       rateLimitTitle: "Please try again shortly",
       rateLimitMessage:
         "The GitHub API rate limit has been reached. Try generating the document again in a few minutes.",
@@ -693,7 +688,7 @@ export function resolveLocaleFromAcceptLanguage(
 }
 
 export function getLocalizedPathname(
-  pathname: "/" | "/result",
+  pathname: LocalizedPathname,
   locale: Locale,
 ) {
   if (locale === "en") {
@@ -701,6 +696,23 @@ export function getLocalizedPathname(
   }
 
   return pathname;
+}
+
+export function getLocalizedResultPath(template: TemplateId, locale: Locale) {
+  return getLocalizedPathname(`/result/${template}`, locale);
+}
+
+export function getResultTemplateFromPathname(pathname: string): TemplateId | null {
+  const normalizedPathname =
+    pathname === "/en" ? "/" : pathname.startsWith("/en/") ? pathname.slice(3) : pathname;
+  const match = normalizedPathname.match(/^\/result\/([^/]+)$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const template = templateSchema.safeParse(match[1]);
+  return template.success ? template.data : null;
 }
 
 export function detectLocaleFromPathname(pathname: string): Locale {

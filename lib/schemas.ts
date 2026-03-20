@@ -25,8 +25,6 @@ export type AuthorizedPrivateInsights = {
 
 export const resultSearchParamsSchema = z.object({
   lang: localeSchema.optional(),
-  url: z.string().min(1, "GitHub URL 또는 아이디를 입력해 주세요."),
-  template: templateSchema.default("profile"),
   refresh: z.string().optional(),
 });
 
