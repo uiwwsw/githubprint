@@ -4,34 +4,40 @@ import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { composeProfileTemplateView } from "@/lib/template-composers";
 import { formatDate } from "@/lib/utils";
 import {
+  type AuthorizedPrivateInsights,
   type BenchmarkSnapshot,
   type ContributionSummary,
   type DataMode,
   type GitHubPrintAnalysis,
   type Locale,
+  type PrivateExposureMode,
 } from "@/lib/schemas";
 
 export function ProfileTemplate({
   analysis,
+  authorizedPrivateInsights,
   benchmark,
   contributionSummary,
   dataMode,
   generatedAt,
   mode,
+  privateExposureMode = "aggregate",
   profileUrl,
   locale,
 }: {
   analysis: GitHubPrintAnalysis;
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   benchmark: BenchmarkSnapshot;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
   mode: "openai" | "fallback";
+  privateExposureMode?: PrivateExposureMode;
   profileUrl: string;
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
-  const view = composeProfileTemplateView(analysis, benchmark, locale);
+  const view = composeProfileTemplateView(analysis, benchmark, locale, dataMode);
 
   return (
     <DocumentShell
@@ -77,11 +83,16 @@ export function ProfileTemplate({
           </div>
         </div>
         <div className="mt-7">
-          <FactGrid analysis={analysis} locale={locale} />
+          <FactGrid
+            analysis={analysis}
+            authorizedPrivateInsights={authorizedPrivateInsights}
+            dataMode={dataMode}
+            locale={locale}
+          />
         </div>
       </header>
 
-      <div className="document-grid-profile mt-8">
+      <div className="document-grid-stack document-grid-stack-profile mt-8">
         <div className="min-w-0 space-y-6">
           <SectionBlock title={dict.templates.profile.sections.type} eyebrow={dict.templates.profile.sections.type}>
             <p>{analysis.inferred.developerType}</p>
@@ -97,6 +108,18 @@ export function ProfileTemplate({
               <p>{view.projectLead}</p>
               <ProjectList analysis={analysis} locale={locale} />
             </div>
+          </SectionBlock>
+          <SectionBlock title={dict.templates.profile.sections.evidence} eyebrow={dict.templates.profile.sections.evidence}>
+            <EvidenceList analysis={analysis} />
+          </SectionBlock>
+          <SectionBlock title={dict.templates.profile.sections.dataScope} eyebrow={dict.templates.profile.sections.dataScope}>
+            <PublicDataScope
+              authorizedPrivateInsights={authorizedPrivateInsights}
+              contributionSummary={contributionSummary}
+              dataMode={dataMode}
+              locale={locale}
+              privateExposureMode={privateExposureMode}
+            />
           </SectionBlock>
         </div>
         <div className="min-w-0 space-y-6">
@@ -123,16 +146,6 @@ export function ProfileTemplate({
               <p>{view.roleLead}</p>
               <ChipList items={analysis.inferred.bestFitRoles} />
             </div>
-          </SectionBlock>
-          <SectionBlock title={dict.templates.profile.sections.evidence} eyebrow={dict.templates.profile.sections.evidence}>
-            <EvidenceList analysis={analysis} />
-          </SectionBlock>
-          <SectionBlock title={dict.templates.profile.sections.dataScope} eyebrow={dict.templates.profile.sections.dataScope}>
-            <PublicDataScope
-              contributionSummary={contributionSummary}
-              dataMode={dataMode}
-              locale={locale}
-            />
           </SectionBlock>
           <SectionBlock title={dict.templates.profile.sections.caution} eyebrow={dict.templates.profile.sections.caution}>
             <p>{analysis.inferred.cautionNote}</p>

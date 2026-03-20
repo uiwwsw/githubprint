@@ -28,11 +28,14 @@ type Dictionary = {
     authDescription: string;
     authReadyEyebrow: string;
     authReadyMessage: string;
-    authReadyHint: string;
-    authGenerateSelf: string;
     authSignIn: string;
     authSignOut: string;
     authSignedInAs: string;
+    generatorTitle: string;
+    generatorDescription: string;
+    privateToggleLabel: string;
+    privateToggleHint: string;
+    privateToggleWarning: string;
     urlLabel: string;
     urlPlaceholder: string;
     urlHintPrimary: string;
@@ -62,6 +65,9 @@ type Dictionary = {
     dataModeLabel: string;
     dataModePublic: string;
     dataModePrivate: string;
+    privateExposureLabel: string;
+    privateExposureAggregate: string;
+    privateExposureInclude: string;
     modeAi: string;
     modeFallback: string;
     download: string;
@@ -70,6 +76,7 @@ type Dictionary = {
     stateStatusLabel: string;
     stateStatusValue: string;
     stateEyebrow: string;
+    backToTemplate: string;
     backHome: string;
   };
   errors: {
@@ -96,11 +103,17 @@ type Dictionary = {
     factCommitsYear: string;
     factPullRequestsYear: string;
     factIssuesYear: string;
+    factAuthorizedRepos: string;
+    factPrivateRepos: string;
+    factRecentPrivateRepos: string;
     benchmarkOverall: string;
     confidenceLabel: string;
     cohortLabel: string;
     repoUnit: string;
     followerUnit: string;
+    privateInsightsTitle: string;
+    privateInsightsHint: string;
+    privateInsightsTopStack: string;
     signedInActivityTitle: string;
     signedInActivityHint: string;
     signedInActivityWindow: string;
@@ -215,20 +228,25 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleTop: "GitHub를",
       titleBottom: "전달 가능한 개발자 문서로",
       description:
-        "공개 GitHub 정보를 바탕으로 읽기 쉬운 문서를 만들고, 로그인한 본인 계정은 private-enriched mode로 더 깊게 읽을 수 있습니다.",
+        "GitHub로 로그인하면 내 계정을 바로 읽기 쉬운 개발자 문서로 변환합니다.",
       authEyebrow: "로그인 모드",
-      authTitle: "GitHub 로그인으로 내 계정 더 깊게 보기",
+      authTitle: "GitHub 로그인으로 내 프로필 바로 만들기",
       authDescription:
-        "로그인한 상태에서 본인 프로필을 생성하면, GitHubPrint가 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
+        "로그인하면 GitHubPrint가 본인 계정을 바로 문서로 만들고, 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
-        "본인 프로필을 생성하면 GitHubPrint가 승인된 GitHub 데이터 범위까지 반영합니다.",
-      authReadyHint:
-        "다른 사람 프로필을 생성할 때는 계속 공개 GitHub 정보만 사용합니다.",
-      authGenerateSelf: "내 프로필 바로 생성",
+        "아래에서 템플릿과 비공개 포함 범위를 고른 뒤 본인 프로필 결과를 생성할 수 있습니다.",
       authSignIn: "GitHub로 로그인",
       authSignOut: "로그아웃",
       authSignedInAs: "로그인됨",
+      generatorTitle: "문서 템플릿과 비공개 포함 범위 선택",
+      generatorDescription:
+        "기본값은 비공개 저장소 상세를 숨기는 공유용 문서입니다. 토글을 켜면 비공개 저장소 이름과 설명도 결과에 직접 포함할 수 있습니다.",
+      privateToggleLabel: "비공개 저장소 포함하기",
+      privateToggleHint:
+        "끄면 비공개 저장소는 집계형 신호로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다.",
+      privateToggleWarning:
+        "켜면 비공개 저장소 이름, 설명, 링크가 문서와 PDF에 직접 포함될 수 있습니다.",
       urlLabel: "GitHub URL 또는 아이디",
       urlPlaceholder: "예: https://github.com/username 또는 username",
       urlHintPrimary: "프로필 URL, 저장소 URL, GitHub 아이디를 모두 입력할 수 있습니다.",
@@ -240,7 +258,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submit: "문서 생성",
       submitting: "문서 생성 중...",
       submitHint:
-        "기본 템플릿이 미리 선택되어 있어, 유효한 URL 또는 아이디를 입력하면 바로 문서를 만들 수 있습니다.",
+        "템플릿과 비공개 포함 범위를 선택한 뒤 바로 문서를 만들 수 있습니다.",
       dataScopeTitle: "분석에 반영하는 GitHub 데이터 범위",
       dataScopeItems: {
         profile:
@@ -265,6 +283,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModeLabel: "데이터 범위",
       dataModePublic: "공개 GitHub",
       dataModePrivate: "로그인한 본인 계정",
+      privateExposureLabel: "비공개 상세",
+      privateExposureAggregate: "기본 공유 모드",
+      privateExposureInclude: "비공개 상세 포함",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
       download: "다운로드",
@@ -273,6 +294,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       stateStatusLabel: "상태",
       stateStatusValue: "생성 불가",
       stateEyebrow: "결과 문서",
+      backToTemplate: "템플릿 다시 선택",
       backHome: "입력 페이지로 돌아가기",
     },
     errors: {
@@ -302,11 +324,18 @@ const dictionaries: Record<Locale, Dictionary> = {
       factCommitsYear: "최근 1년 커밋",
       factPullRequestsYear: "최근 1년 PR",
       factIssuesYear: "최근 1년 이슈",
+      factAuthorizedRepos: "읽은 전체 저장소",
+      factPrivateRepos: "비공개 저장소",
+      factRecentPrivateRepos: "최근 비공개 업데이트",
       benchmarkOverall: "유사한 개발자군 비교",
       confidenceLabel: "분석 신뢰도",
       cohortLabel: "비교 집단",
       repoUnit: "개",
       followerUnit: "명",
+      privateInsightsTitle: "승인된 비공개 저장소 신호",
+      privateInsightsHint:
+        "로그인한 본인 계정에서만 계산되는 비공개 저장소 집계 신호입니다.",
+      privateInsightsTopStack: "비공개 쪽에서 추가로 보이는 스택",
       signedInActivityTitle: "승인된 활동 스냅샷",
       signedInActivityHint:
         "로그인한 본인 계정일 때만 읽을 수 있는 최근 1년 GitHub 활동 통계입니다.",
@@ -431,20 +460,25 @@ const dictionaries: Record<Locale, Dictionary> = {
       titleTop: "Turn GitHub",
       titleBottom: "into a shareable developer document",
       description:
-        "GitHubPrint reads public GitHub data and turns it into a polished document. If you sign in, your own account can be analyzed in private-enriched mode.",
+        "Sign in with GitHub and turn your own account into a polished developer document right away.",
       authEyebrow: "Signed-in mode",
-      authTitle: "Sign in with GitHub for a deeper self-read",
+      authTitle: "Sign in with GitHub and generate your profile right away",
       authDescription:
-        "When you sign in and generate your own profile, GitHubPrint can use the GitHub data you authorized, including private repositories and private profile signals.",
+        "When you sign in, GitHubPrint can immediately generate your own document using the GitHub data you authorized, including private repositories and private profile signals.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
-        "When you generate your own profile, GitHubPrint will include the GitHub data range you authorized.",
-      authReadyHint:
-        "Profiles for other people still use public GitHub evidence only.",
-      authGenerateSelf: "Generate my profile",
+        "Choose the template and private exposure below, then generate your own profile document.",
       authSignIn: "Sign in with GitHub",
       authSignOut: "Sign out",
       authSignedInAs: "Signed in as",
+      generatorTitle: "Choose the template and private-repo exposure",
+      generatorDescription:
+        "The default is a shareable document that keeps private repository details hidden. Turn the toggle on only if you want private repository names and descriptions to appear directly in the result.",
+      privateToggleLabel: "Include private repositories",
+      privateToggleHint:
+        "When off, private repositories contribute only through aggregated signals and their names or links stay hidden in the result.",
+      privateToggleWarning:
+        "When on, private repository names, descriptions, and links may appear directly in the document and exported PDF.",
       urlLabel: "GitHub URL or username",
       urlPlaceholder: "e.g. https://github.com/username or username",
       urlHintPrimary: "Profile URLs, repository URLs, and GitHub usernames are all accepted.",
@@ -456,7 +490,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       submit: "Convert",
       submitting: "Converting...",
       submitHint:
-        "The default template is preselected. Convert becomes available as soon as the URL or username is valid.",
+        "Choose the template and private-repo exposure, then generate the document right away.",
       dataScopeTitle: "GitHub data used",
       dataScopeItems: {
         profile:
@@ -481,6 +515,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModeLabel: "Data",
       dataModePublic: "Public GitHub",
       dataModePrivate: "Signed-in self mode",
+      privateExposureLabel: "Private detail",
+      privateExposureAggregate: "Default sharing mode",
+      privateExposureInclude: "Private details included",
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
       download: "Download",
@@ -489,6 +526,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       stateStatusLabel: "Status",
       stateStatusValue: "Unavailable",
       stateEyebrow: "GitHubPrint Result",
+      backToTemplate: "Choose another template",
       backHome: "Back to home",
     },
     errors: {
@@ -518,11 +556,18 @@ const dictionaries: Record<Locale, Dictionary> = {
       factCommitsYear: "12m commits",
       factPullRequestsYear: "12m PRs",
       factIssuesYear: "12m issues",
+      factAuthorizedRepos: "Authorized repos",
+      factPrivateRepos: "Private repos",
+      factRecentPrivateRepos: "Recent private updates",
       benchmarkOverall: "Peer benchmark",
       confidenceLabel: "Confidence",
       cohortLabel: "Cohort",
       repoUnit: "",
       followerUnit: "",
+      privateInsightsTitle: "Authorized private-repo signals",
+      privateInsightsHint:
+        "These aggregate private-repository signals are calculated only for the signed-in user's own account.",
+      privateInsightsTopStack: "Additional stack signals from private work",
       signedInActivityTitle: "Authorized activity snapshot",
       signedInActivityHint:
         "These last-12-month GitHub activity counts are available only for the signed-in user's own account.",

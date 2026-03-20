@@ -5,6 +5,7 @@ export type TemplateId = z.infer<typeof templateSchema>;
 export const localeSchema = z.enum(["ko", "en"]);
 export type Locale = z.infer<typeof localeSchema>;
 export type DataMode = "public" | "private_enriched";
+export type PrivateExposureMode = "aggregate" | "include";
 export type ContributionSummary = {
   endedAt: string;
   startedAt: string;
@@ -13,6 +14,13 @@ export type ContributionSummary = {
   totalIssueContributions: number;
   totalPullRequestContributions: number;
   totalPullRequestReviewContributions: number;
+};
+export type AuthorizedPrivateInsights = {
+  authorizedRepoCount: number;
+  hiddenRepresentativeCount: number;
+  privateRepoCount: number;
+  recentPrivateRepoCount: number;
+  topPrivateStack: string[];
 };
 
 export const resultSearchParamsSchema = z.object({

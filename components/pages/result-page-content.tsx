@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { getGitHubSession } from "@/lib/auth";
+import { buildGitHubLogoutPath, getGitHubSession } from "@/lib/auth";
 import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
 import { GitHubUrlError, normalizeGitHubUrlInput } from "@/lib/github-url";
-import { getDictionary } from "@/lib/i18n";
+import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
 import { buildResultMetadata } from "@/lib/seo";
 import {
   resultSearchParamsSchema,
   type Locale,
+  type PrivateExposureMode,
   type TemplateId,
   templateSchema,
 } from "@/lib/schemas";
@@ -118,6 +119,14 @@ export async function ResultPageContent({
 }: ResultPageProps & { locale: Locale }) {
   const rawParams = await searchParams;
   const dict = getDictionary(locale);
+  const homeHref = getLocalizedPathname("/", locale);
+  const session = await getGitHubSession();
+  const logoutHref = session
+    ? buildGitHubLogoutPath(homeHref)
+    : undefined;
+  const requestedPrivateInclude =
+    getFirstValue(rawParams.private) === "1" ||
+    getFirstValue(rawParams.private) === "true";
   const parsed = resultSearchParamsSchema.safeParse({
     refresh: getFirstValue(rawParams.refresh),
     template: getFirstValue(rawParams.template),
@@ -135,8 +144,10 @@ export async function ResultPageContent({
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
+            backHref={homeHref}
             canDownload={false}
             locale={locale}
+            logoutHref={logoutHref}
             mode="fallback"
             template={template}
           />
@@ -156,7 +167,6 @@ export async function ResultPageContent({
       Boolean(parsed.data.refresh) &&
       (process.env.NODE_ENV !== "production" ||
         readEnv("GITHUBPRINT_ALLOW_RESULT_REFRESH", "GITFOLIO_ALLOW_RESULT_REFRESH") === "1");
-    const session = await getGitHubSession();
     const authContext =
       session &&
       session.user.login.toLowerCase() === normalized.username.toLowerCase()
@@ -166,11 +176,14 @@ export async function ResultPageContent({
             viewerUsername: session.user.login,
           }
         : undefined;
+    const privateExposureMode: PrivateExposureMode =
+      authContext && requestedPrivateInclude ? "include" : "aggregate";
     await assertResultRequestAllowed({ forceFresh });
     const source = await getGitHubSource(normalized.username, {
       authContext,
       forceFresh,
       locale,
+      privateExposureMode,
     });
     const analysisResult = await analyzeGitHubSource(source, {
       forceFresh,
@@ -186,6 +199,7 @@ export async function ResultPageContent({
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
+            backHref={homeHref}
             dataMode={source.dataMode}
             downloadFileName={{
               generatedAt,
@@ -193,15 +207,19 @@ export async function ResultPageContent({
               username: normalized.username,
             }}
             locale={locale}
+            logoutHref={logoutHref}
             mode={analysisResult.mode}
+            privateExposureMode={source.privateExposureMode}
             template={parsed.data.template}
           />
           <RenderTemplate
             analysisResult={analysisResult}
+            authorizedPrivateInsights={source.authorizedPrivateInsights}
             contributionSummary={source.activity.contributionSummary}
             dataMode={source.dataMode}
             generatedAt={generatedAt}
             locale={locale}
+            privateExposureMode={source.privateExposureMode}
             profileUrl={normalized.canonicalProfileUrl}
             template={parsed.data.template}
           />
@@ -219,8 +237,10 @@ export async function ResultPageContent({
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
+            backHref={homeHref}
             canDownload={false}
             locale={locale}
+            logoutHref={logoutHref}
             mode="fallback"
             template={template}
           />

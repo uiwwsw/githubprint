@@ -12,7 +12,13 @@ import {
   type RepoIdentity,
   type RepoStackSummary,
 } from "@/lib/repo-identity";
-import type { ContributionSummary, DataMode, Locale } from "@/lib/schemas";
+import type {
+  AuthorizedPrivateInsights,
+  ContributionSummary,
+  DataMode,
+  Locale,
+  PrivateExposureMode,
+} from "@/lib/schemas";
 
 type GitHubUserResponse = {
   avatar_url: string;
@@ -48,6 +54,7 @@ type GitHubRepoResponse = {
   name: string;
   name_with_owner?: string;
   open_issues_count: number;
+  private: boolean;
   pushed_at: string;
   size: number;
   stargazers_count: number;
@@ -139,6 +146,7 @@ export type GitHubRepoSnapshot = {
   techSignals: string[];
   topics: string[];
   updatedAt: string;
+  visibility: "private" | "public";
 };
 
 export type GitHubSourceData = {
@@ -167,10 +175,12 @@ export type GitHubSourceData = {
     note: string;
     recentRepoCount: number;
   };
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   cacheKey: string;
   dataMode: DataMode;
   evidenceSignals: string[];
   pinnedRepoNames: string[];
+  privateExposureMode: PrivateExposureMode;
   representativeRepos: GitHubRepoSnapshot[];
   repos: GitHubRepoSnapshot[];
   stackSummary?: RepoStackSummary;
@@ -915,6 +925,33 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
     .slice(0, 6);
 }
 
+function buildAuthorizedPrivateInsights(
+  repos: GitHubRepoSnapshot[],
+  hiddenRepresentativeCount: number,
+) {
+  const privateRepos = repos.filter((repo) => repo.visibility === "private");
+  if (privateRepos.length === 0) {
+    return null;
+  }
+
+  const privateStackSummary = summarizeRepoStack(privateRepos);
+
+  return {
+    authorizedRepoCount: repos.length,
+    hiddenRepresentativeCount,
+    privateRepoCount: privateRepos.length,
+    recentPrivateRepoCount: privateRepos.filter(
+      (repo) => recencyScore(repo.updatedAt) >= 8,
+    ).length,
+    topPrivateStack:
+      privateStackSummary.coreStack.length > 0
+        ? privateStackSummary.coreStack.slice(0, 4)
+        : buildTopLanguages(privateRepos)
+            .map((item) => item.name)
+            .slice(0, 4),
+  } satisfies AuthorizedPrivateInsights;
+}
+
 function formatLocaleNumber(value: number, locale: Locale) {
   return new Intl.NumberFormat(locale === "ko" ? "ko-KR" : "en-US").format(
     value,
@@ -927,7 +964,9 @@ function buildEvidenceSignals(
     GitHubSourceData,
     | "account"
     | "activity"
+    | "authorizedPrivateInsights"
     | "dataMode"
+    | "privateExposureMode"
     | "representativeRepos"
     | "stackSummary"
     | "topLanguages"
@@ -940,6 +979,21 @@ function buildEvidenceSignals(
       locale === "ko"
         ? "로그인한 본인 계정 기준으로 승인된 GitHub 데이터 범위까지 함께 읽었습니다."
         : "This reading includes GitHub data authorized by the signed-in account, which may include private repositories.",
+    );
+  }
+
+  if (
+    source.dataMode === "private_enriched" &&
+    source.authorizedPrivateInsights?.privateRepoCount
+  ) {
+    signals.push(
+      source.privateExposureMode === "include"
+        ? locale === "ko"
+          ? `승인된 비공개 저장소 ${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)}개까지 결과 문서에 직접 포함할 수 있도록 열어 두었습니다.`
+          : `${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)} authorized private repositories are available for direct inclusion in this document.`
+        : locale === "ko"
+          ? `승인된 비공개 저장소 ${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)}개를 분석에 반영했지만, 기본 공유 모드에서는 상세를 숨깁니다.`
+          : `${formatLocaleNumber(source.authorizedPrivateInsights.privateRepoCount, locale)} authorized private repositories inform the analysis, while details stay hidden in the default sharing mode.`,
     );
   }
 
@@ -996,9 +1050,14 @@ function buildEvidenceSignals(
 
   signals.push(source.activity.note);
   signals.push(
-    locale === "ko"
-      ? `공개 저장소 수는 ${source.account.publicRepoCount}개, 팔로워 수는 ${source.account.followers}명입니다.`
-      : `The account has ${source.account.publicRepoCount} public repositories and ${source.account.followers} followers.`,
+    source.dataMode === "private_enriched" &&
+      source.authorizedPrivateInsights?.privateRepoCount
+      ? locale === "ko"
+        ? `공개 저장소는 ${source.account.publicRepoCount}개이고, 승인된 범위에서 읽은 전체 소유 저장소는 ${formatLocaleNumber(source.authorizedPrivateInsights.authorizedRepoCount, locale)}개입니다.`
+        : `The account exposes ${source.account.publicRepoCount} public repositories, while ${formatLocaleNumber(source.authorizedPrivateInsights.authorizedRepoCount, locale)} owned repositories were readable within the authorized scope.`
+      : locale === "ko"
+        ? `공개 저장소 수는 ${source.account.publicRepoCount}개, 팔로워 수는 ${source.account.followers}명입니다.`
+        : `The account has ${source.account.publicRepoCount} public repositories and ${source.account.followers} followers.`,
   );
 
   return signals.slice(0, 5);
@@ -1024,8 +1083,10 @@ function buildMockSource(
     ...mockGitHubProfile,
     account,
     activity,
+    authorizedPrivateInsights: null,
     cacheKey: `${mockGitHubProfile.cacheKey}::${overrides?.cacheKeySuffix ?? "fixture"}`,
     dataMode: "public",
+    privateExposureMode: "aggregate",
     stackSummary: summarizeRepoStack(mockGitHubProfile.representativeRepos),
   };
 
@@ -1034,7 +1095,9 @@ function buildMockSource(
     evidenceSignals: buildEvidenceSignals(locale, {
       account: source.account,
       activity: source.activity,
+      authorizedPrivateInsights: source.authorizedPrivateInsights,
       dataMode: source.dataMode,
+      privateExposureMode: source.privateExposureMode,
       representativeRepos: source.representativeRepos,
       stackSummary: source.stackSummary,
       topLanguages: source.topLanguages,
@@ -1077,6 +1140,7 @@ function buildDevelopmentFallbackSource(
           : "GitHub API rate limits were hit in local development, so recent activity is shown only from a minimal fallback source.",
       recentRepoCount: 0,
     },
+    authorizedPrivateInsights: null,
     cacheKey: `local-dev-fallback::${username.toLowerCase()}`,
     dataMode: "public",
     evidenceSignals: [
@@ -1088,6 +1152,7 @@ function buildDevelopmentFallbackSource(
         : "To see real GitHub interpretation, set GITHUB_TOKEN or retry after the rate limit resets.",
     ],
     pinnedRepoNames: [],
+    privateExposureMode: "aggregate",
     representativeRepos: [],
     repos: [],
     stackSummary: {
@@ -1105,6 +1170,7 @@ async function fetchGitHubSourceInternal(
   locale: Locale,
   forceFresh?: boolean,
   authContext?: GitHubSourceAuthContext,
+  privateExposureMode: PrivateExposureMode = "aggregate",
 ): Promise<GitHubSourceData> {
   const useFixture =
     process.env.NODE_ENV !== "production" &&
@@ -1197,6 +1263,7 @@ async function fetchGitHubSourceInternal(
       techSignals: [],
       topics: repo.topics ?? [],
       updatedAt: repo.updated_at,
+      visibility: repo.private ? "private" : "public",
     }));
 
     const readmeTargetRepos = getRepoPoolForReadmes(repos);
@@ -1255,8 +1322,21 @@ async function fetchGitHubSourceInternal(
       .map((repo) => ({ ...repo, score: scoreRepo(repo) }))
       .sort((left, right) => right.score - left.score);
 
-    const representativeRepoCandidates = scoredRepos
+    const allRepresentativeRepoCandidates = scoredRepos
       .filter((repo) => !repo.archived)
+      .slice(0, REPRESENTATIVE_REPO_LIMIT);
+    const hiddenRepresentativeCount =
+      dataMode === "private_enriched" && privateExposureMode === "aggregate"
+        ? allRepresentativeRepoCandidates.filter(
+            (repo) => repo.visibility === "private",
+          ).length
+        : 0;
+    const representativeRepoCandidates = scoredRepos
+      .filter(
+        (repo) =>
+          !repo.archived &&
+          (privateExposureMode === "include" || repo.visibility === "public"),
+      )
       .slice(0, REPRESENTATIVE_REPO_LIMIT);
     const detailTargetNames = new Set(
       representativeRepoCandidates
@@ -1333,6 +1413,13 @@ async function fetchGitHubSourceInternal(
     const activityNote = formatActivityNote(locale, lastActiveAt, recentRepoCount);
     const topLanguages = buildTopLanguages(scoredReposWithDetails);
     const stackSummary = summarizeRepoStack(scoredReposWithDetails);
+    const authorizedPrivateInsights =
+      dataMode === "private_enriched"
+        ? buildAuthorizedPrivateInsights(
+            scoredReposWithDetails,
+            hiddenRepresentativeCount,
+          )
+        : null;
 
     const source: GitHubSourceData = {
       account: {
@@ -1360,8 +1447,10 @@ async function fetchGitHubSourceInternal(
         note: activityNote,
         recentRepoCount,
       },
+      authorizedPrivateInsights,
       cacheKey: [
         dataMode,
+        privateExposureMode,
         user.login,
         user.updated_at,
         contributionSummary
@@ -1373,6 +1462,7 @@ async function fetchGitHubSourceInternal(
       dataMode,
       evidenceSignals: [],
       pinnedRepoNames: pinnedRepos.map((repo) => repo.name),
+      privateExposureMode,
       representativeRepos,
       repos: scoredReposWithDetails,
       stackSummary,
@@ -1409,7 +1499,8 @@ async function fetchGitHubSourceInternal(
 }
 
 const getCachedGitHubSource = unstable_cache(
-  async (username: string, locale: Locale) => fetchGitHubSourceInternal(username, locale, false),
+  async (username: string, locale: Locale) =>
+    fetchGitHubSourceInternal(username, locale, false),
   ["githubprint-github-source"],
   { revalidate: CACHE_WINDOW_SECONDS },
 );
@@ -1420,11 +1511,19 @@ export async function getGitHubSource(
     authContext?: GitHubSourceAuthContext;
     forceFresh?: boolean;
     locale?: Locale;
+    privateExposureMode?: PrivateExposureMode;
   },
 ) {
   const locale = options?.locale ?? "ko";
+  const privateExposureMode = options?.privateExposureMode ?? "aggregate";
   if (options?.authContext) {
-    return fetchGitHubSourceInternal(username, locale, true, options.authContext);
+    return fetchGitHubSourceInternal(
+      username,
+      locale,
+      true,
+      options.authContext,
+      privateExposureMode,
+    );
   }
 
   return options?.forceFresh

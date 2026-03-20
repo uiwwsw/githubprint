@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PublicDataScope } from "@/components/result/common";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { normalizeGitHubUrlInput, GitHubUrlError } from "@/lib/github-url";
+import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
 import { getTemplateMeta } from "@/lib/templates";
 import { type DataMode, type Locale, type TemplateId } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
@@ -82,8 +83,9 @@ export function UrlForm({
       });
       const targetPath = getLocalizedPathname("/result", locale);
 
+      scrollWindowToTopInstantly();
       startTransition(() => {
-        router.push(`${targetPath}?${params.toString()}`);
+        router.push(`${targetPath}?${params.toString()}`, { scroll: true });
       });
     } catch (submissionError) {
       setIsPending(false);

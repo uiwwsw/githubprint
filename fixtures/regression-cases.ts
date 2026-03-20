@@ -78,6 +78,7 @@ function makeRepo(
     techSignals: [],
     topics: [],
     updatedAt,
+    visibility: "public",
     ...overrides,
   };
 }
@@ -155,14 +156,17 @@ function buildSource(options: {
       username: options.username,
     },
     activity: {
+      contributionSummary: null,
       lastActiveAt,
       note: buildActivityNote(options.recentRepoCount ?? 0, lastActiveAt),
       recentRepoCount: options.recentRepoCount ?? 0,
     },
+    authorizedPrivateInsights: null,
     cacheKey: `${options.username}::regression`,
     dataMode: "public" as const,
     evidenceSignals: buildEvidenceSignals(options.representativeRepos),
     pinnedRepoNames: options.pinnedRepoNames ?? [],
+    privateExposureMode: "aggregate" as const,
     representativeRepos: options.representativeRepos,
     repos,
     topLanguages: buildTopLanguages(repos),

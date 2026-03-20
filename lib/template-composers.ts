@@ -1,4 +1,9 @@
-import type { BenchmarkSnapshot, GitHubPrintAnalysis, Locale } from "@/lib/schemas";
+import type {
+  BenchmarkSnapshot,
+  DataMode,
+  GitHubPrintAnalysis,
+  Locale,
+} from "@/lib/schemas";
 
 type BenchmarkMetric = BenchmarkSnapshot["metrics"][number];
 
@@ -64,6 +69,7 @@ export function composeBriefTemplateView(
   analysis: GitHubPrintAnalysis,
   benchmark: BenchmarkSnapshot,
   locale: Locale,
+  dataMode: DataMode = "public",
 ): BriefTemplateView {
   const stackText = joinReadable(analysis.facts.coreStack.slice(0, 2), locale);
 
@@ -74,8 +80,12 @@ export function composeBriefTemplateView(
           ? `${stackText} 중심 프로젝트 요약`
           : `A quick snapshot of ${stackText}-centered work`
         : locale === "ko"
-          ? "공개 GitHub 활동 요약"
-          : "A quick snapshot of public GitHub work",
+          ? dataMode === "private_enriched"
+            ? "승인된 GitHub 활동 요약"
+            : "공개 GitHub 활동 요약"
+          : dataMode === "private_enriched"
+            ? "A quick snapshot of authorized GitHub work"
+            : "A quick snapshot of public GitHub work",
     summary: firstSentences(analysis.profile.summary, 2),
     highlights: analysis.evidence.slice(0, 4).map((item) => item.detail),
     activityNote: analysis.facts.activityNote,
@@ -150,6 +160,7 @@ export function composeProfileTemplateView(
   analysis: GitHubPrintAnalysis,
   benchmark: BenchmarkSnapshot,
   locale: Locale,
+  dataMode: DataMode = "public",
 ): ProfileTemplateView {
   const coreStack = analysis.facts.coreStack.slice(0, 3);
   const strengths = analysis.inferred.strengths.slice(0, 2);
@@ -178,7 +189,11 @@ export function composeProfileTemplateView(
         : `The clearest strengths cluster around ${strengthText}.`,
     roleLead:
       locale === "ko"
-        ? `공개 정보 기준으로는 ${roleText} 같은 역할과의 접점이 비교적 분명합니다.`
-        : `Based on public evidence, the profile aligns most naturally with roles such as ${roleText}.`,
+        ? dataMode === "private_enriched"
+          ? `승인된 GitHub 기준으로는 ${roleText} 같은 역할과의 접점이 비교적 분명합니다.`
+          : `공개 정보 기준으로는 ${roleText} 같은 역할과의 접점이 비교적 분명합니다.`
+        : dataMode === "private_enriched"
+          ? `Based on authorized GitHub evidence, the profile aligns most naturally with roles such as ${roleText}.`
+          : `Based on public evidence, the profile aligns most naturally with roles such as ${roleText}.`,
   };
 }

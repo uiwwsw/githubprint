@@ -1,4 +1,4 @@
-import { UrlForm } from "@/components/home/url-form";
+import { SelfGenerator } from "@/components/home/self-generator";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
 import { LanguageToggle } from "@/components/ui/language-toggle";
@@ -38,14 +38,11 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
         <div className="mt-12 w-full">
           <GitHubAuthStatus locale={locale} />
         </div>
-
-        <div className="mt-6 w-full">
-          <UrlForm
-            initialUrl={session?.user.login ?? ""}
-            locale={locale}
-            signedInUsername={session?.user.login ?? null}
-          />
-        </div>
+        {session ? (
+          <div className="w-full">
+            <SelfGenerator locale={locale} username={session.user.login} />
+          </div>
+        ) : null}
       </div>
     </main>
   );

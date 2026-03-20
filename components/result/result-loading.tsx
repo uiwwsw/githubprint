@@ -1,10 +1,16 @@
 "use client";
 
+import { useLayoutEffect } from "react";
 import { getDictionary } from "@/lib/i18n";
+import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
 import type { Locale } from "@/lib/schemas";
 
 export function ResultLoading({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
+
+  useLayoutEffect(() => {
+    scrollWindowToTopInstantly();
+  }, []);
 
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">

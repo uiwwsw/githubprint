@@ -8,34 +8,40 @@ import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { formatDate } from "@/lib/utils";
 import { composeBriefTemplateView } from "@/lib/template-composers";
 import {
+  type AuthorizedPrivateInsights,
   type BenchmarkSnapshot,
   type ContributionSummary,
   type DataMode,
   type GitHubPrintAnalysis,
   type Locale,
+  type PrivateExposureMode,
 } from "@/lib/schemas";
 
 export function BriefTemplate({
   analysis,
+  authorizedPrivateInsights,
   benchmark,
   contributionSummary,
   dataMode,
   generatedAt,
   mode,
+  privateExposureMode = "aggregate",
   profileUrl,
   locale,
 }: {
   analysis: GitHubPrintAnalysis;
+  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   benchmark: BenchmarkSnapshot;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
   mode: "openai" | "fallback";
+  privateExposureMode?: PrivateExposureMode;
   profileUrl: string;
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
-  const view = composeBriefTemplateView(analysis, benchmark, locale);
+  const view = composeBriefTemplateView(analysis, benchmark, locale, dataMode);
 
   return (
     <DocumentShell
@@ -69,7 +75,12 @@ export function BriefTemplate({
           </div>
 
           <div className="mt-7">
-            <FactGrid analysis={analysis} locale={locale} />
+            <FactGrid
+              analysis={analysis}
+              authorizedPrivateInsights={authorizedPrivateInsights}
+              dataMode={dataMode}
+              locale={locale}
+            />
           </div>
 
           <div className="mt-7 space-y-6">
@@ -94,9 +105,11 @@ export function BriefTemplate({
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.dataScope} eyebrow={dict.templates.brief.sections.dataScope}>
             <PublicDataScope
+              authorizedPrivateInsights={authorizedPrivateInsights}
               contributionSummary={contributionSummary}
               dataMode={dataMode}
               locale={locale}
+              privateExposureMode={privateExposureMode}
             />
           </SectionBlock>
           <SectionBlock title={dict.templates.brief.sections.source} eyebrow={dict.templates.brief.sections.source}>
