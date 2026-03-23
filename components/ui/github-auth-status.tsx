@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   buildGitHubLoginPath,
   buildGitHubLogoutPath,
@@ -5,6 +6,7 @@ import {
   hasGitHubOAuthConfig,
 } from "@/lib/auth";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
+import { getShowcasePath } from "@/lib/showcase";
 import type { Locale } from "@/lib/schemas";
 
 export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
@@ -15,6 +17,7 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const session = await getGitHubSession();
   const redirectTo = getLocalizedPathname("/", locale);
+  const showcasePath = getShowcasePath("uiwwsw", locale);
 
   if (!session) {
     return (
@@ -29,12 +32,20 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
               {dict.home.authDescription}
             </p>
           </div>
-          <a
-            className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800"
-            href={buildGitHubLoginPath(redirectTo)}
-          >
-            {dict.home.authSignIn}
-          </a>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <a
+              className="inline-flex h-11 items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800"
+              href={buildGitHubLoginPath(redirectTo)}
+            >
+              {dict.home.authSignIn}
+            </a>
+            <Link
+              className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
+              href={showcasePath}
+            >
+              {dict.home.showcaseOpen}
+            </Link>
+          </div>
         </div>
       </div>
     );

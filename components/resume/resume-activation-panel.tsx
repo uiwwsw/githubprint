@@ -7,21 +7,22 @@ import { cn } from "@/lib/utils";
 
 const STARTER_TREE = `resume/
   resume.yaml
+  resume.en.yaml
   content/
-    summary.ko.md
-    summary.en.md
-    experience/
-      product-lead.md`;
+    ko/
+      summary.md
+      experience/
+        product-lead.md
+    en/
+      summary.md
+      experience/
+        product-lead.md`;
 
-const STARTER_YAML = `basics:
+const STARTER_YAML_KO = `basics:
   name: "Your Name"
   avatar: "assets/profile.jpg"
-  headline:
-    ko: "제품과 구현을 함께 다루는 개발자"
-    en: "A developer who handles both product and implementation"
-  location:
-    ko: "Seoul, KR"
-    en: "Seoul, KR"
+  headline: "제품과 구현을 함께 다루는 개발자"
+  location: "Seoul, KR"
   website: "https://example.com"
   links:
     - label: "GitHub"
@@ -29,23 +30,16 @@ const STARTER_YAML = `basics:
       kind: "repo"
 
 summary:
-  markdown:
-    ko: "content/summary.ko.md"
-    en: "content/summary.en.md"
+  markdown: "content/ko/summary.md"
 
 experience:
-  - title:
-      ko: "GitHubPrint"
-      en: "GitHubPrint"
-    subtitle:
-      ko: "Co-founder / Engineer"
-      en: "Co-founder / Engineer"
+  - title: "GitHubPrint"
+    subtitle: "공동창업 / 프론트엔드 개발"
     start: "2025-01-01"
     current: true
-    bullets:
-      - "Built product, design, and engineering end to end."
+    bullets: ["제품, 디자인, 구현을 처음부터 끝까지 맡았습니다."]
     detailsMarkdown:
-      markdown: "content/experience/product-lead.md"
+      markdown: "content/ko/experience/product-lead.md"
 
 projects:
   - title: "GitHubPrint"
@@ -56,9 +50,44 @@ projects:
 education: []
 
 skills:
-  - title:
-      ko: "Core"
-      en: "Core"
+  - title: "Core"
+    items: ["TypeScript", "React", "Next.js"]
+
+customSections: []`;
+
+const STARTER_YAML_EN = `basics:
+  name: "Your Name"
+  avatar: "assets/profile.jpg"
+  headline: "A developer who handles both product and implementation"
+  location: "Seoul, KR"
+  website: "https://example.com"
+  links:
+    - label: "GitHub"
+      url: "https://github.com/your-name"
+      kind: "repo"
+
+summary:
+  markdown: "content/en/summary.md"
+
+experience:
+  - title: "GitHubPrint"
+    subtitle: "Co-founder / Frontend Engineer"
+    start: "2025-01-01"
+    current: true
+    bullets: ["Built product, design, and engineering end to end."]
+    detailsMarkdown:
+      markdown: "content/en/experience/product-lead.md"
+
+projects:
+  - title: "GitHubPrint"
+    repo: "githubprint"
+    liveUrl: "https://githubprint.vercel.app"
+    tech: ["Next.js", "TypeScript", "OpenAI"]
+
+education: []
+
+skills:
+  - title: "Core"
     items: ["TypeScript", "React", "Next.js"]
 
 customSections: []`;
@@ -204,8 +233,17 @@ export function ResumeActivationPanel({
             <pre className="mt-3 overflow-x-auto rounded-[1rem] border border-black/[0.08] bg-neutral-950 p-4 text-xs leading-6 text-neutral-100">
               {STARTER_TREE}
             </pre>
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">
+              resume.yaml
+            </p>
             <pre className="mt-3 overflow-x-auto rounded-[1rem] border border-black/[0.08] bg-neutral-950 p-4 text-xs leading-6 text-neutral-100">
-              {STARTER_YAML}
+              {STARTER_YAML_KO}
+            </pre>
+            <p className="mt-3 text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">
+              resume.en.yaml
+            </p>
+            <pre className="mt-3 overflow-x-auto rounded-[1rem] border border-black/[0.08] bg-neutral-950 p-4 text-xs leading-6 text-neutral-100">
+              {STARTER_YAML_EN}
             </pre>
           </div>
         </div>

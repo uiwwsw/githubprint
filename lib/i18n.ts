@@ -33,6 +33,11 @@ type Dictionary = {
     authSignIn: string;
     authSignOut: string;
     authSignedInAs: string;
+    showcaseDescription: string;
+    showcaseEyebrow: string;
+    showcaseOpen: string;
+    showcaseOpenRepo: string;
+    showcaseTitle: string;
     generatorTitle: string;
     generatorDescription: string;
     privateToggleLabel: string;
@@ -250,6 +255,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       authSignIn: "GitHub로 로그인",
       authSignOut: "로그아웃",
       authSignedInAs: "로그인됨",
+      showcaseDescription:
+        "로그인 전에 공개 `resume` 레포를 기반으로 실제 Resume 레이아웃으로 렌더링한 공개 이력서를 먼저 볼 수 있습니다.",
+      showcaseEyebrow: "공개 이력서",
+      showcaseOpen: "공개 이력서 보기",
+      showcaseOpenRepo: "resume 레포 보기",
+      showcaseTitle: "로그인 없이 실제 결과 레이아웃 먼저 보기",
       generatorTitle: "문서 템플릿과 비공개 포함 범위 선택",
       generatorDescription:
         "기본값은 비공개 저장소 상세를 숨기는 공유용 문서입니다. 토글을 켜면 비공개 저장소 이름과 설명도 결과에 직접 포함할 수 있습니다.",
@@ -498,6 +509,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       authSignIn: "Sign in with GitHub",
       authSignOut: "Sign out",
       authSignedInAs: "Signed in as",
+      showcaseDescription:
+        "Before sign-in, you can open a public resume page that reads the `resume` repository and renders it with the actual Resume layout.",
+      showcaseEyebrow: "Public resume",
+      showcaseOpen: "View public resume",
+      showcaseOpenRepo: "View resume repo",
+      showcaseTitle: "Preview the real layout before sign-in",
       generatorTitle: "Choose the template and private-repo exposure",
       generatorDescription:
         "The default is a shareable document that keeps private repository details hidden. Turn the toggle on only if you want private repository names and descriptions to appear directly in the result.",

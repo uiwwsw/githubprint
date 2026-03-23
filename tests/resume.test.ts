@@ -5,20 +5,32 @@ import {
   buildResumeDocument,
   collectResumeMarkdownPaths,
   parseResumeYamlDocument,
+  pickResumeManifestFile,
 } from "../lib/resume";
 
-test("parses valid resume.yaml and collects markdown references", () => {
+test("prefers locale-specific manifests and falls back to resume.yaml", () => {
+  assert.equal(
+    pickResumeManifestFile(["resume.yaml", "resume.en.yaml"], "en"),
+    "resume.en.yaml",
+  );
+  assert.equal(
+    pickResumeManifestFile(["resume.yaml", "resume_en.yaml"], "en"),
+    "resume_en.yaml",
+  );
+  assert.equal(pickResumeManifestFile(["resume.yaml"], "en"), "resume.yaml");
+  assert.equal(pickResumeManifestFile(["resume.yaml"], "ko"), "resume.yaml");
+});
+
+test("parses valid single-locale resume.yaml and collects markdown references", () => {
   const source = `
 basics:
   name: "Jane Doe"
 summary:
-  markdown:
-    ko: "content/summary.ko.md"
-    en: "content/summary.en.md"
+  markdown: "content/ko/summary.md"
 experience:
   - title: "GitHubPrint"
     detailsMarkdown:
-      markdown: "content/experience/githubprint.md"
+      markdown: "content/ko/experience/githubprint.md"
 `;
 
   const parsed = parseResumeYamlDocument(source);
@@ -29,26 +41,42 @@ experience:
   }
 
   assert.deepEqual(collectResumeMarkdownPaths(parsed.data), [
-    "content/summary.ko.md",
-    "content/summary.en.md",
-    "content/experience/githubprint.md",
+    "content/ko/summary.md",
+    "content/ko/experience/githubprint.md",
   ]);
+});
+
+test("warns when legacy single-file ko/en localized fields are used", () => {
+  const parsed = parseResumeYamlDocument(`
+basics:
+  name:
+    ko: "홍길동"
+    en: "Hong Gil Dong"
+summary:
+  markdown:
+    ko: "content/summary.ko.md"
+    en: "content/summary.en.md"
+`);
+
+  assert.equal(parsed.success, true);
+
+  if (!parsed.success) {
+    return;
+  }
+
+  assert.match(parsed.warnings.join("\n"), /legacy/i);
+  assert.match(parsed.warnings.join("\n"), /resume\.en\.yaml/i);
 });
 
 test("normalizes resume content and verifies owned project repositories", () => {
   const source = `
 basics:
-  name:
-    ko: "홍길동"
-    en: "Hong Gil Dong"
+  name: "홍길동"
   avatar: "assets/profile.jpg"
 summary:
-  markdown:
-    ko: "content/summary.ko.md"
+  markdown: "content/ko/summary.md"
 projects:
-  - title:
-      ko: "GitHubPrint"
-      en: "GitHubPrint"
+  - title: "GitHubPrint"
     id: "githubprint-product"
     repo: "githubprint"
     start: "2025-02-01"
@@ -57,15 +85,11 @@ projects:
 featuredProjects:
   - "githubprint-product"
 experience:
-  - title:
-      ko: "Acme"
-      en: "Acme"
+  - title: "Acme"
     start: "2024-01-01"
     current: true
 skills:
-  - title:
-      ko: "Core"
-      en: "Core"
+  - title: "Core"
     items: ["TypeScript", "React"]
 `;
   const parsed = parseResumeYamlDocument(source);
@@ -77,7 +101,7 @@ skills:
 
   const document = buildResumeDocument(parsed.data, {
     contentFiles: {
-      "content/summary.ko.md": "제품과 구현을 함께 다룹니다.",
+      "content/ko/summary.md": "제품과 구현을 함께 다룹니다.",
     },
     locale: "ko",
     repoCatalog: [
@@ -208,32 +232,18 @@ test("accepts resume repo education and custom section shapes", () => {
 basics:
   name: "Jane Doe"
 education:
-  - school:
-      ko: "공주대학교"
-      en: "Kongju National University"
-    degree:
-      ko: "건축학전공"
-      en: "Architecture"
-    status:
-      ko: "졸업"
-      en: "Graduated"
+  - school: "공주대학교"
+    degree: "건축학전공"
+    status: "졸업"
     start: "2006-02-01"
     end: "2014-01-01"
 customSections:
-  - title:
-      ko: "교육"
-      en: "Training"
+  - title: "교육"
     items:
-      - title:
-          ko: "함수형프로그래밍"
-          en: "Functional Programming"
+      - title: "함수형프로그래밍"
         date: "2020-06-01"
-        organization:
-          ko: "프로그래머스"
-          en: "Programmers"
-        note:
-          ko: "언어: JavaScript"
-          en: "Language: JavaScript"
+        organization: "프로그래머스"
+        note: "언어: JavaScript"
 projects: []
 skills: []
 `;

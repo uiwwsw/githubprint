@@ -86,7 +86,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     },
     card: {
       activationHint:
-        "Resume 템플릿은 `resume` 레포와 루트의 `resume.yaml`이 있어야 활성화됩니다.",
+        "Resume 템플릿은 `resume` 레포와 루트의 `resume.yaml`이 있어야 활성화되며, 영어 버전은 `resume.en.yaml`으로 분리할 수 있습니다.",
       lockedInvalid: "규격 수정 필요",
       lockedMissing: "resume 레포 필요",
       ready: "사용 가능",
@@ -104,12 +104,12 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         "ATS 친화 기본형 Word(.docx) 이력서 다운로드",
         "경력, 프로젝트, 교육, 스킬, 커스텀 섹션 전체 표현",
         "repo/live/docs 링크를 근거 행으로 강조",
-        "같은 데이터로 한국어/영어 미리보기 전환",
+        "`resume.yaml`과 `resume.en.yaml`로 한국어/영어를 분리 관리",
       ],
       enabledTitle: "활성화되면 가능한 것",
       invalidTitle: "resume 레포는 찾았지만 규격이 아직 맞지 않습니다.",
       invalidMessage:
-        "루트에 `resume.yaml`이 있어야 하고, 참조하는 Markdown 파일은 `content/` 아래에 있어야 합니다.",
+        "루트에 `resume.yaml`이 있어야 하고, 영어를 따로 관리하려면 `resume.en.yaml`을 추가하면 됩니다. 참조 Markdown 파일은 `content/` 아래에 있어야 합니다.",
       invalidReasonLabel: "확인된 문제",
       missingTitle: "먼저 이름이 정확히 `resume`인 레포를 만들어야 합니다.",
       missingMessage:
@@ -119,6 +119,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       steps: [
         "`resume` 이름의 GitHub 레포를 만든다.",
         "루트에 `resume.yaml`을 추가한다.",
+        "영문 이력서가 필요하면 `resume.en.yaml`을 추가한다.",
         "긴 요약이나 상세 설명은 `content/*.md`로 분리해 참조한다.",
         "다시 돌아와 Resume 템플릿을 선택해 미리보기와 Word export를 연다.",
       ],
@@ -137,13 +138,13 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     resultState: {
       invalidTitle: "Resume 템플릿을 아직 생성할 수 없습니다.",
       invalidMessage:
-        "`resume` 레포는 있지만 `resume.yaml` 또는 참조 Markdown 규격을 먼저 맞춰야 합니다.",
+        "`resume` 레포는 있지만 `resume.yaml`, 필요한 경우 `resume.en.yaml`, 또는 참조 Markdown 규격을 먼저 맞춰야 합니다.",
       missingTitle: "Resume 템플릿을 열기 전에 `resume` 레포가 필요합니다.",
       missingMessage:
         "홈의 Resume 카드에서 요구 구조를 확인하고 레포를 만든 뒤 다시 시도해 주세요.",
       warningTitle: "일부 항목은 건너뛰고 계속 생성했습니다.",
       warningMessage:
-        "문서를 전체 차단하지 않고, 문제가 있는 필드나 참조만 제외했습니다. 아래 경고를 기준으로 `resume.yaml`을 정리하면 됩니다.",
+        "문서를 전체 차단하지 않고, 문제가 있는 필드나 참조만 제외했습니다. 아래 경고를 기준으로 `resume.yaml` 또는 `resume.en.yaml`을 정리하면 됩니다.",
     },
     shared: {
       githubStart: "GitHub 시작 시점",
@@ -185,7 +186,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     },
     card: {
       activationHint:
-        "The Resume template activates only when a `resume` repo and root-level `resume.yaml` are available.",
+        "The Resume template activates when a `resume` repo and root-level `resume.yaml` are available, and English can be split into `resume.en.yaml`.",
       lockedInvalid: "Schema fix needed",
       lockedMissing: "Needs resume repo",
       ready: "Ready",
@@ -203,12 +204,12 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         "ATS-friendly Word (.docx) export",
         "Full coverage for experience, projects, education, skills, and custom sections",
         "Evidence rows for repo, live, and docs links",
-        "Korean and English previews from the same source data",
+        "Separate Korean and English manifests with `resume.yaml` and `resume.en.yaml`",
       ],
       enabledTitle: "What becomes available",
       invalidTitle: "The resume repo exists, but the schema is not ready yet.",
       invalidMessage:
-        "A root-level `resume.yaml` is required, and referenced Markdown files must stay under `content/`.",
+        "A root-level `resume.yaml` is required. Add `resume.en.yaml` if you want a separate English version, and keep referenced Markdown files under `content/`.",
       invalidReasonLabel: "Detected issue",
       missingTitle: "Create a GitHub repo named exactly `resume` first.",
       missingMessage:
@@ -218,6 +219,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       steps: [
         "Create a GitHub repo named `resume`.",
         "Add `resume.yaml` at the repo root.",
+        "Add `resume.en.yaml` if you want a separate English resume.",
         "Move long summaries or detailed descriptions into `content/*.md` files and reference them.",
         "Return here, select Resume, and open the preview or Word export.",
       ],
@@ -236,13 +238,13 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     resultState: {
       invalidTitle: "The Resume template is not ready yet.",
       invalidMessage:
-        "The `resume` repo exists, but `resume.yaml` or one of its Markdown references still needs to be fixed.",
+        "The `resume` repo exists, but `resume.yaml`, `resume.en.yaml` when needed, or one of its Markdown references still needs to be fixed.",
       missingTitle: "A `resume` repo is required before opening the Resume template.",
       missingMessage:
         "Use the Resume card on the home screen to review the required structure, then try again.",
       warningTitle: "The resume was generated with partial skips.",
       warningMessage:
-        "The document stayed available, but invalid fields or broken references were omitted. Use the warnings below to clean up `resume.yaml`.",
+        "The document stayed available, but invalid fields or broken references were omitted. Use the warnings below to clean up `resume.yaml` or `resume.en.yaml`.",
     },
     shared: {
       githubStart: "GitHub start",
