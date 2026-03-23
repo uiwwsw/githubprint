@@ -37,10 +37,12 @@ type ResumeCopy = {
     togglePublicHint: string;
   };
   resultState: {
-    invalidTitle: string;
-    invalidMessage: string;
-    missingTitle: string;
-    missingMessage: string;
+      invalidTitle: string;
+      invalidMessage: string;
+      missingTitle: string;
+      missingMessage: string;
+      warningTitle: string;
+      warningMessage: string;
   };
   shared: {
     githubStart: string;
@@ -139,6 +141,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       missingTitle: "Resume 템플릿을 열기 전에 `resume` 레포가 필요합니다.",
       missingMessage:
         "홈의 Resume 카드에서 요구 구조를 확인하고 레포를 만든 뒤 다시 시도해 주세요.",
+      warningTitle: "일부 항목은 건너뛰고 계속 생성했습니다.",
+      warningMessage:
+        "문서를 전체 차단하지 않고, 문제가 있는 필드나 참조만 제외했습니다. 아래 경고를 기준으로 `resume.yaml`을 정리하면 됩니다.",
     },
     shared: {
       githubStart: "GitHub 시작 시점",
@@ -235,6 +240,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       missingTitle: "A `resume` repo is required before opening the Resume template.",
       missingMessage:
         "Use the Resume card on the home screen to review the required structure, then try again.",
+      warningTitle: "The resume was generated with partial skips.",
+      warningMessage:
+        "The document stayed available, but invalid fields or broken references were omitted. Use the warnings below to clean up `resume.yaml`.",
     },
     shared: {
       githubStart: "GitHub start",

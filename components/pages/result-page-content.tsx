@@ -5,6 +5,7 @@ import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
+import { getResumeCopy } from "@/lib/resume-copy";
 import { getResumeTemplateAvailability } from "@/lib/resume-source";
 import { buildResultMetadata } from "@/lib/seo";
 import {
@@ -162,6 +163,7 @@ export async function ResultPageContent({
         locale,
         username: session.user.login,
       });
+      const resumeCopy = getResumeCopy(locale);
 
       return (
         <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
@@ -190,14 +192,31 @@ export async function ResultPageContent({
               template={template}
             />
             {availability.state === "ready" ? (
-              <RenderTemplate
-                avatarUrl={session.user.avatarUrl}
-                generatedAt={generatedAt}
-                locale={locale}
-                profileUrl={session.user.profileUrl}
-                resumeDocument={availability.document}
-                template="resume"
-              />
+              <>
+                {availability.document.warnings.length > 0 ? (
+                  <section className="screen-only rounded-[1.25rem] border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950">
+                    <p className="font-medium">
+                      {resumeCopy.resultState.warningTitle}
+                    </p>
+                    <p className="mt-1 leading-6">
+                      {resumeCopy.resultState.warningMessage}
+                    </p>
+                    <ul className="mt-3 list-disc space-y-1 pl-5">
+                      {availability.document.warnings.map((warning) => (
+                        <li key={warning}>{warning}</li>
+                      ))}
+                    </ul>
+                  </section>
+                ) : null}
+                <RenderTemplate
+                  avatarUrl={session.user.avatarUrl}
+                  generatedAt={generatedAt}
+                  locale={locale}
+                  profileUrl={session.user.profileUrl}
+                  resumeDocument={availability.document}
+                  template="resume"
+                />
+              </>
             ) : (
               <ResumeResultState availability={availability} locale={locale} />
             )}

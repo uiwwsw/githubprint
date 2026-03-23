@@ -188,7 +188,8 @@ export async function getResumeTemplateAvailability(options: {
   }
 
   try {
-    const markdownPaths = collectResumeMarkdownPaths(parsed.data);
+    const parseWarnings = [...parsed.warnings];
+    const markdownPaths = collectResumeMarkdownPaths(parsed.data, parseWarnings);
     const referencedFiles =
       markdownPaths.length > 0
         ? localResumeRepoRoot
@@ -204,22 +205,10 @@ export async function getResumeTemplateAvailability(options: {
             )
         : {};
 
-    const missingMarkdownPath = markdownPaths.find(
-      (path) => !Object.prototype.hasOwnProperty.call(referencedFiles, path),
-    );
-
-    if (missingMarkdownPath) {
-      return {
-        detail: `Missing referenced Markdown file: ${missingMarkdownPath}`,
-        repoUrl: lookup.repo.repoUrl,
-        repoVisibility: lookup.repo.visibility,
-        state: "locked_invalid_schema",
-      };
-    }
-
     const document = buildResumeDocument(parsed.data, {
       contentFiles: referencedFiles,
       locale: options.locale,
+      parseWarnings,
       repoCatalog: lookup.repoCatalog.map((repo) => ({
         createdAt: repo.createdAt,
         description: repo.description,

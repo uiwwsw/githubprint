@@ -28,12 +28,107 @@ type ResumeMarkdownInput =
 
 type ResumeAssetPathInput = string;
 
+const MARKDOWN_FILE_PATTERN = /^content\/[a-z0-9/_.-]+\.(md|markdown)$/i;
+const ASSET_FILE_PATTERN =
+  /^assets\/[a-z0-9/_.-]+\.(png|jpg|jpeg|gif|webp|bmp)$/i;
+
+const nonEmptyStringSchema = z.string().trim().min(1);
+const markdownPathSchema = nonEmptyStringSchema.refine(
+  (value) => {
+    const normalized = value.trim().replace(/^\.?\//, "");
+    return MARKDOWN_FILE_PATTERN.test(normalized) && !normalized.includes("..");
+  },
+  {
+    message:
+      "Markdown references must stay inside content/ and end with .md or .markdown.",
+  },
+);
+const assetPathSchema = nonEmptyStringSchema.refine(
+  (value) => {
+    const normalized = value.trim().replace(/^\.?\//, "");
+    return ASSET_FILE_PATTERN.test(normalized) && !normalized.includes("..");
+  },
+  {
+    message:
+      "Avatar references must stay inside assets/ and use png, jpg, jpeg, gif, webp, or bmp.",
+  },
+);
+
+function pushResumeWarning(warnings: string[] | undefined, message: string) {
+  if (!warnings) {
+    return;
+  }
+
+  const normalized = message.trim();
+
+  if (!normalized || warnings.includes(normalized)) {
+    return;
+  }
+
+  warnings.push(normalized);
+}
+
+function formatZodIssue(error: z.ZodError) {
+  const issue = error.issues[0];
+  const issuePath = issue?.path?.length ? `${issue.path.join(".")}: ` : "";
+
+  return issue ? `${issuePath}${issue.message}` : "Invalid value.";
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseOptionalField<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  path: string,
+  warnings: string[],
+) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const result = schema.safeParse(value);
+
+  if (result.success) {
+    return result.data;
+  }
+
+  pushResumeWarning(warnings, `${path}: ${formatZodIssue(result.error)}`);
+  return undefined;
+}
+
+function parseRequiredField<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  path: string,
+) {
+  const result = schema.safeParse(value);
+
+  if (result.success) {
+    return {
+      data: result.data,
+      success: true as const,
+    };
+  }
+
+  return {
+    error: `${path}: ${formatZodIssue(result.error)}`,
+    success: false as const,
+  };
+}
+
 const localizedTextSchema = z
   .union([
-    z.string().trim().min(1),
+    nonEmptyStringSchema,
     z.object({
-      en: z.string().trim().min(1).optional(),
-      ko: z.string().trim().min(1).optional(),
+      en: nonEmptyStringSchema.optional(),
+      ko: nonEmptyStringSchema.optional(),
     }),
   ])
   .refine(
@@ -48,13 +143,13 @@ const localizedTextSchema = z
 const markdownSourceSchema = z
   .union([
     z.object({
-      markdown: z.string().trim().min(1),
+      markdown: markdownPathSchema,
     }),
     z.object({
       markdown: z
         .object({
-          en: z.string().trim().min(1).optional(),
-          ko: z.string().trim().min(1).optional(),
+          en: markdownPathSchema.optional(),
+          ko: markdownPathSchema.optional(),
         })
         .refine((value) => Boolean(value.ko?.trim() || value.en?.trim()), {
           message: "Expected markdown path content in ko or en.",
@@ -77,18 +172,18 @@ const resumeItemSchema = z.object({
   bullets: z.array(localizedTextSchema).optional(),
   current: z.boolean().optional(),
   detailsMarkdown: textSourceSchema.optional(),
-  end: z.string().trim().min(1).optional(),
+  end: nonEmptyStringSchema.optional(),
   links: z.array(linkSchema).optional(),
   location: localizedTextSchema.optional(),
-  start: z.string().trim().min(1).optional(),
+  start: nonEmptyStringSchema.optional(),
   subtitle: localizedTextSchema.optional(),
   title: localizedTextSchema,
 });
 
 const resumeProjectSchema = resumeItemSchema.extend({
-  id: z.string().trim().min(1).optional(),
+  id: nonEmptyStringSchema.optional(),
   liveUrl: z.url().optional(),
-  repo: z.string().trim().min(1).optional(),
+  repo: nonEmptyStringSchema.optional(),
   tech: z.array(localizedTextSchema).optional(),
 });
 
@@ -96,19 +191,19 @@ const resumeEducationSchema = z.union([
   resumeItemSchema,
   z.object({
     degree: localizedTextSchema.optional(),
-    end: z.string().trim().min(1).optional(),
+    end: nonEmptyStringSchema.optional(),
     school: localizedTextSchema,
-    start: z.string().trim().min(1).optional(),
+    start: nonEmptyStringSchema.optional(),
     status: localizedTextSchema.optional(),
   }),
 ]);
 
 const featuredProjectReferenceSchema = z.union([
-  z.string().trim().min(1),
+  nonEmptyStringSchema,
   z
     .object({
-      project: z.string().trim().min(1).optional(),
-      repo: z.string().trim().min(1).optional(),
+      project: nonEmptyStringSchema.optional(),
+      repo: nonEmptyStringSchema.optional(),
     })
     .refine((value) => Boolean(value.project || value.repo), {
       message: "Expected project or repo in featuredProjects.",
@@ -125,7 +220,7 @@ const resumeSkillSchema = z.union([
 
 const customSectionItemSchema = z.union([
   z.object({
-    date: z.string().trim().min(1).optional(),
+    date: nonEmptyStringSchema.optional(),
     note: localizedTextSchema.optional(),
     organization: localizedTextSchema.optional(),
     title: localizedTextSchema,
@@ -134,21 +229,21 @@ const customSectionItemSchema = z.union([
 ]);
 
 const customSectionSchema = z.object({
-  id: z.string().trim().min(1).optional(),
+  id: nonEmptyStringSchema.optional(),
   items: z.array(customSectionItemSchema).optional(),
   layout: z.enum(["chips", "compact", "list"]).optional(),
   title: localizedTextSchema,
 });
 
 const basicsSchema = z.object({
-  avatar: z.string().trim().min(1).optional(),
+  avatar: assetPathSchema.optional(),
   avatarUrl: z.url().optional(),
   email: z.email().optional(),
   headline: localizedTextSchema.optional(),
   links: z.array(linkSchema).optional(),
   location: localizedTextSchema.optional(),
   name: localizedTextSchema,
-  phone: z.string().trim().min(1).optional(),
+  phone: nonEmptyStringSchema.optional(),
   website: z.url().optional(),
 });
 
@@ -237,6 +332,7 @@ export type ResumeDocumentData = {
     visibility: ResumeRepoVisibility;
   };
   summary?: string;
+  warnings: string[];
 };
 
 export type ResumeTemplateAvailability =
@@ -281,6 +377,7 @@ type ResumeFeaturedProjectReference =
 type BuildResumeDocumentOptions = {
   contentFiles: Record<string, string>;
   locale: Locale;
+  parseWarnings?: string[];
   repoCatalog: Array<{
     createdAt: string;
     description: string | null;
@@ -298,10 +395,6 @@ type BuildResumeDocumentOptions = {
   username: string;
   visibility: ResumeRepoVisibility;
 };
-
-const MARKDOWN_FILE_PATTERN = /^content\/[a-z0-9/_.-]+\.(md|markdown)$/i;
-const ASSET_FILE_PATTERN =
-  /^assets\/[a-z0-9/_.-]+\.(png|jpg|jpeg|gif|webp|bmp)$/i;
 const RESUME_PROJECT_LABELS: Record<string, { en: string; ko: string }> = {
   ai: {
     en: "AI",
@@ -332,6 +425,543 @@ const RESUME_PROJECT_LABELS: Record<string, { en: string; ko: string }> = {
     ko: "모바일",
   },
 };
+
+function sanitizeLocalizedTextArray(
+  value: unknown,
+  path: string,
+  warnings: string[],
+) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    pushResumeWarning(warnings, `${path}: Expected an array.`);
+    return undefined;
+  }
+
+  return value.flatMap((item, index) => {
+    const parsed = parseOptionalField(
+      localizedTextSchema,
+      item,
+      `${path}[${index}]`,
+      warnings,
+    );
+    return parsed === undefined ? [] : [parsed];
+  });
+}
+
+function sanitizeLinks(
+  value: unknown,
+  path: string,
+  warnings: string[],
+) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    pushResumeWarning(warnings, `${path}: Expected an array.`);
+    return undefined;
+  }
+
+  return value.flatMap((item, index) => {
+    const parsed = parseOptionalField(
+      linkSchema,
+      item,
+      `${path}[${index}]`,
+      warnings,
+    );
+    return parsed === undefined ? [] : [parsed];
+  });
+}
+
+function sanitizeResumeItem(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof resumeItemSchema> | null {
+  if (!isRecord(value)) {
+    pushResumeWarning(warnings, `${path}: Expected an object.`);
+    return null;
+  }
+
+  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+
+  if (!title.success) {
+    pushResumeWarning(warnings, title.error);
+    return null;
+  }
+
+  const item: z.infer<typeof resumeItemSchema> = {
+    title: title.data,
+  };
+  const bullets = sanitizeLocalizedTextArray(
+    value.bullets,
+    `${path}.bullets`,
+    warnings,
+  );
+  const current = parseOptionalField(
+    z.boolean(),
+    value.current,
+    `${path}.current`,
+    warnings,
+  );
+  const detailsMarkdown = parseOptionalField(
+    textSourceSchema,
+    value.detailsMarkdown,
+    `${path}.detailsMarkdown`,
+    warnings,
+  );
+  const end = parseOptionalField(
+    nonEmptyStringSchema,
+    value.end,
+    `${path}.end`,
+    warnings,
+  );
+  const links = sanitizeLinks(value.links, `${path}.links`, warnings);
+  const location = parseOptionalField(
+    localizedTextSchema,
+    value.location,
+    `${path}.location`,
+    warnings,
+  );
+  const start = parseOptionalField(
+    nonEmptyStringSchema,
+    value.start,
+    `${path}.start`,
+    warnings,
+  );
+  const subtitle = parseOptionalField(
+    localizedTextSchema,
+    value.subtitle,
+    `${path}.subtitle`,
+    warnings,
+  );
+
+  if (bullets !== undefined) {
+    item.bullets = bullets;
+  }
+  if (current !== undefined) {
+    item.current = current;
+  }
+  if (detailsMarkdown !== undefined) {
+    item.detailsMarkdown = detailsMarkdown;
+  }
+  if (end !== undefined) {
+    item.end = end;
+  }
+  if (links !== undefined) {
+    item.links = links;
+  }
+  if (location !== undefined) {
+    item.location = location;
+  }
+  if (start !== undefined) {
+    item.start = start;
+  }
+  if (subtitle !== undefined) {
+    item.subtitle = subtitle;
+  }
+
+  return item;
+}
+
+function sanitizeResumeProject(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof resumeProjectSchema> | null {
+  const baseItem = sanitizeResumeItem(value, path, warnings);
+
+  if (!baseItem) {
+    return null;
+  }
+
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const project: z.infer<typeof resumeProjectSchema> = {
+    ...baseItem,
+  };
+  const id = parseOptionalField(
+    nonEmptyStringSchema,
+    value.id,
+    `${path}.id`,
+    warnings,
+  );
+  const liveUrl = parseOptionalField(
+    z.url(),
+    value.liveUrl,
+    `${path}.liveUrl`,
+    warnings,
+  );
+  const repo = parseOptionalField(
+    nonEmptyStringSchema,
+    value.repo,
+    `${path}.repo`,
+    warnings,
+  );
+  const tech = sanitizeLocalizedTextArray(value.tech, `${path}.tech`, warnings);
+
+  if (id !== undefined) {
+    project.id = id;
+  }
+  if (liveUrl !== undefined) {
+    project.liveUrl = liveUrl;
+  }
+  if (repo !== undefined) {
+    project.repo = repo;
+  }
+  if (tech !== undefined) {
+    project.tech = tech;
+  }
+
+  return project;
+}
+
+function sanitizeResumeEducation(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof resumeEducationSchema> | null {
+  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "school")) {
+    return sanitizeResumeItem(value, path, warnings);
+  }
+
+  const school = parseRequiredField(localizedTextSchema, value.school, `${path}.school`);
+
+  if (!school.success) {
+    pushResumeWarning(warnings, school.error);
+    return null;
+  }
+
+  const entry: z.infer<typeof resumeEducationSchema> = {
+    school: school.data,
+  };
+  const degree = parseOptionalField(
+    localizedTextSchema,
+    value.degree,
+    `${path}.degree`,
+    warnings,
+  );
+  const end = parseOptionalField(
+    nonEmptyStringSchema,
+    value.end,
+    `${path}.end`,
+    warnings,
+  );
+  const start = parseOptionalField(
+    nonEmptyStringSchema,
+    value.start,
+    `${path}.start`,
+    warnings,
+  );
+  const status = parseOptionalField(
+    localizedTextSchema,
+    value.status,
+    `${path}.status`,
+    warnings,
+  );
+
+  if (degree !== undefined) {
+    entry.degree = degree;
+  }
+  if (end !== undefined) {
+    entry.end = end;
+  }
+  if (start !== undefined) {
+    entry.start = start;
+  }
+  if (status !== undefined) {
+    entry.status = status;
+  }
+
+  return entry;
+}
+
+function sanitizeResumeSkill(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof resumeSkillSchema> | null {
+  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "items")) {
+    const item = parseOptionalField(localizedTextSchema, value, path, warnings);
+    return item ?? null;
+  }
+
+  const items = sanitizeLocalizedTextArray(value.items, `${path}.items`, warnings) ?? [];
+
+  if (items.length === 0) {
+    pushResumeWarning(
+      warnings,
+      `${path}.items: At least one valid skill item is required.`,
+    );
+    return null;
+  }
+
+  const title = parseOptionalField(
+    localizedTextSchema,
+    value.title,
+    `${path}.title`,
+    warnings,
+  );
+  const skillGroup: z.infer<typeof resumeSkillSchema> = {
+    items,
+  };
+
+  if (title !== undefined) {
+    skillGroup.title = title;
+  }
+
+  return skillGroup;
+}
+
+function sanitizeCustomSectionItem(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof customSectionItemSchema> | null {
+  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "date")) {
+    return sanitizeResumeItem(value, path, warnings);
+  }
+
+  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+
+  if (!title.success) {
+    pushResumeWarning(warnings, title.error);
+    return null;
+  }
+
+  const item: {
+    date?: string;
+    note?: ResumeLocalizedTextInput;
+    organization?: ResumeLocalizedTextInput;
+    title: ResumeLocalizedTextInput;
+  } = {
+    title: title.data,
+  };
+  const date = parseOptionalField(
+    nonEmptyStringSchema,
+    value.date,
+    `${path}.date`,
+    warnings,
+  );
+  const note = parseOptionalField(
+    localizedTextSchema,
+    value.note,
+    `${path}.note`,
+    warnings,
+  );
+  const organization = parseOptionalField(
+    localizedTextSchema,
+    value.organization,
+    `${path}.organization`,
+    warnings,
+  );
+
+  if (date !== undefined) {
+    item.date = date;
+  }
+  if (note !== undefined) {
+    item.note = note;
+  }
+  if (organization !== undefined) {
+    item.organization = organization;
+  }
+
+  return item;
+}
+
+function sanitizeCustomSection(
+  value: unknown,
+  path: string,
+  warnings: string[],
+): z.infer<typeof customSectionSchema> | null {
+  if (!isRecord(value)) {
+    pushResumeWarning(warnings, `${path}: Expected an object.`);
+    return null;
+  }
+
+  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+
+  if (!title.success) {
+    pushResumeWarning(warnings, title.error);
+    return null;
+  }
+
+  const section: z.infer<typeof customSectionSchema> = {
+    title: title.data,
+  };
+  const id = parseOptionalField(
+    nonEmptyStringSchema,
+    value.id,
+    `${path}.id`,
+    warnings,
+  );
+  const layout = parseOptionalField(
+    z.enum(["chips", "compact", "list"]),
+    value.layout,
+    `${path}.layout`,
+    warnings,
+  );
+
+  if (id !== undefined) {
+    section.id = id;
+  }
+  if (layout !== undefined) {
+    section.layout = layout;
+  }
+
+  if (value.items !== undefined) {
+    if (!Array.isArray(value.items)) {
+      pushResumeWarning(warnings, `${path}.items: Expected an array.`);
+    } else {
+      section.items = value.items.flatMap((item, index) => {
+        const sanitized = sanitizeCustomSectionItem(
+          item,
+          `${path}.items[${index}]`,
+          warnings,
+        );
+        return sanitized ? [sanitized] : [];
+      });
+    }
+  }
+
+  return section;
+}
+
+function sanitizeFeaturedProjectReferences(
+  value: unknown,
+  path: string,
+  warnings: string[],
+) {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (!Array.isArray(value)) {
+    pushResumeWarning(warnings, `${path}: Expected an array.`);
+    return undefined;
+  }
+
+  return value.flatMap((item, index) => {
+    const parsed = parseOptionalField(
+      featuredProjectReferenceSchema,
+      item,
+      `${path}[${index}]`,
+      warnings,
+    );
+    return parsed === undefined ? [] : [parsed];
+  });
+}
+
+function sanitizeBasics(
+  value: unknown,
+  warnings: string[],
+):
+  | {
+      data: RawResumeDocument["basics"];
+      success: true;
+    }
+  | {
+      error: string;
+      success: false;
+    } {
+  if (!isRecord(value)) {
+    return {
+      error: "basics: Expected an object.",
+      success: false,
+    };
+  }
+
+  const name = parseRequiredField(localizedTextSchema, value.name, "basics.name");
+
+  if (!name.success) {
+    return {
+      error: name.error,
+      success: false,
+    };
+  }
+
+  const basics: RawResumeDocument["basics"] = {
+    name: name.data,
+  };
+  const avatar = parseOptionalField(
+    assetPathSchema,
+    value.avatar,
+    "basics.avatar",
+    warnings,
+  );
+  const avatarUrl = parseOptionalField(
+    z.url(),
+    value.avatarUrl,
+    "basics.avatarUrl",
+    warnings,
+  );
+  const email = parseOptionalField(
+    z.email(),
+    value.email,
+    "basics.email",
+    warnings,
+  );
+  const headline = parseOptionalField(
+    localizedTextSchema,
+    value.headline,
+    "basics.headline",
+    warnings,
+  );
+  const links = sanitizeLinks(value.links, "basics.links", warnings);
+  const location = parseOptionalField(
+    localizedTextSchema,
+    value.location,
+    "basics.location",
+    warnings,
+  );
+  const phone = parseOptionalField(
+    nonEmptyStringSchema,
+    value.phone,
+    "basics.phone",
+    warnings,
+  );
+  const website = parseOptionalField(
+    z.url(),
+    value.website,
+    "basics.website",
+    warnings,
+  );
+
+  if (avatar !== undefined) {
+    basics.avatar = avatar;
+  }
+  if (avatarUrl !== undefined) {
+    basics.avatarUrl = avatarUrl;
+  }
+  if (email !== undefined) {
+    basics.email = email;
+  }
+  if (headline !== undefined) {
+    basics.headline = headline;
+  }
+  if (links !== undefined) {
+    basics.links = links;
+  }
+  if (location !== undefined) {
+    basics.location = location;
+  }
+  if (phone !== undefined) {
+    basics.phone = phone;
+  }
+  if (website !== undefined) {
+    basics.website = website;
+  }
+
+  return {
+    data: basics,
+    success: true,
+  };
+}
 
 function pickLocalizedText(
   value: ResumeLocalizedTextInput,
@@ -483,32 +1113,54 @@ function readTextSource(
   value: z.infer<typeof textSourceSchema>,
   locale: Locale,
   contentFiles: Record<string, string>,
+  warnings?: string[],
+  path?: string,
 ) {
   if (!isMarkdownSource(value)) {
-    return pickLocalizedText(value, locale);
+    const text = pickLocalizedText(value, locale);
+    return text || undefined;
   }
 
-  const filePath = pickLocalizedPath(value.markdown, locale);
+  let filePath: string;
+
+  try {
+    filePath = pickLocalizedPath(value.markdown, locale);
+  } catch (error) {
+    pushResumeWarning(
+      warnings,
+      `${path ?? "markdown"}: ${getErrorMessage(
+        error,
+        "Markdown references could not be resolved.",
+      )}`,
+    );
+    return undefined;
+  }
+
   const hasContentFile = Object.prototype.hasOwnProperty.call(contentFiles, filePath);
 
   if (!hasContentFile) {
-    throw new Error(`Missing referenced Markdown file: ${filePath}`);
+    pushResumeWarning(
+      warnings,
+      `${path ?? "markdown"}: Missing referenced Markdown file: ${filePath}`,
+    );
+    return undefined;
   }
 
-  return contentFiles[filePath]?.trim() ?? "";
+  return contentFiles[filePath]?.trim() || undefined;
 }
 
 function readOptionalTextSource(
   value: z.infer<typeof textSourceSchema> | undefined,
   locale: Locale,
   contentFiles: Record<string, string>,
+  warnings?: string[],
+  path?: string,
 ) {
   if (!value) {
     return undefined;
   }
 
-  const text = readTextSource(value, locale, contentFiles);
-  return text || undefined;
+  return readTextSource(value, locale, contentFiles, warnings, path);
 }
 
 function inferLinkKind(url: string): ResumeLinkKind {
@@ -589,6 +1241,8 @@ function normalizeEntry(
   item: z.infer<typeof resumeItemSchema>,
   locale: Locale,
   contentFiles: Record<string, string>,
+  warnings?: string[],
+  path?: string,
 ): ResumeEntry {
   return {
     bullets:
@@ -599,6 +1253,8 @@ function normalizeEntry(
       item.detailsMarkdown,
       locale,
       contentFiles,
+      warnings,
+      path ? `${path}.detailsMarkdown` : undefined,
     ),
     end: item.end?.trim() || undefined,
     links: (item.links ?? []).map((link) => normalizeLink(link, locale)),
@@ -628,9 +1284,11 @@ function normalizeEducationEntry(
   item: z.infer<typeof resumeEducationSchema>,
   locale: Locale,
   contentFiles: Record<string, string>,
+  warnings?: string[],
+  path?: string,
 ): ResumeEntry {
   if (!isResumeEducationRecord(item)) {
-    return normalizeEntry(item, locale, contentFiles);
+    return normalizeEntry(item, locale, contentFiles, warnings, path);
   }
 
   const degree = item.degree ? pickLocalizedText(item.degree, locale) : "";
@@ -653,9 +1311,11 @@ function normalizeCustomSectionItem(
   item: z.infer<typeof customSectionItemSchema>,
   locale: Locale,
   contentFiles: Record<string, string>,
+  warnings?: string[],
+  path?: string,
 ): ResumeEntry {
   if (!isLegacyCustomSectionItem(item)) {
-    return normalizeEntry(item, locale, contentFiles);
+    return normalizeEntry(item, locale, contentFiles, warnings, path);
   }
 
   const note = item.note ? pickLocalizedText(item.note, locale) : "";
@@ -740,8 +1400,10 @@ function normalizeProject(
   contentFiles: Record<string, string>,
   username: string,
   repoCatalog: Map<string, ResumeRepoCatalogEntry>,
+  warnings?: string[],
+  path?: string,
 ): ResumeProject {
-  const entry = normalizeEntry(item, locale, contentFiles);
+  const entry = normalizeEntry(item, locale, contentFiles, warnings, path);
   const tech =
     item.tech?.map((value) => pickLocalizedText(value, locale)).filter(Boolean) ??
     [];
@@ -1003,13 +1665,14 @@ function resolveFeaturedProjects(
   locale: Locale,
   username: string,
   repoCatalog: Map<string, ResumeRepoCatalogEntry>,
+  warnings?: string[],
 ) {
   if (!references || references.length === 0) {
     return explicitProjects;
   }
 
-  return dedupeProjects(
-    references.map((reference) => {
+  const resolved = references.flatMap((reference, index) => {
+    try {
       if (typeof reference === "string") {
         const explicitProject = findExplicitProjectByReference(
           reference,
@@ -1018,10 +1681,14 @@ function resolveFeaturedProjects(
         );
 
         if (!explicitProject) {
-          throw new Error(`Featured project reference not found: ${reference}`);
+          pushResumeWarning(
+            warnings,
+            `featuredProjects[${index}]: Featured project reference not found: ${reference}`,
+          );
+          return [];
         }
 
-        return explicitProject;
+        return [explicitProject];
       }
 
       if (reference.project) {
@@ -1032,53 +1699,189 @@ function resolveFeaturedProjects(
         );
 
         if (!explicitProject) {
-          throw new Error(
-            `Featured project reference not found: ${reference.project}`,
+          pushResumeWarning(
+            warnings,
+            `featuredProjects[${index}]: Featured project reference not found: ${reference.project}`,
           );
+          return [];
         }
 
-        return explicitProject;
+        return [explicitProject];
       }
 
       if (!reference.repo) {
-        throw new Error("Featured project entries require project or repo.");
+        pushResumeWarning(
+          warnings,
+          `featuredProjects[${index}]: Featured project entries require project or repo.`,
+        );
+        return [];
       }
 
-      return (
+      return [
         findExplicitProjectByReference(
           reference.repo,
           explicitProjects,
           username,
         ) ??
         buildRepoBackedProject(reference.repo, locale, username, repoCatalog)
+      ];
+    } catch (error) {
+      pushResumeWarning(
+        warnings,
+        `featuredProjects[${index}]: ${getErrorMessage(
+          error,
+          "Featured project could not be resolved.",
+        )}`,
       );
-    }),
-  );
+      return [];
+    }
+  });
+
+  if (resolved.length === 0) {
+    return explicitProjects;
+  }
+
+  return dedupeProjects(resolved);
 }
 
 export function parseResumeYamlDocument(source: string) {
   try {
     const parsed = parseYaml(source);
-    const result = rawResumeDocumentSchema.safeParse(parsed);
+    const warnings: string[] = [];
 
-    if (!result.success) {
-      const issue = result.error.issues[0];
-      const issuePath = issue?.path?.length
-        ? `${issue.path.join(".")}: `
-        : "";
-
+    if (!isRecord(parsed)) {
       return {
-        error:
-          issue
-            ? `${issuePath}${issue.message}`
-            : "resume.yaml does not match the expected schema.",
+        error: "resume.yaml must contain a top-level object.",
         success: false as const,
       };
     }
 
+    const basics = sanitizeBasics(parsed.basics, warnings);
+
+    if (!basics.success) {
+      return {
+        error: basics.error,
+        success: false as const,
+      };
+    }
+
+    const data: RawResumeDocument = {
+      basics: basics.data,
+    };
+
+    const summary = parseOptionalField(
+      textSourceSchema,
+      parsed.summary,
+      "summary",
+      warnings,
+    );
+    const experience = Array.isArray(parsed.experience)
+      ? parsed.experience.flatMap((item, index) => {
+          const sanitized = sanitizeResumeItem(
+            item,
+            `experience[${index}]`,
+            warnings,
+          );
+          return sanitized ? [sanitized] : [];
+        })
+      : parsed.experience === undefined
+        ? undefined
+        : (() => {
+            pushResumeWarning(warnings, "experience: Expected an array.");
+            return undefined;
+          })();
+    const projects = Array.isArray(parsed.projects)
+      ? parsed.projects.flatMap((item, index) => {
+          const sanitized = sanitizeResumeProject(
+            item,
+            `projects[${index}]`,
+            warnings,
+          );
+          return sanitized ? [sanitized] : [];
+        })
+      : parsed.projects === undefined
+        ? undefined
+        : (() => {
+            pushResumeWarning(warnings, "projects: Expected an array.");
+            return undefined;
+          })();
+    const education = Array.isArray(parsed.education)
+      ? parsed.education.flatMap((item, index) => {
+          const sanitized = sanitizeResumeEducation(
+            item,
+            `education[${index}]`,
+            warnings,
+          );
+          return sanitized ? [sanitized] : [];
+        })
+      : parsed.education === undefined
+        ? undefined
+        : (() => {
+            pushResumeWarning(warnings, "education: Expected an array.");
+            return undefined;
+          })();
+    const skills = Array.isArray(parsed.skills)
+      ? parsed.skills.flatMap((item, index) => {
+          const sanitized = sanitizeResumeSkill(
+            item,
+            `skills[${index}]`,
+            warnings,
+          );
+          return sanitized ? [sanitized] : [];
+        })
+      : parsed.skills === undefined
+        ? undefined
+        : (() => {
+            pushResumeWarning(warnings, "skills: Expected an array.");
+            return undefined;
+          })();
+    const customSections = Array.isArray(parsed.customSections)
+      ? parsed.customSections.flatMap((item, index) => {
+          const sanitized = sanitizeCustomSection(
+            item,
+            `customSections[${index}]`,
+            warnings,
+          );
+          return sanitized ? [sanitized] : [];
+        })
+      : parsed.customSections === undefined
+        ? undefined
+        : (() => {
+            pushResumeWarning(warnings, "customSections: Expected an array.");
+            return undefined;
+          })();
+    const featuredProjects = sanitizeFeaturedProjectReferences(
+      parsed.featuredProjects,
+      "featuredProjects",
+      warnings,
+    );
+
+    if (summary !== undefined) {
+      data.summary = summary;
+    }
+    if (experience !== undefined) {
+      data.experience = experience;
+    }
+    if (projects !== undefined) {
+      data.projects = projects;
+    }
+    if (education !== undefined) {
+      data.education = education;
+    }
+    if (skills !== undefined) {
+      data.skills = skills;
+    }
+    if (customSections !== undefined) {
+      data.customSections = customSections;
+    }
+    if (featuredProjects !== undefined) {
+      data.featuredProjects = featuredProjects;
+    }
+
     return {
-      data: result.data,
+      data,
       success: true as const,
+      warnings,
     };
   } catch (error) {
     return {
@@ -1091,39 +1894,66 @@ export function parseResumeYamlDocument(source: string) {
   }
 }
 
-export function collectResumeMarkdownPaths(raw: RawResumeDocument) {
+export function collectResumeMarkdownPaths(
+  raw: RawResumeDocument,
+  warnings?: string[],
+) {
   const paths = new Set<string>();
 
-  const addSource = (value?: z.infer<typeof textSourceSchema>) => {
+  const addPath = (pathValue: string, path: string) => {
+    try {
+      paths.add(normalizeContentPath(pathValue));
+    } catch (error) {
+      pushResumeWarning(
+        warnings,
+        `${path}: ${getErrorMessage(
+          error,
+          "Markdown references must stay inside content/.",
+        )}`,
+      );
+    }
+  };
+
+  const addSource = (
+    value: z.infer<typeof textSourceSchema> | undefined,
+    path: string,
+  ) => {
     if (!value || !isMarkdownSource(value)) {
       return;
     }
 
     if (typeof value.markdown === "string") {
-      paths.add(normalizeContentPath(value.markdown));
+      addPath(value.markdown, path);
       return;
     }
 
     if (value.markdown.ko) {
-      paths.add(normalizeContentPath(value.markdown.ko));
+      addPath(value.markdown.ko, `${path}.ko`);
     }
     if (value.markdown.en) {
-      paths.add(normalizeContentPath(value.markdown.en));
+      addPath(value.markdown.en, `${path}.en`);
     }
   };
 
-  addSource(raw.summary);
-  raw.experience?.forEach((item) => addSource(item.detailsMarkdown));
-  raw.projects?.forEach((item) => addSource(item.detailsMarkdown));
+  addSource(raw.summary, "summary");
+  raw.experience?.forEach((item, index) =>
+    addSource(item.detailsMarkdown, `experience[${index}].detailsMarkdown`),
+  );
+  raw.projects?.forEach((item, index) =>
+    addSource(item.detailsMarkdown, `projects[${index}].detailsMarkdown`),
+  );
   raw.education?.forEach((item) => {
     if ("detailsMarkdown" in item) {
-      addSource(item.detailsMarkdown);
+      addSource(item.detailsMarkdown, "education.detailsMarkdown");
     }
   });
-  raw.customSections?.forEach((section) =>
-    section.items?.forEach((item) => {
+  raw.customSections?.forEach((section, sectionIndex) =>
+    section.items?.forEach((item, itemIndex) => {
       if ("detailsMarkdown" in item) {
-        addSource(item.detailsMarkdown);
+        addSource(
+          item.detailsMarkdown,
+          `customSections[${sectionIndex}].items[${itemIndex}].detailsMarkdown`,
+        );
       }
     }),
   );
@@ -1138,12 +1968,26 @@ export function buildResumeDocument(
   const repoCatalog = new Map(
     options.repoCatalog.map((repo) => [repo.name.toLowerCase(), repo] as const),
   );
+  const warnings = [...(options.parseWarnings ?? [])];
+  let avatarPath: string | undefined;
+
+  if (raw.basics.avatar) {
+    try {
+      avatarPath = normalizeAssetPath(raw.basics.avatar);
+    } catch (error) {
+      pushResumeWarning(
+        warnings,
+        `basics.avatar: ${getErrorMessage(
+          error,
+          "Avatar references could not be resolved.",
+        )}`,
+      );
+    }
+  }
 
   const resumeDocument: ResumeDocumentData = {
     basics: {
-      avatarPath: raw.basics.avatar
-        ? normalizeAssetPath(raw.basics.avatar)
-        : undefined,
+      avatarPath,
       avatarUrl: raw.basics.avatarUrl,
       email: raw.basics.email,
       headline: raw.basics.headline
@@ -1164,21 +2008,39 @@ export function buildResumeDocument(
 
       return {
         id: section.id ?? toSectionId(title, `custom-section-${index + 1}`),
-        items: (section.items ?? []).map((item) =>
-          normalizeCustomSectionItem(item, options.locale, options.contentFiles),
+        items: (section.items ?? []).map((item, itemIndex) =>
+          normalizeCustomSectionItem(
+            item,
+            options.locale,
+            options.contentFiles,
+            warnings,
+            `customSections[${index}].items[${itemIndex}]`,
+          ),
         ),
         layout: section.layout ?? "list",
         title,
       };
     }),
     education: sortResumeEntries(
-      (raw.education ?? []).map((item) =>
-        normalizeEducationEntry(item, options.locale, options.contentFiles),
+      (raw.education ?? []).map((item, index) =>
+        normalizeEducationEntry(
+          item,
+          options.locale,
+          options.contentFiles,
+          warnings,
+          `education[${index}]`,
+        ),
       ),
     ),
     experience: sortResumeEntries(
-      (raw.experience ?? []).map((item) =>
-        normalizeEntry(item, options.locale, options.contentFiles),
+      (raw.experience ?? []).map((item, index) =>
+        normalizeEntry(
+          item,
+          options.locale,
+          options.contentFiles,
+          warnings,
+          `experience[${index}]`,
+        ),
       ),
     ),
     allProjects: [],
@@ -1194,18 +2056,23 @@ export function buildResumeDocument(
       raw.summary,
       options.locale,
       options.contentFiles,
+      warnings,
+      "summary",
     ),
+    warnings,
   };
 
   const explicitProjects = linkProjectsToExperience(
     sortResumeEntries(
-      (raw.projects ?? []).map((item) =>
+      (raw.projects ?? []).map((item, index) =>
         normalizeProject(
           item,
           options.locale,
           options.contentFiles,
           options.username,
           repoCatalog,
+          warnings,
+          `projects[${index}]`,
         ),
       ),
     ),
@@ -1219,6 +2086,7 @@ export function buildResumeDocument(
         options.locale,
         options.username,
         repoCatalog,
+        warnings,
       ),
     ),
     resumeDocument.experience,

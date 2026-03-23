@@ -276,6 +276,76 @@ summary: "missing basics"
   assert.match(parsed.error, /Invalid input|basics|expected/i);
 });
 
+test("keeps valid resume sections when unrelated yaml entries are broken", () => {
+  const parsed = parseResumeYamlDocument(`
+basics:
+  name: "Jane Doe"
+  website: "not-a-url"
+summary:
+  markdown: "content/summary.md"
+experience:
+  - subtitle: "Missing title should be skipped"
+  - title: "Stable Experience"
+    detailsMarkdown:
+      markdown: "content/notes.txt"
+projects:
+  - title: "Stable Project"
+    repo: "githubprint"
+    liveUrl: "notaurl"
+featuredProjects:
+  - "missing-project"
+`);
+
+  assert.equal(parsed.success, true);
+
+  if (!parsed.success) {
+    return;
+  }
+
+  assert.equal(parsed.data.experience?.length, 1);
+  assert.equal(parsed.data.projects?.length, 1);
+  assert.match(parsed.warnings.join("\n"), /basics\.website/);
+  assert.match(parsed.warnings.join("\n"), /experience\[0\]\.title/);
+  assert.match(parsed.warnings.join("\n"), /experience\[1\]\.detailsMarkdown/);
+  assert.match(parsed.warnings.join("\n"), /projects\[0\]\.liveUrl/);
+
+  const document = buildResumeDocument(parsed.data, {
+    contentFiles: {},
+    locale: "en",
+    parseWarnings: parsed.warnings,
+    repoCatalog: [
+      {
+        createdAt: "2025-02-01T00:00:00.000Z",
+        description: "Turns GitHub into a shareable document",
+        homepageUrl: "https://githubprint.vercel.app",
+        language: "TypeScript",
+        name: "githubprint",
+        projectLabels: ["AI", "frontend"],
+        pushedAt: "2026-03-01T00:00:00.000Z",
+        repoUrl: "https://github.com/example/githubprint",
+        topics: ["ai", "nextjs"],
+        updatedAt: "2026-03-20T00:00:00.000Z",
+      },
+    ],
+    repoUrl: "https://github.com/example/resume",
+    username: "example",
+    visibility: "public",
+  });
+
+  assert.equal(document.basics.website, undefined);
+  assert.equal(document.summary, undefined);
+  assert.equal(document.experience.length, 1);
+  assert.equal(document.experience[0]?.title, "Stable Experience");
+  assert.equal(document.experience[0]?.detailsMarkdown, undefined);
+  assert.equal(document.allProjects.length, 1);
+  assert.equal(document.allProjects[0]?.title, "Stable Project");
+  assert.equal(document.allProjects[0]?.liveUrl, undefined);
+  assert.equal(document.projects.length, 1);
+  assert.equal(document.projects[0]?.title, "Stable Project");
+  assert.match(document.warnings.join("\n"), /Missing referenced Markdown file: content\/summary\.md/);
+  assert.match(document.warnings.join("\n"), /featuredProjects\[0\]/);
+});
+
 test("accepts empty referenced markdown files without treating them as missing", () => {
   const parsed = parseResumeYamlDocument(`
 basics:
