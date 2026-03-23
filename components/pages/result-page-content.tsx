@@ -121,7 +121,7 @@ export async function ResultPageContent({
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
         <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="flex justify-end">
+          <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
@@ -169,7 +169,7 @@ export async function ResultPageContent({
         <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
           <LocaleSync locale={locale} />
           <div className="mx-auto max-w-[1200px] space-y-5">
-            <div className="flex justify-end">
+            <div className="screen-only flex justify-end">
               <LanguageToggle locale={locale} />
             </div>
             <ResultActions
@@ -240,7 +240,7 @@ export async function ResultPageContent({
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
         <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="flex justify-end">
+          <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
@@ -278,7 +278,7 @@ export async function ResultPageContent({
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
         <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="flex justify-end">
+          <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />
           </div>
           <ResultActions
