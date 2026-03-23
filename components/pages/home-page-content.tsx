@@ -2,7 +2,6 @@ import { SelfGenerator } from "@/components/home/self-generator";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
 import { LanguageToggle } from "@/components/ui/language-toggle";
-import { LocaleSync } from "@/components/ui/locale-sync";
 import { getGitHubSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
 import { getResumeTemplateAvailability } from "@/lib/resume-source";
@@ -52,7 +51,6 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
           type="application/ld+json"
         />
       ))}
-      <LocaleSync locale={locale} />
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col items-center justify-center">
         <div className="mb-8 flex w-full justify-end">
           <LanguageToggle locale={locale} />

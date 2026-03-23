@@ -19,7 +19,6 @@ import { RenderTemplate } from "@/components/result/render-template";
 import { ResumeResultState } from "@/components/result/resume-result-state";
 import { ResultState } from "@/components/result/result-state";
 import { LanguageToggle } from "@/components/ui/language-toggle";
-import { LocaleSync } from "@/components/ui/locale-sync";
 
 export type ResultPageSearchParams = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -119,7 +118,6 @@ export async function ResultPageContent({
   if (!session) {
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
-        <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />
@@ -167,7 +165,6 @@ export async function ResultPageContent({
 
       return (
         <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
-          <LocaleSync locale={locale} />
           <div className="mx-auto max-w-[1200px] space-y-5">
             <div className="screen-only flex justify-end">
               <LanguageToggle locale={locale} />
@@ -238,7 +235,6 @@ export async function ResultPageContent({
 
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
-        <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />
@@ -276,7 +272,6 @@ export async function ResultPageContent({
 
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
-        <LocaleSync locale={locale} />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">
             <LanguageToggle locale={locale} />

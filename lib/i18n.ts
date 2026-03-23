@@ -732,6 +732,10 @@ export function resolveLocale(value?: string | string[] | null): Locale {
   return parsed.success ? parsed.data : defaultLocale;
 }
 
+export function isLocale(value: string): value is Locale {
+  return localeSchema.safeParse(value).success;
+}
+
 export function resolveLocaleFromAcceptLanguage(
   acceptLanguage?: string | null,
 ): Locale {

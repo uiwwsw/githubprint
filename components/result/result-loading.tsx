@@ -1,11 +1,12 @@
 "use client";
 
 import { useLayoutEffect } from "react";
-import { getDictionary } from "@/lib/i18n";
+import { useLocale } from "next-intl";
+import { getDictionary, resolveLocale } from "@/lib/i18n";
 import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
-import type { Locale } from "@/lib/schemas";
 
-export function ResultLoading({ locale }: { locale: Locale }) {
+export function ResultLoading() {
+  const locale = resolveLocale(useLocale());
   const dict = getDictionary(locale);
 
   useLayoutEffect(() => {
