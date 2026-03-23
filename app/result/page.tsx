@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getLocalizedResultPath } from "@/lib/i18n";
+import { buildResultMetadata } from "@/lib/seo";
 import { templateSchema } from "@/lib/schemas";
+
+export const metadata: Metadata = buildResultMetadata("ko");
 
 type ResultRedirectPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

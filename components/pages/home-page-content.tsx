@@ -6,6 +6,7 @@ import { LocaleSync } from "@/components/ui/locale-sync";
 import { getGitHubSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
 import { getResumeTemplateAvailability } from "@/lib/resume-source";
+import { buildHomeStructuredData } from "@/lib/seo";
 import {
   DEFAULT_SELF_GENERATOR_TEMPLATE,
   parseStoredPrivatePreference,
@@ -18,6 +19,7 @@ import { cookies } from "next/headers";
 
 export async function HomePageContent({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
+  const structuredData = buildHomeStructuredData(locale);
   const session = await getGitHubSession();
   const cookieStore = await cookies();
   const storedTemplate = parseStoredTemplatePreference(
@@ -43,6 +45,13 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
+      {structuredData.map((entry) => (
+        <script
+          key={`${entry["@type"]}-${locale}`}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
+          type="application/ld+json"
+        />
+      ))}
       <LocaleSync locale={locale} />
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl flex-col items-center justify-center">
         <div className="mb-8 flex w-full justify-end">

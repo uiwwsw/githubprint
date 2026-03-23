@@ -18,6 +18,11 @@ export function proxy(request: NextRequest) {
   const pathname = nextUrl.pathname;
   const langParam = nextUrl.searchParams.get("lang");
   const isApiRoute = pathname === "/api" || pathname.startsWith("/api/");
+  const isResultPath =
+    pathname === "/result" ||
+    pathname.startsWith("/result/") ||
+    pathname === "/en/result" ||
+    pathname.startsWith("/en/result/");
   const locale = isApiRoute && langParam
     ? resolveLocale(langParam)
     : detectLocaleFromPathname(pathname);
@@ -25,17 +30,27 @@ export function proxy(request: NextRequest) {
 
   if (langParam && !isApiRoute) {
     const redirectUrl = nextUrl.clone();
-    const isResultPath = pathname === "/result" || pathname === "/en/result";
+    const isResultIndexPath = pathname === "/result" || pathname === "/en/result";
 
-    redirectUrl.pathname = getLocalizedPathname(isResultPath ? "/result" : "/", locale);
+    redirectUrl.pathname = getLocalizedPathname(isResultIndexPath ? "/result" : "/", locale);
     redirectUrl.searchParams.delete("lang");
 
     return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.next({
+  const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
+
+  if (isResultPath) {
+    // Result pages are private to the signed-in user and should never appear in search.
+    response.headers.set(
+      "X-Robots-Tag",
+      "noindex, nofollow, noarchive, nosnippet, noimageindex",
+    );
+  }
+
+  return response;
 }
 
 export const config = {

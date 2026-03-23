@@ -216,30 +216,34 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHubPrint | GitHub를 전달 가능한 개발자 문서로",
+      homeTitle: "GitHubPrint | GitHub를 이력서와 개발자 포트폴리오 PDF로 변환",
       homeDescription:
-        "로그인한 본인 GitHub 계정을 바탕으로 한국어 또는 영어 개발자 문서를 만드는 GitHubPrint.",
+        "GitHubPrint는 로그인한 내 GitHub를 이력서, 개발자 포트폴리오, PDF 문서로 정리합니다. resume 저장소가 있으면 ATS 친화 Word 이력서도 생성합니다.",
       homeKeywords: [
         "GitHubPrint",
+        "GitHub 이력서",
         "GitHub 포트폴리오",
+        "개발자 이력서 생성기",
         "개발자 프로필 생성기",
         "GitHub PDF",
+        "GitHub resume",
+        "ATS 이력서",
         "developer profile PDF",
       ],
       resultTitle: "GitHubPrint 결과 문서",
       resultDescription:
-        "GitHub 데이터를 바탕으로 정리한 개발자 문서 미리보기.",
+        "로그인한 본인 GitHub 데이터를 바탕으로 정리한 비공개 결과 문서 미리보기.",
     },
     home: {
       eyebrow: "GitHubPrint",
       titleTop: "GitHub를",
-      titleBottom: "전달 가능한 개발자 문서로",
+      titleBottom: "이력서와 개발자 문서로",
       description:
-        "GitHub로 로그인하면 내 계정을 바로 읽기 쉬운 개발자 문서로 변환합니다.",
+        "GitHub로 로그인하면 내 계정을 바로 이력서, 포트폴리오, 읽기 쉬운 개발자 문서로 변환합니다.",
       authEyebrow: "로그인 모드",
-      authTitle: "GitHub 로그인으로 내 프로필 바로 만들기",
+      authTitle: "GitHub 로그인으로 내 이력서와 프로필 바로 만들기",
       authDescription:
-        "로그인하면 GitHubPrint가 본인 계정을 바로 문서로 만들고, 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
+        "로그인하면 GitHubPrint가 본인 계정을 바로 이력서형 문서로 만들고, 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
         "아래에서 템플릿과 비공개 포함 범위를 고른 뒤 본인 프로필 결과를 생성할 수 있습니다.",
@@ -461,30 +465,33 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHubPrint | Turn GitHub into a shareable developer document",
+      homeTitle: "GitHubPrint | Turn GitHub into a resume, portfolio, and developer PDF",
       homeDescription:
-        "GitHubPrint turns your signed-in GitHub account into a polished developer document in Korean or English.",
+        "GitHubPrint turns your signed-in GitHub into a resume, developer portfolio, PDF, and ATS-friendly Word resume when a GitHub resume repository is available.",
       homeKeywords: [
         "GitHubPrint",
+        "GitHub resume",
         "GitHub portfolio",
+        "developer resume builder",
         "developer profile generator",
         "GitHub PDF",
+        "ATS resume",
         "developer document",
       ],
       resultTitle: "GitHubPrint Result Document",
       resultDescription:
-        "Preview a developer document generated from GitHub signals.",
+        "Private preview of a developer document generated from your GitHub signals.",
     },
     home: {
       eyebrow: "GitHubPrint",
       titleTop: "Turn GitHub",
-      titleBottom: "into a shareable developer document",
+      titleBottom: "into a resume and developer profile",
       description:
-        "Sign in with GitHub and turn your own account into a polished developer document right away.",
+        "Sign in with GitHub and turn your own account into a resume, portfolio, and polished developer document right away.",
       authEyebrow: "Signed-in mode",
-      authTitle: "Sign in with GitHub and generate your profile right away",
+      authTitle: "Sign in with GitHub and generate your resume and profile right away",
       authDescription:
-        "When you sign in, GitHubPrint can immediately generate your own document using the GitHub data you authorized, including private repositories and private profile signals.",
+        "When you sign in, GitHubPrint can immediately generate your own resume-style document using the GitHub data you authorized, including private repositories and private profile signals.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
         "Choose the template and private exposure below, then generate your own profile document.",

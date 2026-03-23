@@ -42,6 +42,8 @@ export function buildHomeMetadata(locale: Locale): Metadata {
   const description = dict.metadata.homeDescription;
 
   return {
+    applicationName: dict.siteName,
+    category: locale === "ko" ? "개발자 이력서 생성기" : "Developer resume builder",
     title,
     description,
     keywords: dict.metadata.homeKeywords,
@@ -50,6 +52,7 @@ export function buildHomeMetadata(locale: Locale): Metadata {
       languages: {
         ko: "/",
         en: "/en",
+        "x-default": "/",
       },
     },
     openGraph: {
@@ -67,6 +70,49 @@ export function buildHomeMetadata(locale: Locale): Metadata {
       description,
     },
   };
+}
+
+export function buildHomeStructuredData(locale: Locale) {
+  const dict = getDictionary(locale);
+  const url = localePath("/", locale);
+  const inLanguage = locale === "ko" ? "ko-KR" : "en-US";
+  const description = dict.metadata.homeDescription;
+  const featureList =
+    locale === "ko"
+      ? [
+          "GitHub를 이력서와 개발자 소개 문서로 변환",
+          "공유 가능한 개발자 포트폴리오 PDF 생성",
+          "resume 저장소 기반 ATS 친화 Word 이력서 생성",
+          "한국어와 영어 결과 문서 지원",
+        ]
+      : [
+          "Turn GitHub into a developer resume and profile document",
+          "Generate shareable developer portfolio PDFs",
+          "Create an ATS-friendly Word resume from a GitHub resume repository",
+          "Support Korean and English output",
+        ];
+
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: dict.siteName,
+      url,
+      inLanguage,
+      description,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      name: dict.siteName,
+      url,
+      operatingSystem: "Web",
+      applicationCategory: "BusinessApplication",
+      inLanguage,
+      description,
+      featureList,
+    },
+  ];
 }
 
 export function buildResultMetadata(
@@ -92,12 +138,25 @@ export function buildResultMetadata(
     robots: {
       index: false,
       follow: false,
+      noarchive: true,
+      noimageindex: true,
+      nosnippet: true,
+      googleBot: {
+        index: false,
+        follow: false,
+        noarchive: true,
+        noimageindex: true,
+        nosnippet: true,
+        "max-image-preview": "none",
+        "max-snippet": 0,
+      },
     },
     alternates: {
       canonical: localizedCanonicalPath,
       languages: {
         ko: options?.template ? `/result/${options.template}` : "/result",
         en: options?.template ? `/en/result/${options.template}` : "/en/result",
+        "x-default": options?.template ? `/result/${options.template}` : "/result",
       },
     },
     openGraph: {
