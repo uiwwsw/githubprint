@@ -3,8 +3,8 @@
     "id": "role:frontend-product",
     "priority": 10,
     "text": {
-      "ko": "제품 중심 프론트엔드 개발",
-      "en": "Product-focused frontend development"
+      "ko": "제품 구축과 운영을 함께 보는 프론트엔드 개발",
+      "en": "Frontend product development that spans both build-out and ongoing operation"
     },
     "minOrientationScores": {
       "frontend": 60
@@ -14,8 +14,8 @@
     "id": "role:frontend-prototype",
     "priority": 9,
     "text": {
-      "ko": "프로토타입 제작이 잦은 제품팀의 프론트엔드 역할",
-      "en": "Frontend work inside product teams that prototype frequently"
+      "ko": "아키텍처와 UI 구현을 함께 맡는 제품 프론트엔드 역할",
+      "en": "Product frontend work that sits close to both architecture and UI implementation"
     },
     "minOrientationScores": {
       "frontend": 45
@@ -86,8 +86,8 @@
     "id": "role:generalist-mvp",
     "priority": 7,
     "text": {
-      "ko": "초기 제품 MVP 구현",
-      "en": "Early-stage MVP implementation"
+      "ko": "초기 제품에서 범위가 넓은 MVP 구현 역할",
+      "en": "Broad-scope MVP implementation work in early-stage products"
     },
     "minWorkingStyleScores": {
       "prototyping": 40,

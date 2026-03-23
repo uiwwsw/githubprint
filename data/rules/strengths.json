@@ -23,8 +23,8 @@
     "id": "strength:frontend",
     "priority": 8,
     "text": {
-      "ko": "UI 구현과 사용자 화면 작업이 반복되어 프론트엔드 경험이 비교적 분명합니다.",
-      "en": "Repeated UI and product-surface signals make the frontend story relatively clear."
+      "ko": "UI 구현부터 운영 화면까지 반복된 결과가 보여, 프론트엔드 경험 축이 비교적 선명합니다.",
+      "en": "Visible work across UI implementation and operational surfaces makes the frontend story relatively legible."
     },
     "minOrientationScores": {
       "frontend": 55
@@ -78,8 +78,8 @@
     "id": "strength:quality",
     "priority": 7,
     "text": {
-      "ko": "테스트와 검증 도구가 있어 품질 관리에 관심이 있는 편으로 보입니다.",
-      "en": "Testing and verification tooling suggests some visible interest in quality management."
+      "ko": "테스트와 검증 도구가 보여, 결과물의 안정성과 품질을 챙기려는 경향이 보입니다.",
+      "en": "Testing and verification tooling suggests visible interest in reliability and quality control."
     },
     "minWorkingStyleScores": {
       "quality": 45
@@ -100,8 +100,8 @@
     "id": "strength:structure",
     "priority": 6,
     "text": {
-      "ko": "모노레포, 설정, 워크플로우 구성이 보여 구조를 정리하는 역량이 드러납니다.",
-      "en": "Monorepo layout, configuration, and workflow signals suggest strength around structuring a codebase."
+      "ko": "모노레포, 설정, 워크플로우 구성이 보여 구조를 정리하고 기준을 세우는 역량이 드러납니다.",
+      "en": "Monorepo, configuration, and workflow signals suggest strength in structuring a codebase and setting engineering guardrails."
     },
     "minWorkingStyleScores": {
       "structure": 45

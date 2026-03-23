@@ -1662,6 +1662,16 @@ function sortResumeEntries<T extends ResumeEntry>(entries: T[]) {
   });
 }
 
+export function isResumeHighlightSectionId(id: string) {
+  const normalized = id.trim().toLowerCase();
+  return (
+    normalized === "highlights" ||
+    normalized === "highlight" ||
+    normalized === "key-highlights" ||
+    normalized === "key_highlights"
+  );
+}
+
 function experienceContainsDate(entry: ResumeEntry, target: number) {
   const start = getComparableDate(entry.start);
   const end = entry.current
@@ -2168,15 +2178,13 @@ export function buildResumeDocument(
     resumeDocument.experience,
   );
   const featuredProjects = linkProjectsToExperience(
-    sortResumeEntries(
-      resolveFeaturedProjects(
-        raw.featuredProjects,
-        explicitProjects,
-        options.locale,
-        options.username,
-        repoCatalog,
-        warnings,
-      ),
+    resolveFeaturedProjects(
+      raw.featuredProjects,
+      explicitProjects,
+      options.locale,
+      options.username,
+      repoCatalog,
+      warnings,
     ),
     resumeDocument.experience,
   );

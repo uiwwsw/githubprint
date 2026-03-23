@@ -5,6 +5,7 @@ import {
   buildResumeProjectEvidenceSummary,
   formatResumeProjectLabel,
   formatResumeDateRange,
+  isResumeHighlightSectionId,
   parseResumeMarkdown,
   type ResumeCustomSection,
   type ResumeDocumentData,
@@ -61,14 +62,16 @@ function MarkdownContent({ markdown }: { markdown: string }) {
 }
 
 function ResumeSection({
+  bordered = true,
   children,
   title,
 }: {
+  bordered?: boolean;
   children: ReactNode;
   title: string;
 }) {
   return (
-    <section className="border-t border-black/[0.08] pt-6">
+    <section className={cn(bordered && "border-t border-black/[0.08] pt-6")}>
       <div className="space-y-4">
         <div className="print-break-after-avoid">
           <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
@@ -79,6 +82,39 @@ function ResumeSection({
         {children}
       </div>
     </section>
+  );
+}
+
+function HighlightSectionContent({
+  section,
+}: {
+  section: ResumeCustomSection;
+}) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {section.items.map((entry) => {
+        const detail = entry.bullets[0] ?? entry.detailsMarkdown;
+
+        return (
+          <article
+            className="print-break-inside-avoid rounded-[1.2rem] border border-black/[0.08] bg-white p-5"
+            key={`${section.id}-${entry.title}`}
+          >
+            {entry.subtitle ? (
+              <p className="text-[11px] uppercase tracking-[0.18em] text-neutral-400">
+                {entry.subtitle}
+              </p>
+            ) : null}
+            <h3 className="mt-2 font-serif text-[1.45rem] leading-tight text-neutral-950">
+              {entry.title}
+            </h3>
+            {detail ? (
+              <p className="mt-3 text-sm leading-7 text-neutral-700">{detail}</p>
+            ) : null}
+          </article>
+        );
+      })}
+    </div>
   );
 }
 
@@ -400,9 +436,15 @@ export function ResumeTemplate({
   const resolvedAvatarUrl = resume.basics.avatarPath
     ? `/api/resume-asset?path=${encodeURIComponent(resume.basics.avatarPath)}`
     : resume.basics.avatarUrl ?? avatarUrl;
-  const topLinks = [...resume.basics.links];
+  const topLinks = resume.basics.links.filter((link) => link.kind !== "contact");
   const visibilityLabel = getVisibilityLabel(locale, resume.source.visibility);
   const projectsByExperience = new Map<string, ResumeProject[]>();
+  const highlightSection = resume.customSections.find((section) =>
+    isResumeHighlightSectionId(section.id),
+  );
+  const trailingSections = resume.customSections.filter(
+    (section) => !isResumeHighlightSectionId(section.id),
+  );
 
   resume.allProjects.forEach((project) => {
     if (!project.linkedExperienceTitle) {
@@ -494,20 +536,6 @@ export function ResumeTemplate({
                 {resume.basics.location}
               </span>
             ) : null}
-            <span className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5">
-              {copy.actions.repoVisibilityLabel}: {visibilityLabel}
-            </span>
-            <span className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5">
-              {copy.actions.repoSourceLabel}:{" "}
-              <a
-                className="underline decoration-black/20 underline-offset-4"
-                href={resume.source.repoUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {resume.source.repoName}
-              </a>
-            </span>
           </div>
 
           {topLinks.length > 0 ? <LinkRow links={topLinks} locale={locale} /> : null}
@@ -515,6 +543,12 @@ export function ResumeTemplate({
       </header>
 
       <div className="mt-8 space-y-8">
+        {highlightSection ? (
+          <ResumeSection bordered={false} title={highlightSection.title}>
+            <HighlightSectionContent section={highlightSection} />
+          </ResumeSection>
+        ) : null}
+
         <ResumeSection title={copy.template.sections.summary}>
           {resume.summary ? (
             <MarkdownContent markdown={resume.summary} />
@@ -603,7 +637,7 @@ export function ResumeTemplate({
           )}
         </ResumeSection>
 
-        {resume.customSections.map((section) => (
+        {trailingSections.map((section) => (
           <ResumeSection key={section.id} title={section.title}>
             {section.items.length > 0 ? (
               <CustomSectionContent locale={locale} section={section} />

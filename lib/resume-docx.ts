@@ -16,7 +16,9 @@ import {
   buildResumeProjectEvidenceSummary,
   formatResumeProjectLabel,
   formatResumeDateRange,
+  isResumeHighlightSectionId,
   parseResumeMarkdown,
+  type ResumeCustomSection,
   type ResumeDocumentData,
   type ResumeEntry,
   type ResumeProject,
@@ -423,6 +425,24 @@ function buildContactParagraph(document: ResumeDocumentData) {
   });
 }
 
+function buildHighlightParagraphs(section: ResumeCustomSection) {
+  return section.items.map((entry) => {
+    const detail = entry.bullets[0] ?? "";
+
+    return new Paragraph({
+      bullet: { level: 0 },
+      spacing: {
+        after: 70,
+      },
+      children: [
+        createText(entry.title, { bold: true }),
+        ...(entry.subtitle ? [createText(`  |  ${entry.subtitle}`)] : []),
+        ...(detail ? [createText(`  ${detail}`)] : []),
+      ],
+    });
+  });
+}
+
 export async function buildResumeDocx(
   documentData: ResumeDocumentData,
   locale: Locale,
@@ -445,6 +465,12 @@ export async function buildResumeDocx(
     (await createAvatarParagraph(
       documentData.basics.avatarUrl ?? options?.fallbackAvatarUrl,
     ));
+  const highlightSections = documentData.customSections.filter((section) =>
+    isResumeHighlightSectionId(section.id),
+  );
+  const trailingSections = documentData.customSections.filter(
+    (section) => !isResumeHighlightSectionId(section.id),
+  );
   const children: Paragraph[] = [
     ...(avatarParagraph ? [avatarParagraph] : []),
     new Paragraph({
@@ -474,6 +500,15 @@ export async function buildResumeDocx(
   }
 
   children.push(buildContactParagraph(documentData));
+
+  highlightSections.forEach((section) => {
+    if (section.items.length === 0) {
+      return;
+    }
+
+    children.push(createSectionHeading(section.title));
+    children.push(...buildHighlightParagraphs(section));
+  });
 
   if (documentData.summary) {
     children.push(createSectionHeading(copy.template.sections.summary));
@@ -530,18 +565,16 @@ export async function buildResumeDocx(
     });
   }
 
-  if (documentData.customSections.length > 0) {
-    documentData.customSections.forEach((section) => {
-      if (section.items.length === 0) {
-        return;
-      }
+  trailingSections.forEach((section) => {
+    if (section.items.length === 0) {
+      return;
+    }
 
-      children.push(createSectionHeading(section.title));
-      section.items.forEach((entry) => {
-        children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
-      });
+    children.push(createSectionHeading(section.title));
+    section.items.forEach((entry) => {
+      children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
     });
-  }
+  });
 
   children.push(
     new Paragraph({

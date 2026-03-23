@@ -1,3 +1,4 @@
+import { parseResumeMarkdown, type ResumeDocumentData } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
 
 export type ShowcaseSlug = "uiwwsw";
@@ -251,4 +252,138 @@ export function getShowcaseRecord(slug: ShowcaseSlug) {
 export function getShowcasePath(slug: ShowcaseSlug, locale: Locale) {
   void slug;
   return locale === "en" ? "/en/showcase" : "/showcase";
+}
+
+function compactWhitespace(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function getResumeSummaryExcerpt(resume?: ResumeDocumentData | null) {
+  if (!resume?.summary) {
+    return "";
+  }
+
+  const text = parseResumeMarkdown(resume.summary)
+    .map((block) => {
+      if (block.type === "list") {
+        return block.items.join(" ");
+      }
+
+      return block.text;
+    })
+    .filter(Boolean)
+    .join(" ");
+
+  return compactWhitespace(text);
+}
+
+export function getShowcaseDisplayName(
+  slug: ShowcaseSlug,
+  resume?: ResumeDocumentData | null,
+) {
+  return resume?.basics.name ?? getShowcaseRecord(slug).name;
+}
+
+export function getShowcaseProfileImage(
+  slug: ShowcaseSlug,
+  resume?: ResumeDocumentData | null,
+) {
+  return resume?.basics.avatarUrl ?? getShowcaseRecord(slug).profileImagePath;
+}
+
+export function getShowcaseLocation(
+  slug: ShowcaseSlug,
+  locale: Locale,
+  resume?: ResumeDocumentData | null,
+) {
+  return resume?.basics.location ?? getShowcaseRecord(slug).location[locale];
+}
+
+export function getShowcaseSkills(
+  slug: ShowcaseSlug,
+  resume?: ResumeDocumentData | null,
+) {
+  const resumeSkills = [
+    ...new Set(
+      resume?.skills.flatMap((group) => group.items).filter(Boolean) ?? [],
+    ),
+  ].slice(0, 9);
+
+  if (resumeSkills.length > 0) {
+    return resumeSkills;
+  }
+
+  return getShowcaseRecord(slug).skills;
+}
+
+export function getShowcaseLede(
+  slug: ShowcaseSlug,
+  locale: Locale,
+  resume?: ResumeDocumentData | null,
+) {
+  const fallback = getShowcaseRecord(slug).lede[locale];
+  const summary = getResumeSummaryExcerpt(resume);
+  const headline = resume?.basics.headline?.trim();
+
+  if (headline && summary) {
+    return compactWhitespace(`${headline}. ${summary}`);
+  }
+
+  if (summary) {
+    return summary;
+  }
+
+  if (headline) {
+    return headline;
+  }
+
+  return fallback;
+}
+
+export function getShowcaseSeoTitle(
+  slug: ShowcaseSlug,
+  locale: Locale,
+  resume?: ResumeDocumentData | null,
+) {
+  const fallback = getShowcaseRecord(slug).seoTitle[locale];
+  const name = resume?.basics.name?.trim();
+
+  if (!name) {
+    return fallback;
+  }
+
+  return locale === "ko"
+    ? `${name} 공개 이력서 | GitHubPrint`
+    : `${name} Public Resume | GitHubPrint`;
+}
+
+export function getShowcaseSeoDescription(
+  slug: ShowcaseSlug,
+  locale: Locale,
+  resume?: ResumeDocumentData | null,
+) {
+  const fallback = getShowcaseRecord(slug).seoDescription[locale];
+  const lede = getShowcaseLede(slug, locale, resume);
+
+  return lede || fallback;
+}
+
+export function getShowcaseKeywords(
+  slug: ShowcaseSlug,
+  locale: Locale,
+  resume?: ResumeDocumentData | null,
+) {
+  const showcase = getShowcaseRecord(slug);
+  const skills = getShowcaseSkills(slug, resume);
+  const headline = resume?.basics.headline?.trim();
+  const base = [
+    getShowcaseDisplayName(slug, resume),
+    showcase.username,
+    headline,
+    ...skills.slice(0, 5),
+    locale === "ko" ? "공개 이력서" : "public resume",
+    "GitHubPrint",
+  ].filter(Boolean) as string[];
+
+  return [...new Set(base)];
 }

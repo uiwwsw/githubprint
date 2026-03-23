@@ -11,22 +11,22 @@
   },
   "summary": {
     "high": {
-      "ko": "{name}의 GitHub를 보면 {languages} 중심의 프로젝트가 반복되고, {projects} 같은 대표 저장소에서 {primaryOrientation} 경향이 비교적 분명하게 드러납니다. 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
-      "en": "Based on GitHub signals, {name} repeatedly ships projects around {languages}, and repositories such as {projects} make the {primaryOrientation} orientation relatively clear. Overall, the profile leans toward {primaryStyle}."
+      "ko": "{name}의 GitHub에서는 {languages} 축이 반복되고, {projects} 같은 저장소가 어떤 문제를 어떻게 구현하는 개발자인지 빠르게 보여줍니다. 공개 근거 기준으로는 {primaryOrientation} 성향이 가장 뚜렷하며, 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
+      "en": "Across GitHub, {name} shows a repeated throughline around {languages}, and repositories such as {projects} make it easier to read what kinds of problems this developer tends to implement. Based on visible evidence, the clearest tilt is {primaryOrientation}, with an overall lean toward {primaryStyle}."
     },
     "medium": {
-      "ko": "{name}의 저장소를 보면 {languages} 중심의 구현 경험이 보이고, {projects} 같은 저장소에서 {primaryOrientation} 경향을 확인할 수 있습니다. 확인 가능한 GitHub 정보 범위 안에서는 {primaryStyle} 성향도 함께 드러납니다.",
-      "en": "Across repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} suggest a {primaryOrientation} tilt. Within the limits of visible GitHub evidence, there are also signals of {primaryStyle}."
+      "ko": "{name}의 저장소를 보면 {languages} 중심의 구현 경험이 반복되고, {projects} 같은 저장소에서 {primaryOrientation} 경향을 읽을 수 있습니다. 확인 가능한 GitHub 범위 안에서는 {primaryStyle} 성향도 함께 드러납니다.",
+      "en": "Across repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} make a {primaryOrientation} tilt reasonably legible. Within the limits of visible GitHub evidence, there are also signs of {primaryStyle}."
     },
     "low": {
-      "ko": "{name}의 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 경향이 상대적으로 더 두드러진다고 보는 편이 맞습니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 드러납니다.",
-      "en": "GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} signals are only relatively stronger than the rest. The working style currently reads as somewhat {primaryStyle}."
+      "ko": "{name}의 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 경향이 상대적으로 더 강하다고 보는 편이 안전합니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 드러납니다.",
+      "en": "GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} is only relatively more visible than the rest. Working-style signals currently read as somewhat {primaryStyle}."
     }
   },
   "caution": {
     "high": {
-      "ko": "저장소, 문서, 최근 활동을 통해 확인 가능한 정보는 비교적 충분하지만, 실제 협업 방식과 경력 정보까지 확인되는 것은 아닙니다.",
-      "en": "Repositories, documentation, and recent activity provide relatively solid evidence, but they still do not verify collaboration style or career history."
+      "ko": "저장소, 문서, 최근 활동 덕분에 읽을 수 있는 정보는 비교적 충분하지만, 실제 협업 방식이나 업무 범위 전체까지 검증되는 것은 아닙니다.",
+      "en": "Repositories, documentation, and recency provide a relatively solid reading surface, but they still do not verify collaboration style or the full scope of day-to-day work."
     },
     "medium": {
       "ko": "판단은 저장소와 README, 최근 활동을 바탕으로 한 해석이며, 실제 업무 맥락은 더 조심스럽게 보는 편이 맞습니다.",
@@ -56,7 +56,7 @@
     }
   },
   "disclaimer": {
-    "ko": "이 문서는 공개 GitHub 기준에서 관찰되는 정보만 바탕으로 작성되었습니다. 경력 연차, 협업 방식, 비즈니스 임팩트 등은 확인되지 않는 한 단정하지 않았습니다.",
-    "en": "This document is based only on information observable from public GitHub data. Career tenure, collaboration style, and business impact are not asserted unless clearly evidenced."
+    "ko": "이 문서는 공개 GitHub 기준에서 관찰되는 정보만 바탕으로 작성된 해석 문서입니다. 경력 연차, 협업 방식, 조직 내 역할 범위, 비즈니스 임팩트 등은 공개 근거가 확인될 때만 제한적으로 다룹니다.",
+    "en": "This document is an interpretive reading based only on information observable from public GitHub data. Career tenure, collaboration style, role scope inside a team, and business impact are discussed only when visible evidence clearly supports them."
   }
 }

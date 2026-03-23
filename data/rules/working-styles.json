@@ -41,8 +41,8 @@
       {
         "min": 65,
         "text": {
-          "ko": "배포 링크와 대표작 구성을 보면, 결과물을 실제로 써볼 수 있는 형태로 정리하는 편으로 보입니다.",
-          "en": "Deployment links and standout-project structure suggest a tendency to package work into something shareable and usable."
+          "ko": "배포 링크와 대표작 구성을 보면, 결과물을 직접 확인하고 판단할 수 있는 형태로 정리하는 편으로 보입니다.",
+          "en": "Deployment links and standout-project structure suggest a tendency to package work into something that can be inspected and evaluated directly."
         }
       },
       {
@@ -103,8 +103,8 @@
       {
         "min": 65,
         "text": {
-          "ko": "모노레포, 설정 파일, CI 구성을 보면 구조와 운영 흐름을 정리하는 편으로 보입니다.",
-          "en": "Monorepo layouts, configuration files, and CI signals suggest an inclination toward structuring systems and operational flow."
+          "ko": "모노레포, 설정 파일, CI 구성을 보면 코드베이스 구조와 운영 기준을 정리하는 편으로 보입니다.",
+          "en": "Monorepo layouts, configuration files, and CI signals suggest an inclination toward structuring a codebase and clarifying operational standards."
         }
       },
       {
@@ -165,8 +165,8 @@
       {
         "min": 65,
         "text": {
-          "ko": "최근 활동과 수정 흐름을 보면, 저장소를 반복적으로 손보며 다듬는 편으로 보입니다.",
-          "en": "Recent activity and maintenance patterns suggest an iterative habit of revisiting and refining repositories."
+          "ko": "최근 활동과 수정 흐름을 보면, 한 번 만들고 끝내기보다 반복적으로 손보며 다듬는 편으로 보입니다.",
+          "en": "Recent activity and maintenance patterns suggest a habit of revisiting and refining work rather than shipping it once and leaving it untouched."
         }
       },
       {

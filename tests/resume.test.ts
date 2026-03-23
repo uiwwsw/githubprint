@@ -4,6 +4,7 @@ import {
   buildResumeProjectEvidenceSummary,
   buildResumeDocument,
   collectResumeMarkdownPaths,
+  isResumeHighlightSectionId,
   parseResumeYamlDocument,
   pickResumeManifestFile,
 } from "../lib/resume";
@@ -209,22 +210,67 @@ featuredProjects:
   assert.equal(document.projects.length, 2);
   assert.deepEqual(
     document.projects.map((project) => project.title),
-    ["githubprint", "Equipment Client"],
+    ["Equipment Client", "githubprint"],
   );
   assert.equal(
-    document.projects[0]?.liveUrl,
+    document.projects[1]?.liveUrl,
     "https://githubprint.vercel.app",
   );
   assert.equal(
-    document.projects[0]?.repoDescription,
+    document.projects[1]?.repoDescription,
     "Turns GitHub into a shareable document",
   );
-  assert.deepEqual(document.projects[0]?.projectLabels, ["AI", "frontend"]);
-  assert.deepEqual(document.projects[0]?.tech, ["TypeScript"]);
+  assert.deepEqual(document.projects[1]?.projectLabels, ["AI", "frontend"]);
+  assert.deepEqual(document.projects[1]?.tech, ["TypeScript"]);
   assert.equal(
-    buildResumeProjectEvidenceSummary(document.projects[0]!, "en"),
+    buildResumeProjectEvidenceSummary(document.projects[1]!, "en"),
     "Based on the GitHub evidence, this reads most clearly as AI and Frontend work. The clearest stack centers on TypeScript. It includes both a live link and a verified GitHub repository.",
   );
+});
+
+test("preserves curated featured project order", () => {
+  const source = `
+basics:
+  name: "Jane Doe"
+experience: []
+projects:
+  - id: "project-a"
+    title: "Project A"
+  - id: "project-b"
+    title: "Project B"
+featuredProjects:
+  - "project-b"
+  - "project-a"
+skills: []
+`;
+
+  const parsed = parseResumeYamlDocument(source);
+  assert.equal(parsed.success, true);
+
+  if (!parsed.success) {
+    return;
+  }
+
+  const document = buildResumeDocument(parsed.data, {
+    contentFiles: {},
+    locale: "en",
+    repoCatalog: [],
+    repoUrl: "https://github.com/example/resume",
+    updatedAt: "2026-03-23T00:00:00.000Z",
+    username: "example",
+    visibility: "public",
+  });
+
+  assert.deepEqual(
+    document.projects.map((project) => project.title),
+    ["Project B", "Project A"],
+  );
+});
+
+test("recognizes highlight section ids", () => {
+  assert.equal(isResumeHighlightSectionId("highlights"), true);
+  assert.equal(isResumeHighlightSectionId("key-highlights"), true);
+  assert.equal(isResumeHighlightSectionId("training"), false);
 });
 
 test("accepts resume repo education and custom section shapes", () => {

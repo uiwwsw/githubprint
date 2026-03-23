@@ -2,7 +2,14 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ResumeTemplate } from "@/components/templates/resume";
 import { buildShowcaseStructuredData } from "@/lib/seo";
-import { getShowcasePath, getShowcaseRecord, type ShowcaseSlug } from "@/lib/showcase";
+import {
+  getShowcaseDisplayName,
+  getShowcasePath,
+  getShowcaseProfileImage,
+  getShowcaseRecord,
+  getShowcaseSkills,
+  type ShowcaseSlug,
+} from "@/lib/showcase";
 import { getPublicShowcaseResumeDocument } from "@/lib/showcase-resume";
 import { getSiteUrl } from "@/lib/site-url";
 import type { Locale } from "@/lib/schemas";
@@ -35,12 +42,15 @@ export async function ShowcasePageContent({
 }) {
   const showcase = getShowcaseRecord(slug);
   const pageUrl = new URL(getShowcasePath(slug, locale), getSiteUrl()).toString();
-  const structuredData = buildShowcaseStructuredData(locale, slug);
   const resume = await getPublicShowcaseResumeDocument({
     locale,
     repoUrl: showcase.resumeRepoUrl,
     username: showcase.username,
   });
+  const structuredData = buildShowcaseStructuredData(locale, slug, resume);
+  const displayName = getShowcaseDisplayName(slug, resume);
+  const profileImage = getShowcaseProfileImage(slug, resume);
+  const skillChips = getShowcaseSkills(slug, resume).slice(0, 5);
   const homePath = locale === "en" ? "/en" : "/";
   const copy =
     locale === "ko"
@@ -85,7 +95,7 @@ export async function ShowcasePageContent({
                 {copy.publicSample}
               </p>
               <h1 className="font-serif text-3xl text-neutral-950">
-                {showcase.name}
+                {displayName}
               </h1>
               <p className="max-w-3xl text-sm leading-7 text-neutral-600">
                 {copy.pageIntro}
@@ -137,12 +147,63 @@ export async function ShowcasePageContent({
         </div>
 
         {resume ? (
-          <ResumeTemplate
-            generatedAt={resume.source.updatedAt ?? showcase.createdAt}
-            locale={locale}
-            profileUrl={`https://github.com/${showcase.username}`}
-            resume={resume}
-          />
+          <div className="space-y-5">
+            <section className="screen-only rounded-[1.8rem] border border-black/[0.08] bg-white/[0.72] p-5 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4">
+                    <img
+                      alt={`${displayName} profile`}
+                      className="h-[4.5rem] w-[4.5rem] rounded-[1.3rem] border border-black/[0.08] object-cover shadow-[0_24px_40px_-30px_rgba(0,0,0,0.65)]"
+                      height="72"
+                      src={profileImage}
+                      width="72"
+                    />
+                    <div className="space-y-1">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
+                        {copy.publicSample}
+                      </p>
+                      <h2 className="font-serif text-2xl text-neutral-950">
+                        {resume.basics.name}
+                      </h2>
+                      {resume.basics.headline ? (
+                        <p className="text-sm leading-7 text-neutral-600">
+                          {resume.basics.headline}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                  {skillChips.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {skillChips.map((item) => (
+                        <span
+                          className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-700"
+                          key={item}
+                        >
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <ExternalLink href={showcase.resumeRepoUrl}>
+                    {copy.openRepo}
+                  </ExternalLink>
+                  <ExternalLink href={`https://github.com/${showcase.username}`}>
+                    {copy.openGithub}
+                  </ExternalLink>
+                </div>
+              </div>
+            </section>
+
+            <ResumeTemplate
+              generatedAt={resume.source.updatedAt ?? showcase.createdAt}
+              locale={locale}
+              profileUrl={`https://github.com/${showcase.username}`}
+              resume={resume}
+            />
+          </div>
         ) : (
           <section className="rounded-[1.8rem] border border-black/[0.08] bg-white/[0.72] p-6 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur">
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">

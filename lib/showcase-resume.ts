@@ -18,7 +18,10 @@ import {
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
 
-const LOCAL_SHOWCASE_RESUME_ROOT = path.resolve(process.cwd(), "tmp/resume-sync");
+const LOCAL_SHOWCASE_RESUME_ROOT_CANDIDATES = [
+  process.env.LOCAL_SHOWCASE_RESUME_ROOT?.trim(),
+  path.resolve(process.cwd(), "../resume"),
+].filter((value): value is string => Boolean(value));
 const ASSET_FILE_PATTERN =
   /^assets\/[a-z0-9/_.-]+\.(png|jpg|jpeg|gif|webp|bmp)$/i;
 
@@ -57,9 +60,13 @@ async function getLocalShowcaseResumeRoot() {
     return null;
   }
 
-  return (await pathExists(path.join(LOCAL_SHOWCASE_RESUME_ROOT, DEFAULT_RESUME_MANIFEST)))
-    ? LOCAL_SHOWCASE_RESUME_ROOT
-    : null;
+  for (const rootPath of LOCAL_SHOWCASE_RESUME_ROOT_CANDIDATES) {
+    if (await pathExists(path.join(rootPath, DEFAULT_RESUME_MANIFEST))) {
+      return rootPath;
+    }
+  }
+
+  return null;
 }
 
 async function pickLocalShowcaseManifestPath(rootPath: string, locale: Locale) {

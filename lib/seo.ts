@@ -1,8 +1,20 @@
 import type { Metadata } from "next";
 import { buildResultDocumentTitle } from "@/lib/result-document";
+import type { ResumeDocumentData } from "@/lib/resume";
 import type { Locale, TemplateId } from "@/lib/schemas";
 import { getDictionary, getLocalizedPathname, getLocalizedResultPath } from "@/lib/i18n";
-import { getShowcasePath, getShowcaseRecord, type ShowcaseSlug } from "@/lib/showcase";
+import {
+  getShowcaseDisplayName,
+  getShowcaseKeywords,
+  getShowcaseLocation,
+  getShowcasePath,
+  getShowcaseProfileImage,
+  getShowcaseRecord,
+  getShowcaseSeoDescription,
+  getShowcaseSeoTitle,
+  getShowcaseSkills,
+  type ShowcaseSlug,
+} from "@/lib/showcase";
 import { getSiteUrl } from "@/lib/site-url";
 
 function localePath(
@@ -183,19 +195,25 @@ function absolutePathUrl(pathname: string) {
 export function buildShowcaseStructuredData(
   locale: Locale,
   slug: ShowcaseSlug,
+  resume?: ResumeDocumentData | null,
 ) {
   const showcase = getShowcaseRecord(slug);
   const pageUrl = absolutePathUrl(getShowcasePath(slug, locale));
-  const profileImageUrl = absolutePathUrl(showcase.profileImagePath);
+  const profileImageUrl = absolutePathUrl(getShowcaseProfileImage(slug, resume));
   const occupationName = locale === "ko" ? "프론트엔드 개발자" : "Frontend developer";
+  const seoTitle = getShowcaseSeoTitle(slug, locale, resume);
+  const seoDescription = getShowcaseSeoDescription(slug, locale, resume);
+  const displayName = getShowcaseDisplayName(slug, resume);
+  const location = getShowcaseLocation(slug, locale, resume);
+  const skills = getShowcaseSkills(slug, resume);
 
   return [
     {
       "@context": "https://schema.org",
       "@type": "ProfilePage",
       "@id": `${pageUrl}#webpage`,
-      name: showcase.seoTitle[locale],
-      description: showcase.seoDescription[locale],
+      name: seoTitle,
+      description: seoDescription,
       inLanguage: locale === "ko" ? "ko-KR" : "en-US",
       url: pageUrl,
       primaryImageOfPage: profileImageUrl,
@@ -207,9 +225,9 @@ export function buildShowcaseStructuredData(
       "@context": "https://schema.org",
       "@type": "Person",
       "@id": `${pageUrl}#person`,
-      name: showcase.name,
+      name: displayName,
       alternateName: showcase.username,
-      description: showcase.seoDescription[locale],
+      description: seoDescription,
       image: profileImageUrl,
       url: pageUrl,
       jobTitle: locale === "ko" ? "프론트엔드 개발자" : "Frontend engineer",
@@ -218,14 +236,14 @@ export function buildShowcaseStructuredData(
         name: occupationName,
         occupationLocation: {
           "@type": "City",
-          name: showcase.location[locale],
+          name: location,
         },
       },
       sameAs: showcase.sameAs,
-      knowsAbout: showcase.skills,
+      knowsAbout: skills,
       homeLocation: {
         "@type": "Place",
-        name: showcase.location[locale],
+        name: location,
       },
       alumniOf: {
         "@type": "CollegeOrUniversity",
@@ -238,17 +256,21 @@ export function buildShowcaseStructuredData(
 export function buildShowcaseMetadata(
   locale: Locale,
   slug: ShowcaseSlug,
+  resume?: ResumeDocumentData | null,
 ): Metadata {
   const showcase = getShowcaseRecord(slug);
   const canonicalPath = getShowcasePath(slug, locale);
   const alternateKoPath = getShowcasePath(slug, "ko");
   const alternateEnPath = getShowcasePath(slug, "en");
-  const profileImageUrl = absolutePathUrl(showcase.profileImagePath);
+  const profileImageUrl = absolutePathUrl(getShowcaseProfileImage(slug, resume));
+  const seoTitle = getShowcaseSeoTitle(slug, locale, resume);
+  const seoDescription = getShowcaseSeoDescription(slug, locale, resume);
+  const displayName = getShowcaseDisplayName(slug, resume);
 
   return {
-    title: showcase.seoTitle[locale],
-    description: showcase.seoDescription[locale],
-    keywords: showcase.keywords[locale],
+    title: seoTitle,
+    description: seoDescription,
+    keywords: getShowcaseKeywords(slug, locale, resume),
     robots: {
       index: true,
       follow: true,
@@ -261,11 +283,11 @@ export function buildShowcaseMetadata(
     },
     authors: [
       {
-        name: showcase.name,
+        name: displayName,
         url: `https://github.com/${showcase.username}`,
       },
     ],
-    creator: showcase.name,
+    creator: displayName,
     publisher: "GitHubPrint",
     alternates: {
       canonical: canonicalPath,
@@ -277,8 +299,8 @@ export function buildShowcaseMetadata(
     },
     openGraph: {
       type: "profile",
-      title: showcase.seoTitle[locale],
-      description: showcase.seoDescription[locale],
+      title: seoTitle,
+      description: seoDescription,
       url: absolutePathUrl(canonicalPath),
       locale: locale === "ko" ? "ko_KR" : "en_US",
       alternateLocale: locale === "ko" ? ["en_US"] : ["ko_KR"],
@@ -289,15 +311,15 @@ export function buildShowcaseMetadata(
           height: 1029,
           alt:
             locale === "ko"
-              ? `${showcase.name} 공개 이력서 프로필 이미지`
+              ? `${displayName} 공개 이력서 프로필 이미지`
               : `${showcase.username} public resume profile image`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: showcase.seoTitle[locale],
-      description: showcase.seoDescription[locale],
+      title: seoTitle,
+      description: seoDescription,
       images: [profileImageUrl],
     },
   };
