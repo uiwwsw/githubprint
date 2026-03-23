@@ -223,6 +223,28 @@ export type GitHubSourceAuthContext = {
   viewerUsername: string;
 };
 
+export type GitHubOwnedRepoCatalogEntry = {
+  createdAt: string;
+  defaultBranch: string;
+  description: string | null;
+  homepageUrl: string;
+  language: string | null;
+  name: string;
+  projectLabels: string[];
+  pushedAt: string;
+  repoUrl: string;
+  topics: string[];
+  updatedAt: string;
+  visibility: "private" | "public";
+};
+
+export type GitHubResumeRepoLookup = {
+  repo: GitHubOwnedRepoCatalogEntry & {
+    rootFiles: string[];
+  };
+  repoCatalog: GitHubOwnedRepoCatalogEntry[];
+};
+
 const GITHUB_API_BASE = "https://api.github.com";
 const CACHE_WINDOW_SECONDS = 60 * 15;
 const MAX_GITHUB_PAGINATION_PAGES = 20;
@@ -635,6 +657,21 @@ function decodeReadme(readme: GitHubReadmeResponse | null) {
     .trim();
 }
 
+function decodeGitHubTextContent(file: GitHubReadmeResponse | null) {
+  if (!file?.content) {
+    return null;
+  }
+
+  if (file.encoding !== "base64") {
+    return null;
+  }
+
+  return Buffer.from(file.content, "base64")
+    .toString("utf-8")
+    .replace(/\u0000/g, "")
+    .trim();
+}
+
 function sanitizeReadme(readme: string | null) {
   if (!readme) {
     return null;
@@ -747,14 +784,29 @@ async function fetchRepoFileContent(
 ) {
   try {
     const response = await githubJson<GitHubReadmeResponse>(
-      `/repos/${username}/${repo.name}/contents/${encodeURIComponent(filePath)}?ref=${repo.defaultBranch}`,
+      buildGitHubRepoContentsPath(username, repo.name, filePath, repo.defaultBranch),
       { accessToken, disableCache, forceFresh },
     );
 
-    return sanitizeReadme(decodeReadme(response));
+    return decodeGitHubTextContent(response);
   } catch {
     return null;
   }
+}
+
+function buildGitHubRepoContentsPath(
+  username: string,
+  repoName: string,
+  filePath: string,
+  defaultBranch: string,
+) {
+  const normalizedPath = filePath
+    .split("/")
+    .filter(Boolean)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/contents/${normalizedPath}?ref=${encodeURIComponent(defaultBranch)}`;
 }
 
 function getRepoManifestTargets(rootFiles: string[]) {
@@ -789,7 +841,232 @@ async function fetchRepoManifestContents(
     ),
   );
 
-  return contents.filter((content): content is string => Boolean(content));
+  return contents
+    .map((content) => content?.slice(0, 1600).trim())
+    .filter((content): content is string => Boolean(content));
+}
+
+function isSignedInViewerForUsername(
+  username: string,
+  authContext?: GitHubSourceAuthContext,
+) {
+  return Boolean(
+    authContext &&
+      authContext.viewerUsername.toLowerCase() === username.toLowerCase(),
+  );
+}
+
+function canUsePrivateRepoScope(
+  username: string,
+  authContext?: GitHubSourceAuthContext,
+) {
+  return Boolean(
+    isSignedInViewerForUsername(username, authContext) &&
+      authContext?.scopes.some(
+        (scope) => scope === "repo" || scope === "public_repo",
+      ),
+  );
+}
+
+function getOwnedRepoListPath(username: string, usePrivateRepoScope: boolean) {
+  return usePrivateRepoScope
+    ? "/user/repos?per_page=100&sort=updated&direction=desc&visibility=all&affiliation=owner"
+    : `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`;
+}
+
+function mapRepoCatalogEntry(repo: GitHubRepoResponse): GitHubOwnedRepoCatalogEntry {
+  const topics = repo.topics ?? [];
+  const identity = inferRepoIdentity({
+    description: repo.description,
+    githubLanguage: repo.language,
+    manifestContents: [],
+    name: repo.name,
+    readme: null,
+    recentCommitMessages: [],
+    rootFiles: [],
+    topics,
+  });
+  const projectLabels = [
+    ...identity.domains.map((item) =>
+      normalizeRepoDisplayLabel(
+        {
+          description: repo.description,
+          githubLanguage: repo.language,
+          identity,
+          manifestContents: [],
+          name: repo.name,
+          readme: null,
+          recentCommitMessages: [],
+          rootFiles: [],
+          topics,
+        },
+        item.label,
+        identity,
+      ),
+    ),
+    ...identity.surfaces.map((item) =>
+      normalizeRepoDisplayLabel(
+        {
+          description: repo.description,
+          githubLanguage: repo.language,
+          identity,
+          manifestContents: [],
+          name: repo.name,
+          readme: null,
+          recentCommitMessages: [],
+          rootFiles: [],
+          topics,
+        },
+        item.label,
+        identity,
+      ),
+    ),
+  ]
+    .filter(Boolean)
+    .filter((label, index, labels) => labels.indexOf(label) === index)
+    .slice(0, 3);
+
+  return {
+    createdAt: repo.created_at,
+    defaultBranch: repo.default_branch,
+    description: repo.description,
+    homepageUrl: repo.homepage ?? "",
+    language: repo.language,
+    name: repo.name,
+    projectLabels,
+    pushedAt: repo.pushed_at,
+    repoUrl: repo.html_url,
+    topics,
+    updatedAt: repo.updated_at,
+    visibility: repo.private ? "private" : "public",
+  };
+}
+
+export async function getResumeRepoLookup(
+  username: string,
+  options?: {
+    authContext?: GitHubSourceAuthContext;
+    forceFresh?: boolean;
+  },
+): Promise<GitHubResumeRepoLookup | null> {
+  const authContext = options?.authContext;
+  const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
+  const usePrivateRepoScope = canUsePrivateRepoScope(username, authContext);
+  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const disableCache = Boolean(isSignedInViewer);
+  const reposResponse = await githubJsonPaginated<GitHubRepoResponse>(
+    getOwnedRepoListPath(username, usePrivateRepoScope),
+    {
+      accessToken: authAccessToken,
+      disableCache,
+      forceFresh: options?.forceFresh,
+    },
+  );
+  const repoCatalog = reposResponse.map(mapRepoCatalogEntry);
+  const resumeRepo = repoCatalog.find(
+    (repo) => repo.name.toLowerCase() === "resume",
+  );
+
+  if (!resumeRepo) {
+    return null;
+  }
+
+  const rootFiles = await fetchRepoRootFiles(
+    username,
+    resumeRepo,
+    options?.forceFresh,
+    authAccessToken,
+    disableCache,
+  );
+
+  return {
+    repo: {
+      ...resumeRepo,
+      rootFiles,
+    },
+    repoCatalog,
+  };
+}
+
+export async function getResumeRepoFileContents(
+  username: string,
+  repo: Pick<GitHubOwnedRepoCatalogEntry, "defaultBranch" | "name">,
+  filePaths: string[],
+  options?: {
+    authContext?: GitHubSourceAuthContext;
+    forceFresh?: boolean;
+  },
+) {
+  const authContext = options?.authContext;
+  const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
+  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const disableCache = Boolean(isSignedInViewer);
+  const uniquePaths = [...new Set(filePaths.filter(Boolean))];
+  const filePairs = await Promise.all(
+    uniquePaths.map(async (filePath) => [
+      filePath,
+      await fetchRepoFileContent(
+        username,
+        repo,
+        filePath,
+        options?.forceFresh,
+        authAccessToken,
+        disableCache,
+      ),
+    ] as const),
+  );
+
+  return Object.fromEntries(
+    filePairs.filter(([, content]) => content !== null),
+  ) as Record<string, string>;
+}
+
+function inferAssetContentType(filePath: string) {
+  const lower = filePath.toLowerCase();
+
+  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+  if (lower.endsWith(".gif")) return "image/gif";
+  if (lower.endsWith(".webp")) return "image/webp";
+  if (lower.endsWith(".bmp")) return "image/bmp";
+  return "application/octet-stream";
+}
+
+export async function getResumeRepoBinaryAsset(
+  username: string,
+  repo: Pick<GitHubOwnedRepoCatalogEntry, "defaultBranch" | "name">,
+  filePath: string,
+  options?: {
+    authContext?: GitHubSourceAuthContext;
+    forceFresh?: boolean;
+  },
+) {
+  const authContext = options?.authContext;
+  const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
+  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const disableCache = Boolean(isSignedInViewer);
+
+  try {
+    const response = await githubJson<GitHubReadmeResponse>(
+      buildGitHubRepoContentsPath(username, repo.name, filePath, repo.defaultBranch),
+      {
+        accessToken: authAccessToken,
+        disableCache,
+        forceFresh: options?.forceFresh,
+      },
+    );
+
+    if (!response.content || response.encoding !== "base64") {
+      return null;
+    }
+
+    return {
+      contentType: inferAssetContentType(filePath),
+      data: Buffer.from(response.content, "base64"),
+    };
+  } catch {
+    return null;
+  }
 }
 
 function recencyScore(updatedAt: string) {

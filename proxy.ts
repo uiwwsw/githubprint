@@ -16,9 +16,14 @@ function withLocaleHeader(request: NextRequest, locale: "ko" | "en") {
 export function proxy(request: NextRequest) {
   const { nextUrl } = request;
   const pathname = nextUrl.pathname;
+  const langParam = nextUrl.searchParams.get("lang");
+  const isApiRoute = pathname === "/api" || pathname.startsWith("/api/");
+  const locale = isApiRoute && langParam
+    ? resolveLocale(langParam)
+    : detectLocaleFromPathname(pathname);
+  const requestHeaders = withLocaleHeader(request, locale);
 
-  if (nextUrl.searchParams.has("lang")) {
-    const locale = resolveLocale(nextUrl.searchParams.get("lang"));
+  if (langParam && !isApiRoute) {
     const redirectUrl = nextUrl.clone();
     const isResultPath = pathname === "/result" || pathname === "/en/result";
 
@@ -27,9 +32,6 @@ export function proxy(request: NextRequest) {
 
     return NextResponse.redirect(redirectUrl);
   }
-
-  const locale = detectLocaleFromPathname(pathname);
-  const requestHeaders = withLocaleHeader(request, locale);
 
   return NextResponse.next({
     request: { headers: requestHeaders },

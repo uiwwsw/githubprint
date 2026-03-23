@@ -68,7 +68,7 @@ type Dictionary = {
     privateExposureInclude: string;
     modeAi: string;
     modeFallback: string;
-    download: string;
+    downloadPdf: string;
     loadingEyebrow: string;
     loadingMessage: string;
     stateStatusLabel: string;
@@ -291,7 +291,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateExposureInclude: "비공개 상세 포함",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
-      download: "다운로드",
+    downloadPdf: "PDF 다운로드",
       loadingEyebrow: "결과 미리보기",
       loadingMessage: "GitHub 정보를 바탕으로 문서 미리보기를 만드는 중입니다.",
       stateStatusLabel: "상태",
@@ -379,6 +379,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         shortLabel: "내러티브",
         description: "프로젝트 흐름과 작업 성향을 글 중심으로 풀어낸 리포트",
         emphasis: "반복 패턴, 프로젝트 읽기, 해석 맥락을 더 깊게 보여줍니다.",
+      },
+      resume: {
+        label: "Resume",
+        shortLabel: "이력서",
+        description: "resume 레포를 기반으로 Word 이력서를 만드는 자기서술형 문서",
+        emphasis: "활성화되면 전체 경력, 프로젝트, 링크를 ATS 친화 문서로 정리합니다.",
       },
     },
     templates: {
@@ -530,7 +536,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateExposureInclude: "Private details included",
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
-      download: "Download",
+      downloadPdf: "Download PDF",
       loadingEyebrow: "Result Preview",
       loadingMessage: "Reading GitHub data and generating the document preview.",
       stateStatusLabel: "Status",
@@ -618,6 +624,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         shortLabel: "Narrative",
         description: "A prose-led report that reads the profile in context.",
         emphasis: "Gives more room to recurring patterns, project reading, and interpretation.",
+      },
+      resume: {
+        label: "Resume",
+        shortLabel: "Resume",
+        description: "A self-authored resume built from a dedicated `resume` repository.",
+        emphasis: "When activated, it turns career history, projects, and links into an ATS-friendly document.",
       },
     },
     templates: {

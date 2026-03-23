@@ -95,6 +95,16 @@
   page-break-inside: avoid;
 }
 
+.print-break-after-avoid {
+  break-after: avoid-page;
+  page-break-after: avoid;
+}
+
+.print-copy-flow {
+  orphans: 3;
+  widows: 3;
+}
+
 .print-only {
   display: none;
 }

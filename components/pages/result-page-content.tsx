@@ -5,6 +5,7 @@ import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
+import { getResumeTemplateAvailability } from "@/lib/resume-source";
 import { buildResultMetadata } from "@/lib/seo";
 import {
   resultSearchParamsSchema,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/schemas";
 import { ResultActions } from "@/components/result/result-actions";
 import { RenderTemplate } from "@/components/result/render-template";
+import { ResumeResultState } from "@/components/result/resume-result-state";
 import { ResultState } from "@/components/result/result-state";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { LocaleSync } from "@/components/ui/locale-sync";
@@ -151,6 +153,59 @@ export async function ResultPageContent({
       viewerUsername: session.user.login,
     };
     await assertResultRequestAllowed({ forceFresh });
+    const generatedAt = new Date().toISOString();
+
+    if (template === "resume") {
+      const availability = await getResumeTemplateAvailability({
+        authContext,
+        forceFresh,
+        locale,
+        username: session.user.login,
+      });
+
+      return (
+        <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+          <LocaleSync locale={locale} />
+          <div className="mx-auto max-w-[1200px] space-y-5">
+            <div className="flex justify-end">
+              <LanguageToggle locale={locale} />
+            </div>
+            <ResultActions
+              backHref={homeHref}
+              canDownload={availability.state === "ready"}
+              downloadFileName={{
+                generatedAt,
+                template,
+                username: session.user.login,
+              }}
+              locale={locale}
+              logoutHref={logoutHref}
+              mode="fallback"
+              resumeDownloadUrl={`/api/resume-docx?lang=${locale}`}
+              resumeRepoVisibility={
+                "repoVisibility" in availability
+                  ? availability.repoVisibility
+                  : undefined
+              }
+              template={template}
+            />
+            {availability.state === "ready" ? (
+              <RenderTemplate
+                avatarUrl={session.user.avatarUrl}
+                generatedAt={generatedAt}
+                locale={locale}
+                profileUrl={session.user.profileUrl}
+                resumeDocument={availability.document}
+                template="resume"
+              />
+            ) : (
+              <ResumeResultState availability={availability} locale={locale} />
+            )}
+          </div>
+        </main>
+      );
+    }
+
     const source = await getGitHubSource(session.user.login, {
       authContext,
       forceFresh,
@@ -161,7 +216,6 @@ export async function ResultPageContent({
       forceFresh,
       locale,
     });
-    const generatedAt = new Date().toISOString();
 
     return (
       <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">

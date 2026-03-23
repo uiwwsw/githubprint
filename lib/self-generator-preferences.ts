@@ -7,7 +7,12 @@ export const DEFAULT_SELF_GENERATOR_TEMPLATE: TemplateId = "profile";
 export function parseStoredTemplatePreference(
   value: string | null | undefined,
 ) {
-  if (value === "brief" || value === "profile" || value === "insight") {
+  if (
+    value === "brief" ||
+    value === "profile" ||
+    value === "insight" ||
+    value === "resume"
+  ) {
     return value satisfies TemplateId;
   }
 

@@ -10,70 +10,86 @@ import {
 import { BriefTemplate } from "@/components/templates/brief";
 import { ProfileTemplate } from "@/components/templates/profile";
 import { InsightTemplate } from "@/components/templates/insight";
+import { ResumeTemplate } from "@/components/templates/resume";
+import type { ResumeDocumentData } from "@/lib/resume";
 
-type TemplateProps = {
+type SharedTemplateProps = {
+  avatarUrl?: string;
+  generatedAt: string;
+  locale: Locale;
+  profileUrl: string;
+};
+
+type AnalysisTemplateProps = SharedTemplateProps & {
   analysisResult: AnalysisResult;
   authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
-  generatedAt: string;
-  locale: Locale;
   privateExposureMode?: PrivateExposureMode;
-  profileUrl: string;
+  template: Exclude<TemplateId, "resume">;
 };
 
-export function RenderTemplate({
-  template,
-  analysisResult,
-  authorizedPrivateInsights,
-  contributionSummary,
-  dataMode,
-  generatedAt,
-  locale,
-  privateExposureMode = "aggregate",
-  profileUrl,
-}: TemplateProps & {
-  template: TemplateId;
-}) {
+type ResumeRenderProps = SharedTemplateProps & {
+  resumeDocument: ResumeDocumentData;
+  template: "resume";
+};
+
+export function RenderTemplate(
+  props: AnalysisTemplateProps | ResumeRenderProps,
+) {
+  if (props.template === "resume") {
+    return (
+      <section id="result-preview">
+        <ResumeTemplate
+          avatarUrl={props.avatarUrl}
+          generatedAt={props.generatedAt}
+          locale={props.locale}
+          profileUrl={props.profileUrl}
+          resume={props.resumeDocument}
+        />
+      </section>
+    );
+  }
+
   const templateNode =
-    template === "brief" ? (
+    props.template === "brief" ? (
       <BriefTemplate
-        analysis={analysisResult.analysis}
-        authorizedPrivateInsights={authorizedPrivateInsights}
-        benchmark={analysisResult.benchmark}
-        contributionSummary={contributionSummary}
-        generatedAt={generatedAt}
-        locale={locale}
-        mode={analysisResult.mode}
-        dataMode={dataMode}
-        privateExposureMode={privateExposureMode}
-        profileUrl={profileUrl}
+        analysis={props.analysisResult.analysis}
+        authorizedPrivateInsights={props.authorizedPrivateInsights}
+        benchmark={props.analysisResult.benchmark}
+        contributionSummary={props.contributionSummary}
+        generatedAt={props.generatedAt}
+        locale={props.locale}
+        mode={props.analysisResult.mode}
+        dataMode={props.dataMode}
+        privateExposureMode={props.privateExposureMode}
+        profileUrl={props.profileUrl}
       />
-    ) : template === "insight" ? (
+    ) : props.template === "insight" ? (
       <InsightTemplate
-        analysis={analysisResult.analysis}
-        authorizedPrivateInsights={authorizedPrivateInsights}
-        benchmark={analysisResult.benchmark}
-        contributionSummary={contributionSummary}
-        generatedAt={generatedAt}
-        locale={locale}
-        mode={analysisResult.mode}
-        dataMode={dataMode}
-        privateExposureMode={privateExposureMode}
-        profileUrl={profileUrl}
+        analysis={props.analysisResult.analysis}
+        authorizedPrivateInsights={props.authorizedPrivateInsights}
+        benchmark={props.analysisResult.benchmark}
+        contributionSummary={props.contributionSummary}
+        generatedAt={props.generatedAt}
+        locale={props.locale}
+        mode={props.analysisResult.mode}
+        dataMode={props.dataMode}
+        privateExposureMode={props.privateExposureMode}
+        profileUrl={props.profileUrl}
       />
     ) : (
       <ProfileTemplate
-        analysis={analysisResult.analysis}
-        authorizedPrivateInsights={authorizedPrivateInsights}
-        benchmark={analysisResult.benchmark}
-        contributionSummary={contributionSummary}
-        generatedAt={generatedAt}
-        locale={locale}
-        mode={analysisResult.mode}
-        dataMode={dataMode}
-        privateExposureMode={privateExposureMode}
-        profileUrl={profileUrl}
+        analysis={props.analysisResult.analysis}
+        authorizedPrivateInsights={props.authorizedPrivateInsights}
+        benchmark={props.analysisResult.benchmark}
+        contributionSummary={props.contributionSummary}
+        generatedAt={props.generatedAt}
+        locale={props.locale}
+        mode={props.analysisResult.mode}
+        dataMode={props.dataMode}
+        privateExposureMode={props.privateExposureMode}
+        profileUrl={props.profileUrl}
       />
     );
 

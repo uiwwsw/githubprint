@@ -12,6 +12,8 @@
     <a href="./CONTRIBUTING.md">Contributing</a>
     ·
     <a href="./docs/learning-loop.md">Learning Loop</a>
+    ·
+    <a href="./docs/resume-template.md">Resume Template</a>
   </p>
   <p>
     <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
@@ -31,7 +33,7 @@ GitHubPrint turns GitHub evidence into a readable developer document for sharing
 
 - Input: GitHub profile URL, repository URL, or username
 - Output: a print-ready web document optimized for A4 and browser PDF export
-- Templates: `brief`, `profile`, `insight`
+- Templates: `brief`, `profile`, `insight`, `resume`
 - Analysis: OpenAI when available, schema-validated fallback otherwise
 - Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
 
@@ -62,11 +64,13 @@ Current product limits:
 
 ### Features
 
-- Three document templates rendered from the same analysis data
+- Three inference templates plus one `resume` repo-driven template
 - Cohort benchmark snapshot for activity, documentation, publication, quality, portfolio clarity, and specialization clarity
 - Server-side GitHub URL normalization and public data collection
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
+- ATS-friendly Word export from a dedicated `resume` repository
+- A starter `resume` repository guide with photo support in [`docs/resume-template.md`](./docs/resume-template.md)
 - Fixture mode for UI work without external API calls
 
 ## 한국어
@@ -77,7 +81,7 @@ GitHubPrint는 공개 GitHub 정보, 또는 로그인한 본인 계정의 승인
 
 - 입력: GitHub 프로필 URL, 저장소 URL, 또는 사용자 이름(username)
 - 출력: A4 인쇄와 브라우저 PDF 저장에 맞춘 문서형 결과
-- 템플릿: `brief`, `profile`, `insight`
+- 템플릿: `brief`, `profile`, `insight`, `resume`
 - 분석: OpenAI 사용 가능 시 AI 분석, 불가 시 규칙 기반 대체 분석
 - 언어 경로: `/`, `/result`, `/en`, `/en/result`
 
@@ -108,11 +112,13 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 
 ### 주요 기능
 
-- 같은 분석 데이터를 세 가지 문서 템플릿으로 렌더링
+- 같은 분석 데이터를 쓰는 세 가지 추론형 템플릿과, `resume` 레포 기반 이력서 템플릿 제공
 - 활동성, 문서화, 외부 공개, 검증 흔적, 포트폴리오 선명도, 전문성 선명도를 보여주는 벤치마크 스냅샷
 - 서버 측 GitHub URL 정규화 및 공개 데이터 수집
 - AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
+- 전용 `resume` 레포에서 Word 이력서를 생성하는 ATS 친화 export
+- 사진 필드까지 포함한 `resume` starter 가이드를 [`docs/resume-template.md`](./docs/resume-template.md)로 제공
 - 외부 API 없이 UI 작업이 가능한 fixture mode
 
 ## Architecture
@@ -121,7 +127,8 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 | --- | --- |
 | `app/page.tsx` / `app/en/page.tsx` | Localized home routes |
 | `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes |
-| `components/templates/` | Document templates for `brief`, `profile`, and `insight` |
+| `components/templates/` | Document templates for `brief`, `profile`, `insight`, and `resume` |
+| `lib/resume.ts` / `lib/resume-source.ts` | Resume schema parsing, normalization, and GitHub-backed activation checks |
 | `lib/github.ts` | GitHub collection, caching, fixture mode, and representative repository selection |
 | `lib/repo-identity.ts` | Contributor-editable repository identity inference driven by JSON rules |
 | `lib/analyze.ts` | AI analysis and fallback orchestration |

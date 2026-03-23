@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const templateSchema = z.enum(["brief", "profile", "insight"]);
+export const templateSchema = z.enum(["brief", "profile", "insight", "resume"]);
 export type TemplateId = z.infer<typeof templateSchema>;
 export const localeSchema = z.enum(["ko", "en"]);
 export type Locale = z.infer<typeof localeSchema>;

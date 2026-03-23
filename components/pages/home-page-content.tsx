@@ -5,6 +5,7 @@ import { LanguageToggle } from "@/components/ui/language-toggle";
 import { LocaleSync } from "@/components/ui/locale-sync";
 import { getGitHubSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
+import { getResumeTemplateAvailability } from "@/lib/resume-source";
 import {
   DEFAULT_SELF_GENERATOR_TEMPLATE,
   parseStoredPrivatePreference,
@@ -26,6 +27,19 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
     cookieStore.get(SELF_GENERATOR_PRIVATE_KEY)?.value,
   );
   const hasStoredPreferences = storedTemplate !== null || storedPrivate !== null;
+  const resumeAvailability = session
+    ? await getResumeTemplateAvailability({
+        authContext: {
+          accessToken: session.accessToken,
+          scopes: session.scopes,
+          viewerUsername: session.user.login,
+        },
+        locale,
+        username: session.user.login,
+      }).catch(() => null)
+    : null;
+  const resolvedResumeAvailability =
+    resumeAvailability ?? (session ? { state: "locked_missing_repo" as const } : null);
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
@@ -63,6 +77,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
                 storedTemplate ?? DEFAULT_SELF_GENERATOR_TEMPLATE
               }
               locale={locale}
+              resumeAvailability={resolvedResumeAvailability}
               username={session.user.login}
             />
           </div>

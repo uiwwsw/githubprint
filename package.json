@@ -21,17 +21,20 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test:resume": "node --import tsx --test tests/resume.test.ts",
     "check": "npm run build && npm run typecheck && npm run quality:regress",
     "insights:aggregate": "node scripts/aggregate-insights.mjs",
     "quality:regress": "node scripts/run-quality-regressions.cjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "docx": "^9.6.1",
     "next": "16.1.7",
     "openai": "^6.7.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.3.1",
+    "yaml": "^2.8.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -40,6 +43,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "tailwindcss": "^4.1.16",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

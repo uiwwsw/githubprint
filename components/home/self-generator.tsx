@@ -2,9 +2,12 @@
 
 import { startTransition, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ResumeActivationPanel } from "@/components/resume/resume-activation-panel";
 import { Button } from "@/components/ui/button";
 import { getDictionary, getLocalizedResultPath } from "@/lib/i18n";
 import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
+import { getResumeCopy } from "@/lib/resume-copy";
+import type { ResumeTemplateAvailability } from "@/lib/resume";
 import {
   parseStoredPrivatePreference,
   parseStoredTemplatePreference,
@@ -74,36 +77,61 @@ function storePrivateCookie(includePrivate: boolean) {
   }
 }
 
+function sanitizeTemplateSelection(
+  template: TemplateId,
+  resumeAvailability: ResumeTemplateAvailability | null,
+) {
+  if (template === "resume" && resumeAvailability?.state !== "ready") {
+    return "profile" satisfies TemplateId;
+  }
+
+  return template;
+}
+
 export function SelfGenerator({
   hasStoredPreferences,
   initialIncludePrivate,
   initialTemplate,
   locale,
+  resumeAvailability,
   username,
 }: {
   hasStoredPreferences: boolean;
   initialIncludePrivate: boolean;
   initialTemplate: TemplateId;
   locale: Locale;
+  resumeAvailability: ResumeTemplateAvailability | null;
   username: string;
 }) {
   const router = useRouter();
   const dict = getDictionary(locale);
+  const resumeCopy = getResumeCopy(locale);
   const [includePrivate, setIncludePrivate] = useState(initialIncludePrivate);
   const [isPending, setIsPending] = useState(false);
   const [selectedTemplate, setSelectedTemplate] =
-    useState<TemplateId>(initialTemplate);
+    useState<TemplateId>(
+      sanitizeTemplateSelection(initialTemplate, resumeAvailability),
+    );
   const [isPreferenceReady, setIsPreferenceReady] =
     useState(hasStoredPreferences);
+  const [isResumeGuideOpen, setIsResumeGuideOpen] = useState(false);
 
   useEffect(() => {
+    const safeInitialTemplate = sanitizeTemplateSelection(
+      initialTemplate,
+      resumeAvailability,
+    );
+
     if (hasStoredPreferences) {
-      storeTemplatePreference(initialTemplate);
+      storeTemplatePreference(safeInitialTemplate);
       storePrivatePreference(initialIncludePrivate);
       return;
     }
 
-    const storedTemplate = readStoredTemplate() ?? initialTemplate;
+    const storedTemplate = sanitizeTemplateSelection(
+      readStoredTemplate() ?? safeInitialTemplate,
+      resumeAvailability,
+    );
     const storedPrivate = readStoredPrivateToggle() ?? initialIncludePrivate;
 
     setSelectedTemplate(storedTemplate);
@@ -117,6 +145,7 @@ export function SelfGenerator({
     hasStoredPreferences,
     initialIncludePrivate,
     initialTemplate,
+    resumeAvailability,
   ]);
 
   useEffect(() => {
@@ -124,17 +153,30 @@ export function SelfGenerator({
       return;
     }
 
-    storeTemplateCookie(initialTemplate);
+    const safeInitialTemplate = sanitizeTemplateSelection(
+      initialTemplate,
+      resumeAvailability,
+    );
+    setSelectedTemplate(safeInitialTemplate);
+    storeTemplateCookie(safeInitialTemplate);
     storePrivateCookie(initialIncludePrivate);
-  }, [hasStoredPreferences, initialIncludePrivate, initialTemplate]);
+  }, [
+    hasStoredPreferences,
+    initialIncludePrivate,
+    initialTemplate,
+    resumeAvailability,
+  ]);
 
   const templateCards = useMemo(() => {
     const templateMap = getTemplateMeta(locale);
-    return (["brief", "profile", "insight"] as TemplateId[]).map((id) => ({
-      id,
-      ...templateMap[id],
-    }));
-  }, [locale]);
+    return (["brief", "profile", "insight", "resume"] as TemplateId[]).map(
+      (id) => ({
+        id,
+        resumeState: id === "resume" ? resumeAvailability?.state ?? "locked_missing_repo" : null,
+        ...templateMap[id],
+      }),
+    );
+  }, [locale, resumeAvailability]);
 
   function handleGenerate() {
     setIsPending(true);
@@ -156,6 +198,12 @@ export function SelfGenerator({
   }
 
   function handleTemplateSelect(template: TemplateId) {
+    if (template === "resume" && resumeAvailability?.state !== "ready") {
+      setIsResumeGuideOpen(true);
+      return;
+    }
+
+    setIsResumeGuideOpen(false);
     setSelectedTemplate(template);
     storeTemplatePreference(template);
     storeTemplateCookie(template);
@@ -238,15 +286,30 @@ export function SelfGenerator({
       </div>
 
       <div className="mt-8 space-y-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium text-neutral-700">
-            {dict.home.templateHeading}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-neutral-700">
+              {dict.home.templateHeading}
+            </p>
+            <p className="text-sm text-neutral-500">{dict.home.templateHint}</p>
+          </div>
+          <p className="text-sm leading-6 text-neutral-500">
+            {resumeCopy.card.activationHint}
           </p>
-          <p className="text-sm text-neutral-500">{dict.home.templateHint}</p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {templateCards.map((template) => {
             const isSelected = template.id === selectedTemplate;
+            const isResumeLocked =
+              template.id === "resume" && template.resumeState !== "ready";
+            const resumeStatus =
+              template.resumeState === "locked_invalid_schema"
+                ? resumeCopy.card.lockedInvalid
+                : template.id === "resume"
+                  ? template.resumeState === "ready"
+                    ? resumeCopy.card.ready
+                    : resumeCopy.card.lockedMissing
+                  : null;
 
             return (
               <button
@@ -254,6 +317,8 @@ export function SelfGenerator({
                   "rounded-[1.6rem] border p-5 text-left transition",
                   isSelected
                     ? "border-neutral-950 bg-neutral-950 text-white"
+                    : isResumeLocked
+                      ? "border-amber-300/70 bg-amber-50/80 text-neutral-900 hover:border-amber-400"
                     : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
                 )}
                 key={template.id}
@@ -280,7 +345,7 @@ export function SelfGenerator({
                         : "border-black/[0.08] bg-neutral-100 text-neutral-600",
                     )}
                   >
-                    {isSelected ? dict.home.selected : dict.home.select}
+                    {dict.home.select}
                   </span>
                 </div>
                 <p
@@ -299,10 +364,43 @@ export function SelfGenerator({
                 >
                   {template.emphasis}
                 </p>
+                {template.id === "resume" ? (
+                  <div className="mt-4 space-y-2">
+                    <p
+                      className={cn(
+                        "text-xs leading-5",
+                        isSelected ? "text-white/60" : "text-neutral-500",
+                      )}
+                    >
+                      {resumeCopy.card.activationHint}
+                    </p>
+                    {resumeStatus ? (
+                      <p
+                        className={cn(
+                          "text-xs font-medium leading-5",
+                          isSelected
+                            ? "text-white/78"
+                            : template.resumeState === "ready"
+                              ? "text-emerald-700"
+                              : "text-amber-800",
+                        )}
+                      >
+                        {resumeStatus}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </button>
             );
           })}
         </div>
+        {isResumeGuideOpen && resumeAvailability ? (
+          <ResumeActivationPanel
+            availability={resumeAvailability}
+            locale={locale}
+            onClose={() => setIsResumeGuideOpen(false)}
+          />
+        ) : null}
       </div>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
