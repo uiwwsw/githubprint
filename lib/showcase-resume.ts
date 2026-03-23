@@ -2,6 +2,8 @@ import "server-only";
 
 import { access, readFile } from "fs/promises";
 import path from "path";
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import {
   getResumeRepoBinaryAsset,
   getResumeRepoFileContents,
@@ -18,6 +20,7 @@ import {
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
 
+const SHOWCASE_CACHE_SECONDS = 60 * 60 * 24;
 const LOCAL_SHOWCASE_RESUME_ROOT_CANDIDATES = [
   process.env.LOCAL_SHOWCASE_RESUME_ROOT?.trim(),
   path.resolve(process.cwd(), "../resume"),
@@ -259,18 +262,95 @@ async function buildRemoteShowcaseResumeDocument(options: {
   }
 }
 
+const getCachedRemoteShowcaseResumeDocument = unstable_cache(
+  async (locale: Locale, repoUrl: string, username: string) =>
+    buildRemoteShowcaseResumeDocument({
+      locale,
+      repoUrl,
+      username,
+    }),
+  ["showcase-public-resume-document"],
+  { revalidate: SHOWCASE_CACHE_SECONDS },
+);
+
+const getCachedPublicShowcaseResumeDocument = cache(
+  async (locale: Locale, repoUrl: string, username: string) => {
+    const localDocument = await buildLocalShowcaseResumeDocument({
+      locale,
+      repoUrl,
+      username,
+    });
+
+    if (localDocument) {
+      return localDocument;
+    }
+
+    return getCachedRemoteShowcaseResumeDocument(locale, repoUrl, username);
+  },
+);
+
+async function buildRemoteShowcaseResumeAsset(options: {
+  filePath: string;
+  username: string;
+}): Promise<BinaryAsset | null> {
+  const lookup = await getResumeRepoLookup(options.username);
+
+  if (!lookup || lookup.repo.visibility !== "public") {
+    return null;
+  }
+
+  try {
+    return await getResumeRepoBinaryAsset(
+      options.username,
+      lookup.repo,
+      options.filePath,
+    );
+  } catch {
+    return null;
+  }
+}
+
+const getCachedRemoteShowcaseResumeAsset = unstable_cache(
+  async (username: string, filePath: string) =>
+    buildRemoteShowcaseResumeAsset({
+      filePath,
+      username,
+    }),
+  ["showcase-public-resume-asset"],
+  { revalidate: SHOWCASE_CACHE_SECONDS },
+);
+
+const getCachedPublicShowcaseResumeAsset = cache(
+  async (username: string, filePath: string) => {
+    const rootPath = await getLocalShowcaseResumeRoot();
+
+    if (rootPath) {
+      try {
+        const data = await readFile(resolveLocalResumeFilePath(rootPath, filePath));
+
+        return {
+          contentType: inferAssetContentType(filePath),
+          data,
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    return getCachedRemoteShowcaseResumeAsset(username, filePath);
+  },
+);
+
 export async function getPublicShowcaseResumeDocument(options: {
   locale: Locale;
   repoUrl: string;
   username: string;
 }) {
-  const localDocument = await buildLocalShowcaseResumeDocument(options);
-
-  if (localDocument) {
-    return localDocument;
-  }
-
-  return buildRemoteShowcaseResumeDocument(options);
+  return getCachedPublicShowcaseResumeDocument(
+    options.locale,
+    options.repoUrl,
+    options.username,
+  );
 }
 
 export async function getPublicShowcaseResumeAsset(options: {
@@ -281,35 +361,8 @@ export async function getPublicShowcaseResumeAsset(options: {
     return null;
   }
 
-  const rootPath = await getLocalShowcaseResumeRoot();
-
-  if (rootPath) {
-    try {
-      const data = await readFile(
-        resolveLocalResumeFilePath(rootPath, options.filePath),
-      );
-
-      return {
-        contentType: inferAssetContentType(options.filePath),
-        data,
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  const lookup = await getResumeRepoLookup(options.username);
-
-  if (!lookup || lookup.repo.visibility !== "public") {
-    return null;
-  }
-  try {
-    return await getResumeRepoBinaryAsset(
-      options.username,
-      lookup.repo,
-      options.filePath,
-    );
-  } catch {
-    return null;
-  }
+  return getCachedPublicShowcaseResumeAsset(
+    options.username,
+    options.filePath,
+  );
 }

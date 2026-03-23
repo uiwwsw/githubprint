@@ -4,7 +4,7 @@ import { buildShowcaseMetadata } from "@/lib/seo";
 import { getShowcaseRecord } from "@/lib/showcase";
 import { getPublicShowcaseResumeDocument } from "@/lib/showcase-resume";
 
-export const revalidate = 900;
+export const revalidate = 86400;
 
 export async function generateMetadata(): Promise<Metadata> {
   const showcase = getShowcaseRecord("uiwwsw");
