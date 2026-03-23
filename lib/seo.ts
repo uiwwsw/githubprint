@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { buildResultDocumentTitle } from "@/lib/result-document";
 import type { Locale, TemplateId } from "@/lib/schemas";
 import { getDictionary, getLocalizedPathname, getLocalizedResultPath } from "@/lib/i18n";
+import { getShowcasePath, getShowcaseRecord, type ShowcaseSlug } from "@/lib/showcase";
 import { getSiteUrl } from "@/lib/site-url";
 
 function localePath(
@@ -171,6 +172,133 @@ export function buildResultMetadata(
       card: "summary",
       title,
       description,
+    },
+  };
+}
+
+function absolutePathUrl(pathname: string) {
+  return new URL(pathname, getSiteUrl()).toString();
+}
+
+export function buildShowcaseStructuredData(
+  locale: Locale,
+  slug: ShowcaseSlug,
+) {
+  const showcase = getShowcaseRecord(slug);
+  const pageUrl = absolutePathUrl(getShowcasePath(slug, locale));
+  const profileImageUrl = absolutePathUrl(showcase.profileImagePath);
+  const occupationName = locale === "ko" ? "프론트엔드 개발자" : "Frontend developer";
+
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "@id": `${pageUrl}#webpage`,
+      name: showcase.seoTitle[locale],
+      description: showcase.seoDescription[locale],
+      inLanguage: locale === "ko" ? "ko-KR" : "en-US",
+      url: pageUrl,
+      primaryImageOfPage: profileImageUrl,
+      mainEntity: {
+        "@id": `${pageUrl}#person`,
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": `${pageUrl}#person`,
+      name: showcase.name,
+      alternateName: showcase.username,
+      description: showcase.seoDescription[locale],
+      image: profileImageUrl,
+      url: pageUrl,
+      jobTitle: locale === "ko" ? "프론트엔드 개발자" : "Frontend engineer",
+      hasOccupation: {
+        "@type": "Occupation",
+        name: occupationName,
+        occupationLocation: {
+          "@type": "City",
+          name: showcase.location[locale],
+        },
+      },
+      sameAs: showcase.sameAs,
+      knowsAbout: showcase.skills,
+      homeLocation: {
+        "@type": "Place",
+        name: showcase.location[locale],
+      },
+      alumniOf: {
+        "@type": "CollegeOrUniversity",
+        name: locale === "ko" ? "공주대학교" : "Kongju National University",
+      },
+    },
+  ];
+}
+
+export function buildShowcaseMetadata(
+  locale: Locale,
+  slug: ShowcaseSlug,
+): Metadata {
+  const showcase = getShowcaseRecord(slug);
+  const canonicalPath = getShowcasePath(slug, locale);
+  const alternateKoPath = getShowcasePath(slug, "ko");
+  const alternateEnPath = getShowcasePath(slug, "en");
+  const profileImageUrl = absolutePathUrl(showcase.profileImagePath);
+
+  return {
+    title: showcase.seoTitle[locale],
+    description: showcase.seoDescription[locale],
+    keywords: showcase.keywords[locale],
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+    authors: [
+      {
+        name: showcase.name,
+        url: `https://github.com/${showcase.username}`,
+      },
+    ],
+    creator: showcase.name,
+    publisher: "GitHubPrint",
+    alternates: {
+      canonical: canonicalPath,
+      languages: {
+        ko: alternateKoPath,
+        en: alternateEnPath,
+        "x-default": alternateKoPath,
+      },
+    },
+    openGraph: {
+      type: "profile",
+      title: showcase.seoTitle[locale],
+      description: showcase.seoDescription[locale],
+      url: absolutePathUrl(canonicalPath),
+      locale: locale === "ko" ? "ko_KR" : "en_US",
+      alternateLocale: locale === "ko" ? ["en_US"] : ["ko_KR"],
+      images: [
+        {
+          url: profileImageUrl,
+          width: 1029,
+          height: 1029,
+          alt:
+            locale === "ko"
+              ? `${showcase.name} 공개 이력서 프로필 이미지`
+              : `${showcase.username} public resume profile image`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: showcase.seoTitle[locale],
+      description: showcase.seoDescription[locale],
+      images: [profileImageUrl],
     },
   };
 }

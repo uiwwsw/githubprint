@@ -1,3 +1,4 @@
+import { ShowcaseTeaser } from "@/components/home/showcase-teaser";
 import { SelfGenerator } from "@/components/home/self-generator";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
@@ -77,6 +78,11 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
         <div className="mt-12 w-full">
           <GitHubAuthStatus locale={locale} />
         </div>
+        {!session ? (
+          <div className="w-full">
+            <ShowcaseTeaser locale={locale} />
+          </div>
+        ) : null}
         {session ? (
           <div className="w-full">
             <SelfGenerator

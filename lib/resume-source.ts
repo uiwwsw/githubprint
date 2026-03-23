@@ -9,9 +9,12 @@ import {
   type GitHubSourceAuthContext,
 } from "@/lib/github";
 import {
+  DEFAULT_RESUME_MANIFEST,
   buildResumeDocument,
   collectResumeMarkdownPaths,
   parseResumeYamlDocument,
+  getResumeManifestCandidates,
+  pickResumeManifestFile,
   type ResumeTemplateAvailability,
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
@@ -43,7 +46,17 @@ async function getLocalResumeRepoRoot() {
     : [path.resolve(process.cwd(), "../resume")];
 
   for (const candidate of candidates) {
-    if (await pathExists(path.join(candidate, "resume.yaml"))) {
+    if (await pathExists(path.join(candidate, DEFAULT_RESUME_MANIFEST))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+async function pickLocalResumeManifestPath(rootPath: string, locale: Locale) {
+  for (const candidate of getResumeManifestCandidates(locale)) {
+    if (await pathExists(path.join(rootPath, candidate))) {
       return candidate;
     }
   }
@@ -145,9 +158,22 @@ export async function getResumeTemplateAvailability(options: {
     };
   }
 
-  if (!lookup.repo.rootFiles.includes("resume.yaml")) {
+  if (!lookup.repo.rootFiles.includes(DEFAULT_RESUME_MANIFEST)) {
     return {
-      detail: "Missing required root file: resume.yaml",
+      detail: `Missing required root file: ${DEFAULT_RESUME_MANIFEST}`,
+      repoUrl: lookup.repo.repoUrl,
+      repoVisibility: lookup.repo.visibility,
+      state: "locked_invalid_schema",
+    };
+  }
+
+  const manifestPath = localResumeRepoRoot
+    ? await pickLocalResumeManifestPath(localResumeRepoRoot, options.locale)
+    : pickResumeManifestFile(lookup.repo.rootFiles, options.locale);
+
+  if (!manifestPath) {
+    return {
+      detail: `No readable resume manifest was found for locale: ${options.locale}`,
       repoUrl: lookup.repo.repoUrl,
       repoVisibility: lookup.repo.visibility,
       state: "locked_invalid_schema",
@@ -155,21 +181,21 @@ export async function getResumeTemplateAvailability(options: {
   }
 
   const initialFiles = localResumeRepoRoot
-    ? await readLocalResumeTextFiles(localResumeRepoRoot, ["resume.yaml"])
+    ? await readLocalResumeTextFiles(localResumeRepoRoot, [manifestPath])
     : await getResumeRepoFileContents(
         options.username,
         lookup.repo,
-        ["resume.yaml"],
+        [manifestPath],
         {
           authContext: options.authContext,
           forceFresh: options.forceFresh,
         },
       );
-  const yamlSource = initialFiles["resume.yaml"];
+  const yamlSource = initialFiles[manifestPath];
 
   if (!yamlSource) {
     return {
-      detail: "resume.yaml could not be read from the repository.",
+      detail: `${manifestPath} could not be read from the repository.`,
       repoUrl: lookup.repo.repoUrl,
       repoVisibility: lookup.repo.visibility,
       state: "locked_invalid_schema",
@@ -180,7 +206,7 @@ export async function getResumeTemplateAvailability(options: {
 
   if (!parsed.success) {
     return {
-      detail: parsed.error,
+      detail: `${manifestPath}: ${parsed.error}`,
       repoUrl: lookup.repo.repoUrl,
       repoVisibility: lookup.repo.visibility,
       state: "locked_invalid_schema",

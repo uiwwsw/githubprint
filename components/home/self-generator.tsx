@@ -177,6 +177,28 @@ export function SelfGenerator({
       }),
     );
   }, [locale, resumeAvailability]);
+  const selectedTemplateMeta =
+    templateCards.find((template) => template.id === selectedTemplate) ??
+    templateCards[0];
+
+  function getResumeStatus(
+    state: ResumeTemplateAvailability["state"] | null | undefined,
+  ) {
+    if (state === "locked_invalid_schema") {
+      return resumeCopy.card.lockedInvalid;
+    }
+
+    if (state === "ready") {
+      return resumeCopy.card.ready;
+    }
+
+    return resumeCopy.card.lockedMissing;
+  }
+
+  const selectedResumeStatus =
+    selectedTemplateMeta?.id === "resume"
+      ? getResumeStatus(selectedTemplateMeta.resumeState)
+      : null;
 
   function handleGenerate() {
     setIsPending(true);
@@ -287,112 +309,128 @@ export function SelfGenerator({
 
       <div className="mt-8 space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-baseline lg:justify-between lg:gap-8">
             <p className="text-sm font-medium text-neutral-700">
               {dict.home.templateHeading}
             </p>
-            <p className="text-sm text-neutral-500">{dict.home.templateHint}</p>
+            <p className="max-w-2xl text-sm leading-6 text-neutral-500">
+              {dict.home.templateHint}
+            </p>
           </div>
           <p className="text-sm leading-6 text-neutral-500">
             {resumeCopy.card.activationHint}
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {templateCards.map((template) => {
-            const isSelected = template.id === selectedTemplate;
-            const isResumeLocked =
-              template.id === "resume" && template.resumeState !== "ready";
-            const resumeStatus =
-              template.resumeState === "locked_invalid_schema"
-                ? resumeCopy.card.lockedInvalid
-                : template.id === "resume"
-                  ? template.resumeState === "ready"
-                    ? resumeCopy.card.ready
-                    : resumeCopy.card.lockedMissing
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.95fr)]">
+          <div className="grid gap-4 md:grid-cols-2">
+            {templateCards.map((template) => {
+              const isSelected = template.id === selectedTemplate;
+              const isResumeLocked =
+                template.id === "resume" && template.resumeState !== "ready";
+              const resumeStatus =
+                template.id === "resume"
+                  ? getResumeStatus(template.resumeState)
                   : null;
 
-            return (
-              <button
-                className={cn(
-                  "rounded-[1.6rem] border p-5 text-left transition",
-                  isSelected
-                    ? "border-neutral-950 bg-neutral-950 text-white"
-                    : isResumeLocked
-                      ? "border-amber-300/70 bg-amber-50/80 text-neutral-900 hover:border-amber-400"
-                    : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
-                )}
-                key={template.id}
-                onClick={() => handleTemplateSelect(template.id)}
-                type="button"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-serif text-2xl">{template.label}</p>
-                    <p
+              return (
+                <button
+                  className={cn(
+                    "flex h-full min-h-[13.5rem] flex-col rounded-[1.6rem] border p-5 text-left transition",
+                    isSelected
+                      ? "border-neutral-950 bg-neutral-950/[0.04] text-neutral-950 shadow-[0_18px_40px_-30px_rgba(0,0,0,0.45)]"
+                      : isResumeLocked
+                        ? "border-amber-300/70 bg-amber-50/80 text-neutral-900 hover:border-amber-400"
+                        : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
+                  )}
+                  key={template.id}
+                  onClick={() => handleTemplateSelect(template.id)}
+                  type="button"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-serif text-2xl">{template.label}</p>
+                      <p className="mt-1 text-sm text-neutral-500">
+                        {template.shortLabel}
+                      </p>
+                    </div>
+                    <span
                       className={cn(
-                        "mt-1 text-sm",
-                        isSelected ? "text-white/70" : "text-neutral-500",
+                        "rounded-full border px-3 py-1 text-xs",
+                        isSelected
+                          ? "border-neutral-950/10 bg-neutral-950 text-white"
+                          : "border-black/[0.08] bg-neutral-100 text-neutral-600",
                       )}
                     >
-                      {template.shortLabel}
-                    </p>
+                      {isSelected ? dict.home.selected : dict.home.select}
+                    </span>
                   </div>
-                  <span
-                    className={cn(
-                      "rounded-full border px-3 py-1 text-xs",
-                      isSelected
-                        ? "border-white/[0.15] bg-white/10 text-white/80"
-                        : "border-black/[0.08] bg-neutral-100 text-neutral-600",
-                    )}
-                  >
-                    {dict.home.select}
-                  </span>
-                </div>
-                <p
-                  className={cn(
-                    "mt-6 text-sm leading-6",
-                    isSelected ? "text-white/[0.88]" : "text-neutral-700",
-                  )}
-                >
-                  {template.description}
-                </p>
-                <p
-                  className={cn(
-                    "mt-4 text-sm leading-6",
-                    isSelected ? "text-white/[0.62]" : "text-neutral-500",
-                  )}
-                >
-                  {template.emphasis}
-                </p>
-                {template.id === "resume" ? (
-                  <div className="mt-4 space-y-2">
-                    <p
-                      className={cn(
-                        "text-xs leading-5",
-                        isSelected ? "text-white/60" : "text-neutral-500",
-                      )}
-                    >
-                      {resumeCopy.card.activationHint}
-                    </p>
-                    {resumeStatus ? (
-                      <p
+                  <p className="mt-5 max-w-[28ch] text-sm leading-6 text-neutral-700">
+                    {template.description}
+                  </p>
+                  {resumeStatus ? (
+                    <div className="mt-auto pt-5">
+                      <span
                         className={cn(
-                          "text-xs font-medium leading-5",
-                          isSelected
-                            ? "text-white/78"
-                            : template.resumeState === "ready"
-                              ? "text-emerald-700"
-                              : "text-amber-800",
+                          "inline-flex rounded-full border px-3 py-1 text-xs font-medium",
+                          template.resumeState === "ready"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-amber-200 bg-amber-100/80 text-amber-800",
                         )}
                       >
                         {resumeStatus}
-                      </p>
-                    ) : null}
+                      </span>
+                    </div>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedTemplateMeta ? (
+            <aside className="flex h-full flex-col rounded-[1.8rem] border border-neutral-950 bg-neutral-950 p-6 text-white shadow-[0_26px_70px_-46px_rgba(0,0,0,0.7)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-serif text-[clamp(2.1rem,4vw,2.8rem)] leading-none">
+                    {selectedTemplateMeta.label}
+                  </p>
+                  <p className="mt-2 text-base text-white/72">
+                    {selectedTemplateMeta.shortLabel}
+                  </p>
+                </div>
+                <span className="rounded-full border border-white/[0.15] bg-white/10 px-3 py-1 text-xs text-white/80">
+                  {dict.home.selected}
+                </span>
+              </div>
+
+              <p className="mt-6 text-base leading-8 text-white/[0.9]">
+                {selectedTemplateMeta.description}
+              </p>
+
+              <div className="mt-6 rounded-[1.3rem] border border-white/[0.12] bg-white/[0.04] p-4">
+                <p className="text-sm leading-7 text-white/[0.74]">
+                  {selectedTemplateMeta.emphasis}
+                </p>
+
+                {selectedResumeStatus ? (
+                  <div className="mt-4 border-t border-white/[0.12] pt-4">
+                    <p className="text-sm leading-7 text-white/[0.62]">
+                      {resumeCopy.card.activationHint}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-3 text-sm font-medium",
+                        selectedTemplateMeta.resumeState === "ready"
+                          ? "text-emerald-300"
+                          : "text-amber-200",
+                      )}
+                    >
+                      {selectedResumeStatus}
+                    </p>
                   </div>
                 ) : null}
-              </button>
-            );
-          })}
+              </div>
+            </aside>
+          ) : null}
         </div>
         {isResumeGuideOpen && resumeAvailability ? (
           <ResumeActivationPanel

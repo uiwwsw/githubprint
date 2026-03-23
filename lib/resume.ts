@@ -28,6 +28,15 @@ type ResumeMarkdownInput =
 
 type ResumeAssetPathInput = string;
 
+export const DEFAULT_RESUME_MANIFEST = "resume.yaml";
+
+const RESUME_MANIFEST_CANDIDATES: Record<Locale, string[]> = {
+  en: ["resume.en.yaml", "resume_en.yaml", DEFAULT_RESUME_MANIFEST],
+  ko: [DEFAULT_RESUME_MANIFEST],
+};
+const LEGACY_LOCALIZED_MANIFEST_WARNING =
+  "Single-file ko/en localized fields are legacy. Prefer separate locale manifests such as `resume.yaml` and `resume.en.yaml`.";
+
 const MARKDOWN_FILE_PATTERN = /^content\/[a-z0-9/_.-]+\.(md|markdown)$/i;
 const ASSET_FILE_PATTERN =
   /^assets\/[a-z0-9/_.-]+\.(png|jpg|jpeg|gif|webp|bmp)$/i;
@@ -83,6 +92,44 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function noteLegacyLocalizedManifestValue(
+  value: unknown,
+  warnings?: string[],
+) {
+  if (!warnings || !isRecord(value)) {
+    return;
+  }
+
+  const keys = Object.keys(value);
+  const hasLocalizedObjectShape =
+    keys.length > 0 &&
+    keys.every((key) => key === "ko" || key === "en") &&
+    keys.some((key) => key === "ko" || key === "en");
+  const markdownValue = value.markdown;
+  const hasLocalizedMarkdownShape =
+    isRecord(markdownValue) &&
+    (typeof markdownValue.ko === "string" || typeof markdownValue.en === "string");
+
+  if (hasLocalizedObjectShape || hasLocalizedMarkdownShape) {
+    pushResumeWarning(warnings, LEGACY_LOCALIZED_MANIFEST_WARNING);
+  }
+}
+
+export function getResumeManifestCandidates(locale: Locale) {
+  return [...RESUME_MANIFEST_CANDIDATES[locale]];
+}
+
+export function pickResumeManifestFile(
+  rootFiles: string[],
+  locale: Locale,
+) {
+  const available = new Set(rootFiles.map((file) => file.trim()).filter(Boolean));
+
+  return (
+    getResumeManifestCandidates(locale).find((file) => available.has(file)) ?? null
+  );
+}
+
 function parseOptionalField<T>(
   schema: z.ZodType<T>,
   value: unknown,
@@ -91,6 +138,14 @@ function parseOptionalField<T>(
 ) {
   if (value === undefined) {
     return undefined;
+  }
+
+  const legacyLocalizationSchema =
+    schema === (localizedTextSchema as z.ZodTypeAny) ||
+    schema === (textSourceSchema as z.ZodTypeAny);
+
+  if (legacyLocalizationSchema) {
+    noteLegacyLocalizedManifestValue(value, warnings);
   }
 
   const result = schema.safeParse(value);
@@ -107,7 +162,16 @@ function parseRequiredField<T>(
   schema: z.ZodType<T>,
   value: unknown,
   path: string,
+  warnings?: string[],
 ) {
+  const legacyLocalizationSchema =
+    schema === (localizedTextSchema as z.ZodTypeAny) ||
+    schema === (textSourceSchema as z.ZodTypeAny);
+
+  if (warnings && legacyLocalizationSchema) {
+    noteLegacyLocalizedManifestValue(value, warnings);
+  }
+
   const result = schema.safeParse(value);
 
   if (result.success) {
@@ -486,7 +550,12 @@ function sanitizeResumeItem(
     return null;
   }
 
-  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+  const title = parseRequiredField(
+    localizedTextSchema,
+    value.title,
+    `${path}.title`,
+    warnings,
+  );
 
   if (!title.success) {
     pushResumeWarning(warnings, title.error);
@@ -630,7 +699,12 @@ function sanitizeResumeEducation(
     return sanitizeResumeItem(value, path, warnings);
   }
 
-  const school = parseRequiredField(localizedTextSchema, value.school, `${path}.school`);
+  const school = parseRequiredField(
+    localizedTextSchema,
+    value.school,
+    `${path}.school`,
+    warnings,
+  );
 
   if (!school.success) {
     pushResumeWarning(warnings, school.error);
@@ -727,7 +801,12 @@ function sanitizeCustomSectionItem(
     return sanitizeResumeItem(value, path, warnings);
   }
 
-  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+  const title = parseRequiredField(
+    localizedTextSchema,
+    value.title,
+    `${path}.title`,
+    warnings,
+  );
 
   if (!title.success) {
     pushResumeWarning(warnings, title.error);
@@ -784,7 +863,12 @@ function sanitizeCustomSection(
     return null;
   }
 
-  const title = parseRequiredField(localizedTextSchema, value.title, `${path}.title`);
+  const title = parseRequiredField(
+    localizedTextSchema,
+    value.title,
+    `${path}.title`,
+    warnings,
+  );
 
   if (!title.success) {
     pushResumeWarning(warnings, title.error);
@@ -876,7 +960,12 @@ function sanitizeBasics(
     };
   }
 
-  const name = parseRequiredField(localizedTextSchema, value.name, "basics.name");
+  const name = parseRequiredField(
+    localizedTextSchema,
+    value.name,
+    "basics.name",
+    warnings,
+  );
 
   if (!name.success) {
     return {
@@ -1751,7 +1840,7 @@ export function parseResumeYamlDocument(source: string) {
 
     if (!isRecord(parsed)) {
       return {
-        error: "resume.yaml must contain a top-level object.",
+        error: "Resume manifest must contain a top-level object.",
         success: false as const,
       };
     }
@@ -1888,7 +1977,7 @@ export function parseResumeYamlDocument(source: string) {
       error:
         error instanceof Error
           ? error.message
-          : "resume.yaml could not be parsed.",
+          : "Resume manifest could not be parsed.",
       success: false as const,
     };
   }
