@@ -1,0 +1,301 @@
+basics:
+  name: 윤창원
+  avatar: assets/profile.png
+  headline:
+    ko: 자율성과 책임 속에서 성과를 만드는 프론트엔드 개발자
+    en: A frontend engineer who delivers results with autonomy and ownership
+  location:
+    ko: 서울
+    en: Seoul
+  website: https://uiwwsw.github.io
+  links:
+    - label: GitHub
+      url: https://github.com/uiwwsw
+      kind: repo
+    - label: Portfolio
+      url: https://uiwwsw.github.io
+      kind: live
+    - label: Email
+      url: mailto:uiwwsw@icloud.com
+      kind: contact
+    - label: Phone
+      url: tel:+821021936087
+      kind: contact
+    - label: GitHubPrint
+      url: https://githubprint.vercel.app
+      kind: live
+    - label: VAVN
+      url: https://yavn.vercel.app
+      kind: live
+
+summary:
+  markdown:
+    ko: content/summary.ko.md
+    en: content/summary.en.md
+
+experience:
+  - title:
+      ko: 한국일보
+      en: Hankook Ilbo
+    subtitle:
+      ko: 프리랜서 프론트엔드 PL
+      en: Freelance Frontend PL
+    start: "2024-07-01"
+    end: "2025-12-01"
+    current: false
+    bullets:
+      - >-
+        기사 관리 어드민과 백오피스를 설계하고 구축했습니다.
+      - >-
+        Next.js, TypeScript, React Query 기반 프론트엔드 구조와 개발 기준을 정리했습니다.
+      - >-
+        공통 컴포넌트, 권한 관리, API 연동, 코드 리뷰 가이드를 정착시켰습니다.
+    detailsMarkdown:
+      markdown: content/experience/hankook-ilbo.md
+  - title:
+      ko: 주식회사세미티에스
+      en: Semits
+    subtitle:
+      ko: 프론트엔드개발 팀장
+      en: Frontend Team Lead
+    start: "2023-08-01"
+    end: "2024-04-01"
+    current: false
+    bullets:
+      - >-
+        반도체 개발 장비용 클라이언트 웹서비스를 연속으로 설계하고 구축했습니다.
+      - >-
+        Clean Architecture와 SWR 기반 구조 및 공통 개발 기준을 수립했습니다.
+      - >-
+        Monorepo 개발 환경과 공통 타입, 유틸, API 인터페이스 체계를 정리했습니다.
+    detailsMarkdown:
+      markdown: content/experience/semits.md
+  - title:
+      ko: 업라이즈 주식회사
+      en: UPRISE
+    subtitle:
+      ko: 프론트엔드개발 임시리더
+      en: Acting Frontend Lead
+    start: "2020-05-01"
+    end: "2023-04-01"
+    current: false
+    bullets:
+      - >-
+        서비스 초기 구축부터 유지보수, 레거시 마이그레이션, 컴포넌트 라이브러리 구축까지 주도했습니다.
+      - >-
+        사실상 1인 프론트엔드 체제에서도 우선순위를 정해 안정적으로 제품을 운영했습니다.
+      - >-
+        Nuxt.js, SvelteKit, TypeScript, Shadow DOM 기반 구조 개편과 공통 자산 구축을 수행했습니다.
+    detailsMarkdown:
+      markdown: content/experience/uprise.md
+  - title:
+      ko: (주)와이즈버즈
+      en: Wisebirds
+    subtitle:
+      ko: 프론트엔드개발 주임
+      en: Frontend Engineer
+    start: "2018-11-01"
+    end: "2020-05-01"
+    current: false
+    bullets:
+      - >-
+        신규 사업용 웹서비스 기반을 만들고 TypeScript 도입을 팀에 확산했습니다.
+      - >-
+        Chrome Extension, 공통 UI 라이브러리, Vue 보일러플레이트 등 내부 개발 자산을 구축했습니다.
+      - >-
+        클라이언트 페이지, 어드민, 결재 시스템 등 여러 업무용 웹서비스를 설계하고 런칭했습니다.
+    detailsMarkdown:
+      markdown: content/experience/wisebirds.md
+  - title:
+      ko: (주)인터파크
+      en: Interpark
+    subtitle:
+      ko: UI개발 사원
+      en: UI Engineer
+    start: "2017-06-01"
+    end: "2018-10-01"
+    current: false
+    bullets:
+      - >-
+        티켓·투어 서비스 주요 화면의 UI 개발과 리뉴얼에 참여했습니다.
+      - >-
+        jQuery, SCSS, Gulp 기반 레거시 환경에서 화면 구조 개선과 유지보수를 담당했습니다.
+      - >-
+        개인 프로젝트와 기술 리서치를 통해 DOM 구조와 렌더링 성능 이해를 쌓았습니다.
+    detailsMarkdown:
+      markdown: content/experience/interpark.md
+  - title:
+      ko: (주)아메바
+      en: Ameba
+    subtitle:
+      ko: 퍼블리싱 선임
+      en: Senior Publisher
+    start: "2015-09-01"
+    end: "2017-06-01"
+    current: false
+    bullets:
+      - >-
+        다수의 SI 프로젝트에서 모바일 웹, 앱, 플랫폼 UI 퍼블리싱을 수행했습니다.
+      - >-
+        HTML, CSS, SCSS, JavaScript, jQuery, AngularJS, Ionic, Bootstrap 기반 마크업을 구현했습니다.
+      - >-
+        기획, 디자인, 개발 조직과 협업하며 반응형과 크로스브라우징 이슈를 해결했습니다.
+    detailsMarkdown:
+      markdown: content/experience/ameba.md
+
+projects:
+  - title: GitHubPrint
+    repo: githubprint
+    liveUrl: https://githubprint.vercel.app
+    tech:
+      - Next.js
+      - TypeScript
+  - title: YAVN
+    repo: yavn
+    liveUrl: https://yavn.vercel.app
+    tech:
+      - TypeScript
+  - title: Portfolio
+    repo: uiwwsw.github.io
+    liveUrl: https://uiwwnw.github.io/portfolio/
+    tech:
+      - HTML
+      - CSS
+      - JavaScript
+  - title: Virtual Keyboard
+    repo: virtual-keyboard
+    liveUrl: https://composed-input.vercel.app
+    tech:
+      - TypeScript
+      - React
+      - CSS
+  - title: React Query Helper
+    repo: react-query-helper
+    liveUrl: https://www.npmjs.com/package/@uiwwsw/react-query-helper
+    tech:
+      - TypeScript
+      - React Query
+      - CLI
+  - title: Infinite Paper
+    repo: Infinite-pager
+    liveUrl: https://www.npmjs.com/package/@uiwwsw/infinite-paper
+    tech:
+      - TypeScript
+      - React
+      - Pagination
+  - title: Easter Egg
+    repo: easter-egg
+    liveUrl: https://www.npmjs.com/package/@uiwwsw/easter-egg
+    tech:
+      - TypeScript
+      - JavaScript
+
+education:
+  - school:
+      ko: 공주대학교
+      en: Kongju National University
+    degree:
+      ko: 건축학전공(5년제)
+      en: Architecture (5-year program)
+    status:
+      ko: 졸업
+      en: Graduated
+    start: "2006-02-01"
+    end: "2014-01-01"
+
+skills:
+  - title:
+      ko: Frontend
+      en: Frontend
+    items:
+      - React
+      - Next.js
+      - Vue.js
+      - Nuxt.js
+      - Svelte
+      - SvelteKit
+      - AngularJS
+  - title:
+      ko: Language & Style
+      en: Language & Style
+    items:
+      - JavaScript
+      - TypeScript
+      - HTML
+      - CSS3
+      - SCSS
+  - title:
+      ko: State / Data
+      en: State / Data
+    items:
+      - React Query
+      - SWR
+      - Redux
+      - PostgreSQL
+  - title:
+      ko: UI / Platform
+      en: UI / Platform
+    items:
+      - Tailwind CSS
+      - MUI
+      - Shadow DOM
+      - Flutter
+      - Serverless
+      - AWS
+  - title:
+      ko: Tooling
+      en: Tooling
+    items:
+      - Vite
+      - CLI
+      - Monorepo
+
+customSections:
+  - title:
+      ko: 교육
+      en: Training
+    items:
+      - title:
+          ko: 함수형프로그래밍
+          en: Functional Programming
+        date: "2020-06-01"
+        organization:
+          ko: 프로그래머스 교육
+          en: Programmers
+        note:
+          ko: "언어: JavaScript"
+          en: "Language: JavaScript"
+      - title:
+          ko: next실무 교육
+          en: Practical Next.js Training
+        date: "2020-08-01"
+        organization:
+          ko: 프로그래머스 교육
+          en: Programmers
+        note:
+          ko: "언어: Next.js"
+          en: "Language: Next.js"
+      - title:
+          ko: 웹퍼블리싱교육
+          en: Web Publishing Training
+        date: "2014-01-01"
+        organization:
+          ko: 서울 종각 오프라인 학원
+          en: Offline Academy in Jonggak, Seoul
+        note:
+          ko: "형태: 오프라인 교육"
+          en: "Format: Offline training"
+  - title:
+      ko: 자격증
+      en: Certifications
+    items:
+      - title:
+          ko: 정보처리기능사
+          en: Craftsman Information Processing
+        date: "2004-12-01"
+        organization:
+          ko: 한국산업인력공단
+          en: HRDKorea
+        note:
+          ko: "기관: 한국산업인력공단"
+          en: "Issuer: HRDKorea"
