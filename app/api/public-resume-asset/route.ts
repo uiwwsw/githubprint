@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   return new NextResponse(new Uint8Array(asset.data), {
     headers: {
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "public, max-age=0, s-maxage=86400, stale-while-revalidate=86400",
       "Content-Type": asset.contentType,
     },
   });

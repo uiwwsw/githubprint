@@ -475,24 +475,18 @@ export function ResumeTemplate({
   return (
     <DocumentShell
       accent={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <MetaRibbon
-              label={copy.template.ribbonTemplate}
-              value="Resume"
-            />
-            <MetaRibbon
-              label={copy.template.ribbonGenerated}
-              value={formatDate(generatedAt, locale)}
-            />
-            <MetaRibbon
-              label={copy.actions.repoVisibilityLabel}
-              value={visibilityLabel}
-            />
-          </div>
+        <div className="flex flex-wrap gap-2">
           <MetaRibbon
-            label={copy.template.ribbonSource}
-            value={resume.source.repoName}
+            label={copy.template.ribbonTemplate}
+            value="Resume"
+          />
+          <MetaRibbon
+            label={copy.template.ribbonGenerated}
+            value={formatDate(generatedAt, locale)}
+          />
+          <MetaRibbon
+            label={copy.actions.repoVisibilityLabel}
+            value={visibilityLabel}
           />
         </div>
       }
