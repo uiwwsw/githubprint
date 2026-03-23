@@ -703,6 +703,33 @@ function sanitizeExternalUrl(url: string | null | undefined) {
   }
 }
 
+function parseGitHubRepoUrl(repoUrl: string) {
+  try {
+    const parsed = new URL(repoUrl);
+
+    if (
+      parsed.hostname !== "github.com" &&
+      parsed.hostname !== "www.github.com"
+    ) {
+      return null;
+    }
+
+    const [owner, rawRepoName] = parsed.pathname.split("/").filter(Boolean);
+    const repoName = rawRepoName?.replace(/\.git$/i, "");
+
+    if (!owner || !repoName) {
+      return null;
+    }
+
+    return {
+      owner,
+      repoName,
+    };
+  } catch {
+    return null;
+  }
+}
+
 async function fetchRepoReadme(
   username: string,
   repo: Pick<GitHubRepoSnapshot, "name">,
@@ -940,6 +967,41 @@ function mapRepoCatalogEntry(repo: GitHubRepoResponse): GitHubOwnedRepoCatalogEn
     updatedAt: repo.updated_at,
     visibility: repo.private ? "private" : "public",
   };
+}
+
+export async function getRepoEntryFromUrl(
+  repoUrl: string,
+  options?: {
+    forceFresh?: boolean;
+  },
+): Promise<(GitHubOwnedRepoCatalogEntry & { rootFiles: string[] }) | null> {
+  const parsedRepo = parseGitHubRepoUrl(repoUrl);
+
+  if (!parsedRepo) {
+    return null;
+  }
+
+  try {
+    const repo = await githubJson<GitHubRepoResponse>(
+      `/repos/${encodeURIComponent(parsedRepo.owner)}/${encodeURIComponent(parsedRepo.repoName)}`,
+      {
+        forceFresh: options?.forceFresh,
+      },
+    );
+    const mappedRepo = mapRepoCatalogEntry(repo);
+    const rootFiles = await fetchRepoRootFiles(
+      parsedRepo.owner,
+      mappedRepo,
+      options?.forceFresh,
+    );
+
+    return {
+      ...mappedRepo,
+      rootFiles,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getResumeRepoLookup(

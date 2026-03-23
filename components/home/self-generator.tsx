@@ -325,10 +325,11 @@ export function SelfGenerator({
           <div className="grid gap-4 md:grid-cols-2">
             {templateCards.map((template) => {
               const isSelected = template.id === selectedTemplate;
+              const isResumeTemplate = template.id === "resume";
               const isResumeLocked =
-                template.id === "resume" && template.resumeState !== "ready";
+                isResumeTemplate && template.resumeState !== "ready";
               const resumeStatus =
-                template.id === "resume"
+                isResumeTemplate
                   ? getResumeStatus(template.resumeState)
                   : null;
 
@@ -336,10 +337,14 @@ export function SelfGenerator({
                 <button
                   className={cn(
                     "flex h-full min-h-[13.5rem] flex-col rounded-[1.6rem] border p-5 text-left transition",
-                    isSelected
+                    isSelected && isResumeTemplate
+                      ? "border-emerald-700 bg-[linear-gradient(180deg,rgba(236,253,245,0.98),rgba(209,250,229,0.94))] text-emerald-950 shadow-[0_20px_44px_-30px_rgba(6,95,70,0.45)]"
+                      : isSelected
                       ? "border-neutral-950 bg-neutral-950/[0.04] text-neutral-950 shadow-[0_18px_40px_-30px_rgba(0,0,0,0.45)]"
                       : isResumeLocked
                         ? "border-amber-300/70 bg-amber-50/80 text-neutral-900 hover:border-amber-400"
+                        : isResumeTemplate
+                          ? "border-emerald-200 bg-emerald-50/75 text-emerald-950 hover:border-emerald-300 hover:bg-emerald-50"
                         : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
                   )}
                   key={template.id}
@@ -349,22 +354,43 @@ export function SelfGenerator({
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-serif text-2xl">{template.label}</p>
-                      <p className="mt-1 text-sm text-neutral-500">
-                        {template.shortLabel}
-                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <p
+                          className={cn(
+                            "text-sm",
+                            isResumeTemplate ? "text-emerald-700" : "text-neutral-500",
+                          )}
+                        >
+                          {template.shortLabel}
+                        </p>
+                        {isResumeTemplate ? (
+                          <span className="rounded-full border border-emerald-200 bg-white/85 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-emerald-700">
+                            {dict.home.resumeTemplateBadge}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                     <span
                       className={cn(
                         "rounded-full border px-3 py-1 text-xs",
-                        isSelected
-                          ? "border-neutral-950/10 bg-neutral-950 text-white"
-                          : "border-black/[0.08] bg-neutral-100 text-neutral-600",
+                        isSelected && isResumeTemplate
+                          ? "border-emerald-800 bg-emerald-900 text-emerald-50"
+                          : isSelected
+                            ? "border-neutral-950/10 bg-neutral-950 text-white"
+                            : isResumeTemplate
+                              ? "border-emerald-200 bg-white/85 text-emerald-700"
+                              : "border-black/[0.08] bg-neutral-100 text-neutral-600",
                       )}
                     >
                       {isSelected ? dict.home.selected : dict.home.select}
                     </span>
                   </div>
-                  <p className="mt-5 max-w-[28ch] text-sm leading-6 text-neutral-700">
+                  <p
+                    className={cn(
+                      "mt-5 max-w-[28ch] text-sm leading-6",
+                      isResumeTemplate ? "text-emerald-900/85" : "text-neutral-700",
+                    )}
+                  >
                     {template.description}
                   </p>
                   {resumeStatus ? (
@@ -387,15 +413,29 @@ export function SelfGenerator({
           </div>
 
           {selectedTemplateMeta ? (
-            <aside className="flex h-full flex-col rounded-[1.8rem] border border-neutral-950 bg-neutral-950 p-6 text-white shadow-[0_26px_70px_-46px_rgba(0,0,0,0.7)]">
+            <aside
+              className={cn(
+                "flex h-full flex-col rounded-[1.8rem] border p-6 text-white shadow-[0_26px_70px_-46px_rgba(0,0,0,0.7)]",
+                selectedTemplateMeta.id === "resume"
+                  ? "border-emerald-950 bg-[linear-gradient(145deg,rgba(2,44,34,1),rgba(6,78,59,1)_58%,rgba(2,44,34,1))]"
+                  : "border-neutral-950 bg-neutral-950",
+              )}
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="font-serif text-[clamp(2.1rem,4vw,2.8rem)] leading-none">
                     {selectedTemplateMeta.label}
                   </p>
-                  <p className="mt-2 text-base text-white/72">
-                    {selectedTemplateMeta.shortLabel}
-                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <p className="text-base text-white/72">
+                      {selectedTemplateMeta.shortLabel}
+                    </p>
+                    {selectedTemplateMeta.id === "resume" ? (
+                      <span className="rounded-full border border-emerald-200/30 bg-white/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.14em] text-emerald-100">
+                        {dict.home.resumeTemplateBadge}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
                 <span className="rounded-full border border-white/[0.15] bg-white/10 px-3 py-1 text-xs text-white/80">
                   {dict.home.selected}

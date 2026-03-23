@@ -45,6 +45,7 @@ type Dictionary = {
     privateToggleWarning: string;
     templateHeading: string;
     templateHint: string;
+    resumeTemplateBadge: string;
     selected: string;
     select: string;
     submit: string;
@@ -256,7 +257,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       authSignOut: "로그아웃",
       authSignedInAs: "로그인됨",
       showcaseDescription:
-        "로그인 전에 공개 `resume` 레포를 기반으로 실제 Resume 레이아웃으로 렌더링한 공개 이력서를 먼저 볼 수 있습니다.",
+        "로그인 전에 `resume` 레포를 기반으로 실제 Resume 레이아웃으로 렌더링한 공개 이력서를 먼저 볼 수 있습니다.",
       showcaseEyebrow: "공개 이력서",
       showcaseOpen: "공개 이력서 보기",
       showcaseOpenRepo: "resume 레포 보기",
@@ -271,6 +272,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "켜면 비공개 저장소 이름, 설명, 링크가 문서와 PDF에 직접 포함될 수 있습니다.",
       templateHeading: "문서 템플릿 선택",
       templateHint: "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
+      resumeTemplateBadge: "레포 기반",
       selected: "선택됨",
       select: "선택",
       submit: "문서 생성",
@@ -510,7 +512,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       authSignOut: "Sign out",
       authSignedInAs: "Signed in as",
       showcaseDescription:
-        "Before sign-in, you can open a public resume page that reads the `resume` repository and renders it with the actual Resume layout.",
+        "Before sign-in, you can open a public resume page that reads the connected `resume` repository and renders it with the actual Resume layout.",
       showcaseEyebrow: "Public resume",
       showcaseOpen: "View public resume",
       showcaseOpenRepo: "View resume repo",
@@ -525,6 +527,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "When on, private repository names, descriptions, and links may appear directly in the document and exported PDF.",
       templateHeading: "Choose a document template",
       templateHint: "Templates use the same evidence, but differ in emphasis and reading style.",
+      resumeTemplateBadge: "Repo-driven",
       selected: "Selected",
       select: "Select",
       submit: "Convert",

@@ -40,7 +40,7 @@ export async function GitHubAuthStatus({ locale }: { locale: Locale }) {
               {dict.home.authSignIn}
             </a>
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
+              className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/85 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
               href={showcasePath}
             >
               {dict.home.showcaseOpen}

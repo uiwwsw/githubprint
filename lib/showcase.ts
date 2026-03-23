@@ -18,7 +18,7 @@ type ShowcaseExperience = {
   role: Record<Locale, string>;
 };
 
-type ShowcaseRecord = {
+export type ShowcaseRecord = {
   careerLength: Record<Locale, string>;
   createdAt: string;
   education: Record<Locale, string>;
@@ -29,7 +29,6 @@ type ShowcaseRecord = {
   lede: Record<Locale, string>;
   location: Record<Locale, string>;
   name: string;
-  profileImagePath: string;
   projects: ShowcaseProject[];
   resumeRepoUrl: string;
   sameAs: string[];
@@ -39,6 +38,8 @@ type ShowcaseRecord = {
   summary: Record<Locale, string[]>;
   username: string;
 };
+
+const SHOWCASE_DEFAULT_IMAGE_PATH = "/apple-touch-icon.png";
 
 const showcaseRecords: Record<ShowcaseSlug, ShowcaseRecord> = {
   uiwwsw: {
@@ -161,7 +162,6 @@ const showcaseRecords: Record<ShowcaseSlug, ShowcaseRecord> = {
       en: "Seoul",
     },
     name: "윤창원",
-    profileImagePath: "/showcase/uiwwsw/profile.png",
     projects: [
       {
         title: "GitHubPrint",
@@ -211,8 +211,8 @@ const showcaseRecords: Record<ShowcaseSlug, ShowcaseRecord> = {
       "https://githubprint.vercel.app",
     ],
     seoDescription: {
-      ko: "프론트엔드개발자 윤창원(uiwwsw)의 공개 이력서와 작업 사례 페이지입니다. React, Next.js, TypeScript 기반 경력, 대표 프로젝트, 공개 resume 레포를 실제 Resume 레이아웃으로 확인할 수 있습니다.",
-      en: "Public resume and work showcase for uiwwsw, a frontend engineer and frontend developer. Review React, Next.js, and TypeScript experience, featured projects, and the live Resume layout rendered from the public repository.",
+      ko: "프론트엔드개발자 윤창원(uiwwsw)의 공개 이력서와 작업 사례 페이지입니다. React, Next.js, TypeScript 기반 경력, 대표 프로젝트, 연결된 resume 레포를 실제 Resume 레이아웃으로 확인할 수 있습니다.",
+      en: "Public resume and work showcase for uiwwsw, a frontend engineer and frontend developer. Review React, Next.js, and TypeScript experience, featured projects, and the live Resume layout rendered from the configured resume repository.",
     },
     seoTitle: {
       ko: "프론트엔드개발자 윤창원 이력서와 작업 사례 | GitHubPrint",
@@ -247,6 +247,16 @@ const showcaseRecords: Record<ShowcaseSlug, ShowcaseRecord> = {
 
 export function getShowcaseRecord(slug: ShowcaseSlug) {
   return showcaseRecords[slug];
+}
+
+export function getShowcaseRecordByUsername(username: string) {
+  const normalizedUsername = username.trim().toLowerCase();
+
+  return (
+    Object.values(showcaseRecords).find(
+      (record) => record.username.toLowerCase() === normalizedUsername,
+    ) ?? null
+  );
 }
 
 export function getShowcasePath(slug: ShowcaseSlug, locale: Locale) {
@@ -288,7 +298,8 @@ export function getShowcaseProfileImage(
   slug: ShowcaseSlug,
   resume?: ResumeDocumentData | null,
 ) {
-  return resume?.basics.avatarUrl ?? getShowcaseRecord(slug).profileImagePath;
+  void slug;
+  return resume?.basics.avatarUrl ?? SHOWCASE_DEFAULT_IMAGE_PATH;
 }
 
 export function getShowcaseLocation(
