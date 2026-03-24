@@ -1,5 +1,6 @@
 import { SelfGenerator } from "@/components/home/self-generator";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
+import { PageEnterScrollTop } from "@/components/ui/page-enter-scroll-top";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import { getGitHubSession } from "@/lib/auth";
@@ -44,6 +45,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
 
   return (
     <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
+      <PageEnterScrollTop />
       {structuredData.map((entry) => (
         <script
           key={`${entry["@type"]}-${locale}`}

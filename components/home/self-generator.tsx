@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ResumeActivationPanel } from "@/components/resume/resume-activation-panel";
 import { Button } from "@/components/ui/button";
 import { getDictionary, getLocalizedResultPath } from "@/lib/i18n";
-import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
+import { scheduleWindowTopScroll } from "@/lib/instant-scroll";
 import { getResumeCopy } from "@/lib/resume-copy";
 import type { ResumeTemplateAvailability } from "@/lib/resume";
 import {
@@ -209,12 +209,12 @@ export function SelfGenerator({
       params.set("private", "1");
     }
 
-    scrollWindowToTopInstantly();
     startTransition(() => {
       const query = params.toString();
       const resultPath = getLocalizedResultPath(selectedTemplate, locale);
+      scheduleWindowTopScroll();
       router.push(`${resultPath}${query ? `?${query}` : ""}`, {
-        scroll: true,
+        scroll: false,
       });
     });
   }

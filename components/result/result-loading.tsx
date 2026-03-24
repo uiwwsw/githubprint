@@ -1,20 +1,16 @@
 "use client";
 
-import { useLayoutEffect } from "react";
 import { useLocale } from "next-intl";
+import { PageEnterScrollTop } from "@/components/ui/page-enter-scroll-top";
 import { getDictionary, resolveLocale } from "@/lib/i18n";
-import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
 
 export function ResultLoading() {
   const locale = resolveLocale(useLocale());
   const dict = getDictionary(locale);
 
-  useLayoutEffect(() => {
-    scrollWindowToTopInstantly();
-  }, []);
-
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+      <PageEnterScrollTop />
       <div className="mx-auto max-w-[1200px] space-y-5">
         <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-600">
