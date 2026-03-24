@@ -1,3 +1,5 @@
+let pendingWindowTopScroll = false;
+
 export function scrollWindowToTopInstantly() {
   if (typeof window === "undefined") {
     return;
@@ -16,4 +18,17 @@ export function scrollWindowToTopInstantly() {
     html.style.scrollBehavior = previousHtmlScrollBehavior;
     body.style.scrollBehavior = previousBodyScrollBehavior;
   });
+}
+
+export function scheduleWindowTopScroll() {
+  pendingWindowTopScroll = true;
+}
+
+export function consumeScheduledWindowTopScroll() {
+  if (!pendingWindowTopScroll) {
+    return false;
+  }
+
+  pendingWindowTopScroll = false;
+  return true;
 }

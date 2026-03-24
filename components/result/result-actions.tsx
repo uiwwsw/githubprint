@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PRODUCT_SLUG } from "@/lib/brand";
 import { getDictionary } from "@/lib/i18n";
-import { scrollWindowToTopInstantly } from "@/lib/instant-scroll";
+import { scheduleWindowTopScroll } from "@/lib/instant-scroll";
 import { getResumeCopy } from "@/lib/resume-copy";
 import type { ResumeRepoVisibility } from "@/lib/resume";
 import { buildDownloadFileName } from "@/lib/result-document";
@@ -166,10 +166,6 @@ export function ResultActions({
     }
   }
 
-  function handleScrollTop() {
-    scrollWindowToTopInstantly();
-  }
-
   return (
     <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] items-start justify-between gap-3 sm:items-center">
       <div className="min-w-0 flex flex-1 flex-wrap items-center gap-2 text-sm text-neutral-600">
@@ -177,8 +173,8 @@ export function ResultActions({
           <Link
             className="inline-flex h-10 items-center justify-center rounded-full border border-black/[0.08] bg-white px-4 text-sm font-medium text-neutral-900 transition hover:bg-white/80"
             href={backHref}
-            onClick={handleScrollTop}
-            scroll
+            onClick={scheduleWindowTopScroll}
+            scroll={false}
           >
             {dict.result.backToTemplate}
           </Link>
