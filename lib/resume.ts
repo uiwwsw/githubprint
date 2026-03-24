@@ -418,6 +418,7 @@ export type ResumeTemplateAvailability =
 
 export type ResumeMarkdownBlock =
   | {
+      level: number;
       text: string;
       type: "heading";
     }
@@ -2234,12 +2235,13 @@ export function parseResumeMarkdown(markdown: string): ResumeMarkdownBlock[] {
       return;
     }
 
-    const headingMatch = trimmed.match(/^#{1,6}\s+(.+)$/);
+    const headingMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (headingMatch) {
       flushParagraph();
       flushList();
       blocks.push({
-        text: stripInlineMarkdown(headingMatch[1]),
+        level: headingMatch[1].length,
+        text: stripInlineMarkdown(headingMatch[2]),
         type: "heading",
       });
       return;
