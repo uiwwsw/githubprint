@@ -74,10 +74,7 @@ function ResumeSection({
     <section className={cn(bordered && "border-t border-black/[0.08] pt-6")}>
       <div className="space-y-4">
         <div className="print-break-after-avoid">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-            {title}
-          </p>
-          <h2 className="mt-2 font-serif text-2xl text-neutral-950">{title}</h2>
+          <h2 className="mt-0 font-serif text-2xl text-neutral-950">{title}</h2>
         </div>
         {children}
       </div>

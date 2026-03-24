@@ -50,12 +50,16 @@ export function SectionBlock({
   className?: string;
   children: ReactNode;
 }) {
+  const normalizedTitle = title.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  const normalizedEyebrow = eyebrow?.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  const showEyebrow = Boolean(normalizedEyebrow) && normalizedEyebrow !== normalizedTitle;
+
   return (
     <section className={cn("print-break-inside-avoid rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6", className)}>
-      {eyebrow ? (
+      {showEyebrow ? (
         <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{eyebrow}</p>
       ) : null}
-      <h2 className="mt-2 font-serif text-[1.4rem] leading-tight text-neutral-950">{title}</h2>
+      <h2 className={cn("font-serif text-[1.4rem] leading-tight text-neutral-950", showEyebrow ? "mt-2" : "mt-0")}>{title}</h2>
       <div className="mt-4 text-[15px] leading-7 text-neutral-700">{children}</div>
     </section>
   );
