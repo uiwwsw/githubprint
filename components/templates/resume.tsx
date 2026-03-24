@@ -10,37 +10,77 @@ import {
   type ResumeCustomSection,
   type ResumeDocumentData,
   type ResumeEntry,
+  type ResumeMarkdownBlock,
   type ResumeProject,
   type ResumeRepoVisibility,
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
 import { cn, formatDate } from "@/lib/utils";
 
-function MarkdownContent({ markdown }: { markdown: string }) {
-  const blocks = parseResumeMarkdown(markdown);
+type MarkdownSection = {
+  blocks: ResumeMarkdownBlock[];
+  heading?: string;
+  subgroups: Array<{
+    blocks: ResumeMarkdownBlock[];
+    heading: string;
+  }>;
+};
 
+function groupMarkdownBlocks(blocks: ResumeMarkdownBlock[]) {
+  const sections: MarkdownSection[] = [];
+  let currentSection: MarkdownSection | null = null;
+  let currentSubgroup: MarkdownSection["subgroups"][number] | null = null;
+
+  const ensureSection = () => {
+    if (!currentSection) {
+      currentSection = { blocks: [], subgroups: [] };
+      sections.push(currentSection);
+    }
+
+    return currentSection;
+  };
+
+  blocks.forEach((block) => {
+    if (block.type === "heading") {
+      if (block.level <= 2) {
+        currentSection = { blocks: [], heading: block.text, subgroups: [] };
+        sections.push(currentSection);
+        currentSubgroup = null;
+        return;
+      }
+
+      const section = ensureSection();
+      currentSubgroup = { blocks: [], heading: block.text };
+      section.subgroups.push(currentSubgroup);
+      return;
+    }
+
+    const section = ensureSection();
+    if (currentSubgroup) {
+      currentSubgroup.blocks.push(block);
+      return;
+    }
+
+    section.blocks.push(block);
+  });
+
+  return sections.filter(
+    (section) => section.heading || section.blocks.length > 0 || section.subgroups.length > 0,
+  );
+}
+
+function MarkdownBlocks({ blocks }: { blocks: ResumeMarkdownBlock[] }) {
   return (
-    <div className="space-y-3 text-sm leading-7 text-neutral-700">
+    <>
       {blocks.map((block, index) => {
-        if (block.type === "heading") {
-          return (
-            <p
-              key={`${block.type}-${index}`}
-              className="print-copy-flow font-medium text-neutral-900"
-            >
-              {block.text}
-            </p>
-          );
-        }
-
         if (block.type === "list") {
           return (
             <ul
               key={`${block.type}-${index}`}
               className="list-disc space-y-2 pl-5 text-sm leading-7 text-neutral-700"
             >
-              {block.items.map((item) => (
-                <li className="print-copy-flow" key={item}>
+              {block.items.map((item, itemIndex) => (
+                <li className="print-copy-flow" key={`${index}-${itemIndex}-${item}`}>
                   {item}
                 </li>
               ))}
@@ -57,6 +97,65 @@ function MarkdownContent({ markdown }: { markdown: string }) {
           </p>
         );
       })}
+    </>
+  );
+}
+
+function MarkdownContent({ markdown }: { markdown: string }) {
+  const blocks = parseResumeMarkdown(markdown);
+  const sections = groupMarkdownBlocks(blocks);
+  const hasGroupedHeadings = sections.some((section) => section.heading);
+
+  if (!hasGroupedHeadings) {
+    return (
+      <div className="space-y-3 text-sm leading-7 text-neutral-700">
+        <MarkdownBlocks blocks={blocks} />
+      </div>
+    );
+  }
+
+  const introSection = sections[0]?.heading ? null : sections[0];
+  const groupedSections = introSection ? sections.slice(1) : sections;
+
+  return (
+    <div className="space-y-4 text-sm leading-7 text-neutral-700">
+      {introSection ? <MarkdownBlocks blocks={introSection.blocks} /> : null}
+      {groupedSections.map((section, index) => (
+        <section
+          className="print-break-inside-avoid rounded-[1rem] border border-black/[0.06] bg-black/[0.025] px-4 py-4"
+          key={`${section.heading ?? "group"}-${index}`}
+        >
+          {section.heading ? (
+            <h4 className="text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-950">
+              {section.heading}
+            </h4>
+          ) : null}
+          {section.blocks.length > 0 ? (
+            <div className={cn("space-y-3", section.heading && "mt-3 border-t border-black/[0.06] pt-3")}>
+              <MarkdownBlocks blocks={section.blocks} />
+            </div>
+          ) : null}
+          {section.subgroups.length > 0 ? (
+            <div className={cn("space-y-3", (section.heading || section.blocks.length > 0) && "mt-3")}>
+              {section.subgroups.map((subgroup, subgroupIndex) => (
+                <section
+                  className="rounded-[0.9rem] border border-black/[0.06] bg-white/70 px-4 py-3"
+                  key={`${section.heading ?? "group"}-${index}-subgroup-${subgroupIndex}`}
+                >
+                  <h5 className="text-[0.95rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-900">
+                    {subgroup.heading}
+                  </h5>
+                  {subgroup.blocks.length > 0 ? (
+                    <div className="mt-2 space-y-3 border-t border-black/[0.05] pt-2.5">
+                      <MarkdownBlocks blocks={subgroup.blocks} />
+                    </div>
+                  ) : null}
+                </section>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ))}
     </div>
   );
 }

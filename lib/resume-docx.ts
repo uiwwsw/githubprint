@@ -150,10 +150,15 @@ function createMarkdownParagraphs(markdown: string) {
       return [
         new Paragraph({
           spacing: {
-            after: 80,
-            before: 120,
+            after: block.level >= 3 ? 60 : 80,
+            before: block.level >= 3 ? 100 : 120,
           },
-          children: [createText(block.text, { bold: true })],
+          children: [
+            createText(block.text, {
+              bold: true,
+              size: block.level >= 3 ? 22 : 24,
+            }),
+          ],
         }),
       ];
     }
