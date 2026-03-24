@@ -27,11 +27,13 @@
     "quality:regress": "node scripts/run-quality-regressions.cjs"
   },
   "dependencies": {
+    "@fontsource-variable/noto-serif-kr": "^5.2.10",
     "clsx": "^2.1.1",
     "docx": "^9.6.1",
     "next": "16.1.7",
     "next-intl": "^4.8.3",
     "openai": "^6.7.0",
+    "pretendard": "^1.3.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.3.1",

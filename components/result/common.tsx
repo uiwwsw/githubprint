@@ -498,7 +498,7 @@ export function ProjectList({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="break-words font-serif text-xl text-neutral-950">{project.name}</h3>
+                <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.name}</h3>
                 <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] tracking-[0.18em] text-neutral-500 uppercase">
                   {project.stars} {dict.common.starsLabel}
                 </span>

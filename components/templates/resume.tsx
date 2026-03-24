@@ -102,7 +102,7 @@ function HighlightSectionContent({
                 {entry.subtitle}
               </p>
             ) : null}
-            <h3 className="mt-2 font-serif text-[1.45rem] leading-tight text-neutral-950">
+            <h3 className="mt-2 text-[1.45rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-950">
               {entry.title}
             </h3>
             {detail ? (
@@ -188,7 +188,7 @@ function ResumeEntryBlock({
     <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="font-serif text-xl text-neutral-950">{entry.title}</h3>
+          <h3 className="text-xl font-semibold tracking-[-0.01em] text-neutral-950">{entry.title}</h3>
           {entry.subtitle ? (
             <p className="text-sm font-medium text-neutral-700">{entry.subtitle}</p>
           ) : null}
@@ -278,7 +278,7 @@ function ResumeProjectBlock({
     <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="font-serif text-xl text-neutral-950">{project.title}</h3>
+          <h3 className="text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.title}</h3>
           {project.subtitle ? (
             <p className="text-sm font-medium text-neutral-700">{project.subtitle}</p>
           ) : null}

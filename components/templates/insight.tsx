@@ -153,7 +153,7 @@ function InsightProjectReadings({
     <div className="space-y-6">
       {readings.map((project) => (
         <article className="border-b border-black/[0.08] pb-6 last:border-b-0 last:pb-0" key={project.repoUrl}>
-          <h3 className="font-serif text-[1.45rem] leading-tight text-neutral-950">{project.name}</h3>
+          <h3 className="text-[1.45rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-950">{project.name}</h3>
           <p className="mt-3 text-[15px] leading-7 text-neutral-700">{project.narrative}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
             <a className="break-all underline decoration-black/20 underline-offset-4" href={project.repoUrl} rel="noreferrer" target="_blank">

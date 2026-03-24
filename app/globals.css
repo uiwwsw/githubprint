@@ -9,8 +9,8 @@
   --color-line-strong: var(--line-strong);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
+  --font-sans: var(--font-ui);
+  --font-serif: var(--font-display);
 }
 
 :root {
@@ -22,11 +22,13 @@
   --line-strong: rgba(23, 20, 18, 0.18);
   --muted: #6a625d;
   --accent: #111111;
-  --font-sans:
-    "Avenir Next", "SUIT Variable", "Pretendard", "Apple SD Gothic Neo",
-    "Noto Sans KR", sans-serif;
-  --font-serif:
-    "Iowan Old Style", "Times New Roman", "Noto Serif KR", serif;
+  --font-ui:
+    "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-display:
+    "Noto Serif KR Variable", "Noto Serif KR", Georgia, "Times New Roman",
+    serif;
 }
 
 @layer base {
@@ -45,7 +47,7 @@
       radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 36%),
       linear-gradient(180deg, #f4f0e8 0%, #ece7df 100%);
     color: var(--foreground);
-    font-family: var(--font-sans);
+    font-family: var(--font-ui);
     text-rendering: optimizeLegibility;
   }
 
