@@ -48,11 +48,12 @@ function normalizeShowcaseResumeDocument(
 
   const maskEntry = (entry: ResumeEntry, summaryLabel?: string): ResumeEntry => ({
     ...entry,
+    title: 'Masked',
+    subtitle: 'Masked',
     start: 'Masked',
     end: 'Masked',
     sortDate: undefined,
     location: 'Masked',
-    subtitle: entry.subtitle ? 'Masked' : undefined,
     links: [],
     detailsMarkdown: 'Masked for privacy in showcase mode.',
     bullets: [summaryLabel || 'Masked for privacy in showcase mode.'],
@@ -61,19 +62,45 @@ function normalizeShowcaseResumeDocument(
   return {
     ...document,
     basics,
-    summary: document.summary
-      ? [document.summary.split(/\n+/)[0]?.trim(), 'Additional resume details are masked for privacy in showcase mode.']
-          .filter(Boolean)
-          .join('\n\n')
-      : 'Additional resume details are masked for privacy in showcase mode.',
+    summary: 'This showcase highlights the developer profile only. Career history, tenure, organizations, and project details are masked for privacy.',
     experience: Array.isArray(document.experience)
       ? document.experience.map((item) => maskEntry(item, 'Professional experience details are masked for privacy in showcase mode.'))
       : [],
     education: Array.isArray(document.education)
       ? document.education.map((item) => maskEntry(item, 'Education details are masked for privacy in showcase mode.'))
       : [],
-    projects: [],
-    allProjects: [],
+    projects: Array.isArray(document.projects)
+      ? document.projects.map((item) => ({
+          ...item,
+          title: 'Masked',
+          subtitle: 'Representative project details are masked for privacy in showcase mode.',
+          start: 'Masked',
+          end: 'Masked',
+          links: [],
+          detailsMarkdown: 'Masked for privacy in showcase mode.',
+          bullets: ['Representative project details are masked for privacy in showcase mode.'],
+          liveUrl: undefined,
+          repoDescription: undefined,
+          tech: [],
+          projectLabels: [],
+        }))
+      : [],
+    allProjects: Array.isArray(document.allProjects)
+      ? document.allProjects.map((item) => ({
+          ...item,
+          title: 'Masked',
+          subtitle: 'Representative project details are masked for privacy in showcase mode.',
+          start: 'Masked',
+          end: 'Masked',
+          links: [],
+          detailsMarkdown: 'Masked for privacy in showcase mode.',
+          bullets: ['Representative project details are masked for privacy in showcase mode.'],
+          liveUrl: undefined,
+          repoDescription: undefined,
+          tech: [],
+          projectLabels: [],
+        }))
+      : [],
     skills: [],
     customSections: [],
     warnings: document.warnings,
