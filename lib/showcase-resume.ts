@@ -40,33 +40,37 @@ function normalizeShowcaseResumeDocument(
     delete basics.avatarPath;
   }
 
-  basics.email = undefined;
-  basics.phone = undefined;
+  basics.email = 'Masked';
+  basics.phone = 'Masked';
+  basics.location = basics.location ? 'Masked' : undefined;
+  basics.website = basics.website ? 'Masked' : undefined;
   basics.links = [];
 
   const maskEntry = (entry: ResumeEntry, summaryLabel?: string): ResumeEntry => ({
     ...entry,
-    start: undefined,
-    end: undefined,
-    location: undefined,
+    start: 'Masked',
+    end: 'Masked',
+    sortDate: undefined,
+    location: 'Masked',
+    subtitle: entry.subtitle ? 'Masked' : undefined,
     links: [],
-    detailsMarkdown: undefined,
-    bullets: [summaryLabel || 'Detailed information hidden in showcase mode.'],
+    detailsMarkdown: 'Masked for privacy in showcase mode.',
+    bullets: [summaryLabel || 'Masked for privacy in showcase mode.'],
   });
 
   return {
     ...document,
     basics,
     summary: document.summary
-      ? [document.summary.split(/\n+/)[0]?.trim(), 'Detailed resume information is hidden in showcase mode.']
+      ? [document.summary.split(/\n+/)[0]?.trim(), 'Additional resume details are masked for privacy in showcase mode.']
           .filter(Boolean)
           .join('\n\n')
-      : 'Detailed resume information is hidden in showcase mode.',
+      : 'Additional resume details are masked for privacy in showcase mode.',
     experience: Array.isArray(document.experience)
-      ? document.experience.map((item) => maskEntry(item, 'Professional experience available on request.'))
+      ? document.experience.map((item) => maskEntry(item, 'Professional experience details are masked for privacy in showcase mode.'))
       : [],
     education: Array.isArray(document.education)
-      ? document.education.map((item) => maskEntry(item, 'Education details hidden in showcase mode.'))
+      ? document.education.map((item) => maskEntry(item, 'Education details are masked for privacy in showcase mode.'))
       : [],
     projects: [],
     allProjects: [],
