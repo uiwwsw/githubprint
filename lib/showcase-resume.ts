@@ -15,6 +15,7 @@ import {
   parseResumeYamlDocument,
   pickResumeManifestFile,
   type ResumeDocumentData,
+  type ResumeEntry,
 } from "@/lib/resume";
 import { getShowcaseRecordByUsername } from "@/lib/showcase";
 import type { Locale } from "@/lib/schemas";
@@ -39,9 +40,40 @@ function normalizeShowcaseResumeDocument(
     delete basics.avatarPath;
   }
 
+  basics.email = undefined;
+  basics.phone = undefined;
+  basics.links = [];
+
+  const maskEntry = (entry: ResumeEntry, summaryLabel?: string): ResumeEntry => ({
+    ...entry,
+    start: undefined,
+    end: undefined,
+    location: undefined,
+    links: [],
+    detailsMarkdown: undefined,
+    bullets: [summaryLabel || 'Detailed information hidden in showcase mode.'],
+  });
+
   return {
     ...document,
     basics,
+    summary: document.summary
+      ? [document.summary.split(/\n+/)[0]?.trim(), 'Detailed resume information is hidden in showcase mode.']
+          .filter(Boolean)
+          .join('\n\n')
+      : 'Detailed resume information is hidden in showcase mode.',
+    experience: Array.isArray(document.experience)
+      ? document.experience.map((item) => maskEntry(item, 'Professional experience available on request.'))
+      : [],
+    education: Array.isArray(document.education)
+      ? document.education.map((item) => maskEntry(item, 'Education details hidden in showcase mode.'))
+      : [],
+    projects: [],
+    allProjects: [],
+    skills: [],
+    customSections: [],
+    warnings: document.warnings,
+    source: document.source,
   };
 }
 
