@@ -2,6 +2,7 @@ import "server-only";
 
 import {
   AlignmentType,
+  BorderStyle,
   Document,
   ExternalHyperlink,
   HeadingLevel,
@@ -287,7 +288,35 @@ function buildProjectParagraphs(
   const insertedParagraphs: Paragraph[] = [
     new Paragraph({
       spacing: {
+        before: 120,
+        after: 60,
+      },
+      indent: {
+        left: 240,
+      },
+      border: {
+        left: {
+          color: "D97706",
+          size: 14,
+          space: 10,
+          style: BorderStyle.SINGLE,
+        },
+      },
+      children: [
+        createText(locale === "ko" ? "대표 프로젝트" : "Selected Project", {
+          bold: true,
+          allCaps: true,
+          color: "B45309",
+          size: 18,
+        }),
+      ],
+    }),
+    new Paragraph({
+      spacing: {
         after: 80,
+      },
+      indent: {
+        left: 240,
       },
       children: [
         createText(`${contextLabel}: `, { bold: true }),
@@ -301,6 +330,9 @@ function buildProjectParagraphs(
       new Paragraph({
         spacing: {
           after: 80,
+        },
+        indent: {
+          left: 240,
         },
         children: [
           createText(`${projectProfileLabel}: `, { bold: true }),
@@ -320,6 +352,9 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
+        indent: {
+          left: 240,
+        },
         children: [
           createText(locale === "ko" ? "기술: " : "Tech: ", { bold: true }),
           createText(project.tech.join(", ")),
@@ -333,6 +368,9 @@ function buildProjectParagraphs(
       new Paragraph({
         spacing: {
           after: 80,
+        },
+        indent: {
+          left: 240,
         },
         children: [createText(project.repoDescription)],
       }),
@@ -350,6 +388,9 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
+        indent: {
+          left: 240,
+        },
         children: [createText(projectEvidenceSummary)],
       }),
     );
@@ -361,6 +402,9 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
+        indent: {
+          left: 240,
+        },
         children: [createText(verifiedLabel, { bold: true })],
       }),
     );
@@ -371,6 +415,9 @@ function buildProjectParagraphs(
       new Paragraph({
         spacing: {
           after: 80,
+        },
+        indent: {
+          left: 240,
         },
         children: [
           createText(`${githubStartLabel}: `, { bold: true }),
