@@ -118,7 +118,7 @@ export async function ResultPageContent({
 
   if (!session) {
     return (
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
         <PageEnterScrollTop />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">
@@ -166,7 +166,7 @@ export async function ResultPageContent({
       const resumeCopy = getResumeCopy(locale);
 
       return (
-        <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+        <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
           <PageEnterScrollTop />
           <div className="mx-auto max-w-[1200px] space-y-5">
             <div className="screen-only flex justify-end">
@@ -237,7 +237,7 @@ export async function ResultPageContent({
     });
 
     return (
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
         <PageEnterScrollTop />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">
@@ -275,7 +275,7 @@ export async function ResultPageContent({
     const presentation = getErrorPresentation(error, locale);
 
     return (
-      <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
         <PageEnterScrollTop />
         <div className="mx-auto max-w-[1200px] space-y-5">
           <div className="screen-only flex justify-end">

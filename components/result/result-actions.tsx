@@ -167,11 +167,11 @@ export function ResultActions({
   }
 
   return (
-    <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] items-start justify-between gap-3 sm:items-center">
-      <div className="min-w-0 flex flex-1 flex-wrap items-center gap-2 text-sm text-neutral-600">
+    <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 w-full flex-wrap items-center gap-2 text-sm text-neutral-600 sm:flex-1">
         {backHref ? (
           <Link
-            className="inline-flex h-10 items-center justify-center rounded-full border border-black/[0.08] bg-white px-4 text-sm font-medium text-neutral-900 transition hover:bg-white/80"
+            className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-black/[0.08] bg-white px-4 text-sm font-medium text-neutral-900 transition hover:bg-white/80"
             href={backHref}
             onClick={scheduleWindowTopScroll}
             scroll={false}
@@ -179,11 +179,11 @@ export function ResultActions({
             {dict.result.backToTemplate}
           </Link>
         ) : null}
-        <span className="rounded-full border border-black/[0.08] bg-white/80 px-3 py-1.5">
+        <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/80 px-3 py-1.5">
           {dict.result.templateLabel}: {templateMeta[template].label}
         </span>
         {isResumeTemplate && resumeRepoVisibility ? (
-          <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
+          <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
             {resumeCopy.actions.repoVisibilityLabel}:{" "}
             {resumeRepoVisibility === "private"
               ? resumeCopy.shared.private
@@ -191,14 +191,14 @@ export function ResultActions({
           </span>
         ) : !isResumeTemplate ? (
           <>
-            <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
+            <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
               {dict.result.modeLabel}: {mode === "openai" ? dict.result.modeAi : dict.result.modeFallback}
             </span>
-            <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
+            <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
               {dict.result.dataModeLabel}: {dataMode === "private_enriched" ? dict.result.dataModePrivate : dict.result.dataModePublic}
             </span>
             {dataMode === "private_enriched" ? (
-              <span className="rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
+              <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
                 {dict.result.privateExposureLabel}:{" "}
                 {privateExposureMode === "include"
                   ? dict.result.privateExposureInclude
@@ -208,11 +208,11 @@ export function ResultActions({
           </>
         ) : null}
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <div className="flex items-center gap-2">
+      <div className="flex w-full flex-col items-stretch gap-1 sm:w-auto sm:shrink-0 sm:items-end">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
           {logoutHref ? (
             <a
-              className="inline-flex h-10 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 px-4 text-sm font-medium text-neutral-700 transition hover:bg-white"
+              className={`${isResumeTemplate ? "col-span-2" : ""} inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-full border border-black/[0.08] bg-white/80 px-4 text-sm font-medium text-neutral-700 transition hover:bg-white sm:col-span-1 sm:h-10 sm:w-auto`}
               href={logoutHref}
             >
               {dict.home.authSignOut}
@@ -221,6 +221,7 @@ export function ResultActions({
           {isResumeTemplate ? (
             <>
               <Button
+                className="w-full whitespace-nowrap sm:w-auto"
                 disabled={!canDownload}
                 onClick={handlePdfDownload}
                 variant="secondary"
@@ -228,6 +229,7 @@ export function ResultActions({
                 {dict.result.downloadPdf}
               </Button>
               <Button
+                className="w-full whitespace-nowrap sm:w-auto"
                 disabled={!canDownload || isDownloadingWord}
                 onClick={handleWordDownload}
               >
@@ -238,6 +240,7 @@ export function ResultActions({
             </>
           ) : (
             <Button
+              className={`${logoutHref ? "" : "col-span-2"} w-full whitespace-nowrap sm:col-span-1 sm:w-auto`}
               disabled={!canDownload}
               onClick={handlePdfDownload}
             >
@@ -246,7 +249,7 @@ export function ResultActions({
           )}
         </div>
         {downloadError ? (
-          <p className="max-w-[20rem] text-right text-xs text-red-600">
+          <p className="max-w-[20rem] text-left text-xs text-red-600 sm:text-right">
             {downloadError}
           </p>
         ) : null}
