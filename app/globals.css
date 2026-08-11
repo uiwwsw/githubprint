@@ -169,14 +169,10 @@
 
 @media (max-width: 768px) {
   .document-page {
-    width: 210mm;
-    min-width: 210mm;
-    max-width: 210mm;
-    transform-origin: top center;
+    min-height: auto;
   }
 
-  .document-shell[data-export-mode="print"] {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .screen-toolbar {
+    position: static;
   }
 }
