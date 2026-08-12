@@ -10,7 +10,6 @@ import {
   type ShowcaseSlug,
 } from "@/lib/showcase";
 import { getPublicShowcaseResumeDocument } from "@/lib/showcase-resume";
-import { getSiteUrl } from "@/lib/site-url";
 import type { Locale } from "@/lib/schemas";
 
 function ExternalLink({
@@ -22,7 +21,7 @@ function ExternalLink({
 }) {
   return (
     <a
-      className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/85 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
+      className="inline-flex h-11 w-full items-center justify-center rounded-full border border-black/[0.08] bg-white/85 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white sm:w-auto"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -40,7 +39,6 @@ export async function ShowcasePageContent({
   slug: ShowcaseSlug;
 }) {
   const showcase = getShowcaseRecord(slug);
-  const pageUrl = new URL(getShowcasePath(slug, locale), getSiteUrl()).toString();
   const resume = await getPublicShowcaseResumeDocument({
     locale,
     repoUrl: showcase.resumeRepoUrl,
@@ -72,7 +70,7 @@ export async function ShowcasePageContent({
           openHome: "GitHubPrint 홈",
           openRepo: "resume 레포 보기",
           pageIntro:
-            "이 페이지는 커스텀 쇼케이스가 아니라, 연결된 `resume` 레포를 직접 읽어 GitHubPrint의 실제 Resume 레이아웃으로 렌더링하는 공개 이력서입니다.",
+            "연결된 resume 레포의 최신 내용을 GitHubPrint Resume 레이아웃으로 렌더링한 공개 이력서입니다.",
           publicSample: "공개 이력서",
         }
       : {
@@ -90,12 +88,12 @@ export async function ShowcasePageContent({
           openHome: "GitHubPrint home",
           openRepo: "View resume repo",
           pageIntro:
-            "This page is not a custom showcase layout. It reads the connected `resume` repository directly and renders it with the same GitHubPrint Resume template used in the product.",
+            "This public resume renders the latest content from the connected resume repository in GitHubPrint's Resume layout.",
           publicSample: "Public resume",
         };
 
   return (
-    <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+    <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
       {structuredData.map((entry, index) => (
         <script
           dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
@@ -105,20 +103,17 @@ export async function ShowcasePageContent({
       ))}
 
       <div className="mx-auto max-w-[1200px] space-y-5">
-        <div className="screen-only flex flex-col gap-4 rounded-[1.8rem] border border-black/[0.08] bg-white/[0.72] p-5 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="space-y-2">
+        <div className="screen-only flex flex-col gap-4 rounded-[1.4rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-2">
               <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
                 {copy.publicSample}
               </p>
-              <h1 className="font-serif text-3xl text-neutral-950">
+              <h1 className="break-words font-serif text-3xl text-neutral-950">
                 {displayName}
               </h1>
-              <p className="max-w-3xl text-sm leading-7 text-neutral-600">
-                {copy.pageIntro}
-              </p>
             </div>
-            <div className="inline-flex items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 p-1 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)]">
+            <div className="inline-flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 p-1 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)]">
               <Link
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                   locale === "ko"
@@ -141,9 +136,12 @@ export async function ShowcasePageContent({
               </Link>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <p className="text-pretty text-sm leading-7 text-neutral-600">
+            {copy.pageIntro}
+          </p>
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
             <Link
-              className="inline-flex h-11 items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800"
+              className="inline-flex h-11 w-full items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800 sm:w-auto"
               href={homePath}
             >
               {copy.openHome}
@@ -169,17 +167,17 @@ export async function ShowcasePageContent({
             />
           </div>
         ) : (
-          <section className="rounded-[1.8rem] border border-black/[0.08] bg-white/[0.72] p-6 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur">
+          <section className="rounded-[1.4rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-6">
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
               {copy.publicSample}
             </p>
-            <h2 className="mt-3 font-serif text-3xl text-neutral-950">
+            <h2 className="mt-3 break-words font-serif text-3xl text-neutral-950">
               {copy.fallbackTitle}
             </h2>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-600">
               {copy.fallbackBody}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
               {canOpenSourceRepo ? (
                 <ExternalLink href={showcase.resumeRepoUrl}>
                   {copy.openRepo}

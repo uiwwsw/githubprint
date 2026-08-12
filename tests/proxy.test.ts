@@ -33,5 +33,5 @@ test("still redirects localized page requests that carry a lang query", () => {
   );
 
   assert.equal(response.status, 307);
-  assert.equal(response.headers.get("location"), "https://example.com/result");
+  assert.equal(response.headers.get("location"), "https://example.com/en/result");
 });
