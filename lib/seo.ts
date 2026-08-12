@@ -206,6 +206,26 @@ export function buildShowcaseStructuredData(
   const displayName = getShowcaseDisplayName(slug, resume);
   const location = getShowcaseLocation(slug, locale, resume);
   const skills = getShowcaseSkills(slug, resume);
+  const educationName = resume?.education[0]?.title?.trim();
+  const dateModified = resume?.source.updatedAt ?? showcase.createdAt;
+  const publicProjects = resume?.projects.slice(0, 6) ?? [];
+  const projectEntries = publicProjects.map((project, index) => ({
+    "@context": "https://schema.org",
+    "@type": project.repoUrl ? "SoftwareSourceCode" : "CreativeWork",
+    "@id": `${pageUrl}#project-${index + 1}`,
+    name: project.title,
+    description:
+      project.subtitle ??
+      project.repoDescription ??
+      project.bullets[0] ??
+      undefined,
+    url: project.liveUrl ?? project.repoUrl ?? pageUrl,
+    ...(project.repoUrl ? { codeRepository: project.repoUrl } : {}),
+    ...(project.tech.length > 0 ? { programmingLanguage: project.tech } : {}),
+    author: {
+      "@id": `${pageUrl}#person`,
+    },
+  }));
 
   return [
     {
@@ -214,6 +234,8 @@ export function buildShowcaseStructuredData(
       "@id": `${pageUrl}#webpage`,
       name: seoTitle,
       description: seoDescription,
+      dateCreated: showcase.createdAt,
+      dateModified,
       inLanguage: locale === "ko" ? "ko-KR" : "en-US",
       url: pageUrl,
       primaryImageOfPage: profileImageUrl,
@@ -245,11 +267,23 @@ export function buildShowcaseStructuredData(
         "@type": "Place",
         name: location,
       },
-      alumniOf: {
-        "@type": "CollegeOrUniversity",
-        name: locale === "ko" ? "공주대학교" : "Kongju National University",
-      },
+      ...(educationName
+        ? {
+            alumniOf: {
+              "@type": "CollegeOrUniversity",
+              name: educationName,
+            },
+          }
+        : {}),
+      ...(projectEntries.length > 0
+        ? {
+            subjectOf: projectEntries.map((project) => ({
+              "@id": project["@id"],
+            })),
+          }
+        : {}),
     },
+    ...projectEntries,
   ];
 }
 

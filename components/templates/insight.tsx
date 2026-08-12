@@ -57,11 +57,11 @@ export function InsightTemplate({
         </div>
       }
     >
-      <header className="rounded-[1.9rem] border border-black/[0.08] bg-black/[0.03] p-7">
+      <header className="rounded-[1.4rem] border border-black/[0.08] bg-black/[0.03] p-4 sm:rounded-[1.9rem] sm:p-7">
         <div className="flex flex-col gap-6">
           <div className="min-w-0 max-w-none">
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.insight.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-[clamp(2.9rem,6.8vw,4.3rem)] leading-[1.04] text-neutral-950">
+            <h1 className="mt-3 break-words font-serif text-[clamp(2.25rem,8vw,4.3rem)] leading-[1.04] text-neutral-950">
               {analysis.profile.headline}
             </h1>
             <p className="mt-5 text-[17px] leading-8 text-neutral-700">{analysis.profile.summary}</p>

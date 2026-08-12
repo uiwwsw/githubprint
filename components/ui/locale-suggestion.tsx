@@ -39,17 +39,17 @@ export function LocaleSuggestion({ locale }: { locale: Locale }) {
         };
 
   return (
-    <div className="mb-6 flex items-center justify-between gap-4 rounded-[1.4rem] border border-black/[0.08] bg-white/70 px-4 py-3 text-sm text-neutral-700 shadow-[0_18px_36px_-28px_rgba(0,0,0,0.4)]">
+    <div className="mb-6 flex flex-col items-stretch gap-3 rounded-[1.4rem] border border-black/[0.08] bg-white/70 px-4 py-3 text-sm text-neutral-700 shadow-[0_18px_36px_-28px_rgba(0,0,0,0.4)] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
       <p>{copy.message}</p>
-      <div className="flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
         <Link
-          className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-4 text-xs font-medium whitespace-nowrap text-white shadow-[0_14px_28px_-20px_rgba(0,0,0,0.7)] transition hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15"
+          className="inline-flex h-9 min-w-0 items-center justify-center rounded-full border border-neutral-950 bg-neutral-950 px-3 text-xs font-medium whitespace-nowrap text-white shadow-[0_14px_28px_-20px_rgba(0,0,0,0.7)] transition hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15 sm:shrink-0 sm:px-4"
           href={href}
         >
           {copy.action}
         </Link>
         <button
-          className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-black/[0.08] px-4 text-xs font-medium whitespace-nowrap text-neutral-600 transition hover:bg-white/70"
+          className="inline-flex h-9 min-w-0 items-center justify-center rounded-full border border-black/[0.08] px-3 text-xs font-medium whitespace-nowrap text-neutral-600 transition hover:bg-white/70 sm:shrink-0 sm:px-4"
           onClick={() => {
             window.sessionStorage.setItem(STORAGE_KEY, "1");
             setDismissed(true);

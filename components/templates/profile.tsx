@@ -58,7 +58,7 @@ export function ProfileTemplate({
         <div className="flex flex-col gap-8">
           <div className="min-w-0 max-w-none">
               <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{dict.templates.profile.eyebrow}</p>
-              <h1 className="mt-3 font-serif text-[clamp(2.8rem,6.5vw,4.1rem)] leading-[1.04] text-neutral-950">
+              <h1 className="mt-3 break-words font-serif text-[clamp(2.25rem,8vw,4.1rem)] leading-[1.04] text-neutral-950">
                 {analysis.profile.headline}
               </h1>
               <p className="mt-5 text-[17px] leading-8 text-neutral-700">{view.summary}</p>

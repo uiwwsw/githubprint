@@ -241,7 +241,7 @@ export function SelfGenerator({
     <section
       aria-hidden={!isPreferenceReady}
       className={cn(
-        "mx-auto mt-6 w-full max-w-4xl rounded-[2rem] border border-black/[0.08] bg-white/[0.72] p-6 shadow-[0_30px_80px_-48px_rgba(0,0,0,0.45)] backdrop-blur xl:p-8",
+        "mx-auto mt-6 w-full max-w-4xl rounded-[1.5rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_30px_80px_-48px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[2rem] sm:p-6 xl:p-8",
         !isPreferenceReady && "invisible",
       )}
     >
@@ -259,12 +259,12 @@ export function SelfGenerator({
             </p>
           </div>
 
-          <label className="flex min-w-[17rem] cursor-pointer items-center justify-between gap-4 rounded-[1.2rem] border border-black/[0.08] bg-black/[0.025] px-4 py-3">
-            <div className="space-y-1">
+          <label className="flex w-full min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[1.2rem] border border-black/[0.08] bg-black/[0.025] px-4 py-3 lg:w-auto lg:min-w-[17rem]">
+            <div className="min-w-0 space-y-1">
               <p className="text-sm font-medium text-neutral-900">
                 {dict.home.privateToggleLabel}
               </p>
-              <p className="text-xs leading-5 text-neutral-500">@{username}</p>
+              <p className="truncate text-xs leading-5 text-neutral-500">@{username}</p>
             </div>
             <span
               aria-hidden="true"
