@@ -14,13 +14,13 @@ import {
   collectResumeMarkdownPaths,
   parseResumeYamlDocument,
   pickResumeManifestFile,
-  type ResumeDocumentData,
-  type ResumeEntry,
 } from "@/lib/resume";
 import { getShowcaseRecordByUsername } from "@/lib/showcase";
+import { buildPublicShowcaseResumeDocument } from "@/lib/showcase-resume-mask";
 import type { Locale } from "@/lib/schemas";
 
-const SHOWCASE_CACHE_SECONDS = 60 * 60 * 24;
+const SHOWCASE_DOCUMENT_CACHE_SECONDS = 60 * 15;
+const SHOWCASE_ASSET_CACHE_SECONDS = 60 * 60 * 24;
 const ASSET_FILE_PATTERN =
   /^assets\/[a-z0-9/_.-]+\.(png|jpg|jpeg|gif|webp|bmp)$/i;
 
@@ -28,85 +28,6 @@ type BinaryAsset = {
   contentType: string;
   data: Buffer;
 };
-
-function normalizeShowcaseResumeDocument(
-  document: ResumeDocumentData,
-  username: string,
-) {
-  const basics = { ...document.basics };
-
-  if (document.basics.avatarPath) {
-    basics.avatarUrl = `/api/public-resume-asset?username=${encodeURIComponent(username)}&path=${encodeURIComponent(document.basics.avatarPath)}`;
-    delete basics.avatarPath;
-  }
-
-  basics.email = 'Masked';
-  basics.phone = 'Masked';
-  basics.location = basics.location ? 'Masked' : undefined;
-  basics.website = basics.website ? 'Masked' : undefined;
-  basics.links = [];
-
-  const maskEntry = (entry: ResumeEntry, summaryLabel?: string): ResumeEntry => ({
-    ...entry,
-    title: 'Masked',
-    subtitle: 'Masked',
-    start: 'Masked',
-    end: 'Masked',
-    sortDate: undefined,
-    location: 'Masked',
-    links: [],
-    detailsMarkdown: 'Masked for privacy in showcase mode.',
-    bullets: [summaryLabel || 'Masked for privacy in showcase mode.'],
-  });
-
-  return {
-    ...document,
-    basics,
-    summary: 'This showcase highlights the developer profile only. Career history, tenure, organizations, and project details are masked for privacy.',
-    experience: Array.isArray(document.experience)
-      ? document.experience.map((item) => maskEntry(item, 'Professional experience details are masked for privacy in showcase mode.'))
-      : [],
-    education: Array.isArray(document.education)
-      ? document.education.map((item) => maskEntry(item, 'Education details are masked for privacy in showcase mode.'))
-      : [],
-    projects: Array.isArray(document.projects)
-      ? document.projects.map((item) => ({
-          ...item,
-          title: 'Masked',
-          subtitle: 'Representative project details are masked for privacy in showcase mode.',
-          start: 'Masked',
-          end: 'Masked',
-          links: [],
-          detailsMarkdown: 'Masked for privacy in showcase mode.',
-          bullets: ['Representative project details are masked for privacy in showcase mode.'],
-          liveUrl: undefined,
-          repoDescription: undefined,
-          tech: [],
-          projectLabels: [],
-        }))
-      : [],
-    allProjects: Array.isArray(document.allProjects)
-      ? document.allProjects.map((item) => ({
-          ...item,
-          title: 'Masked',
-          subtitle: 'Representative project details are masked for privacy in showcase mode.',
-          start: 'Masked',
-          end: 'Masked',
-          links: [],
-          detailsMarkdown: 'Masked for privacy in showcase mode.',
-          bullets: ['Representative project details are masked for privacy in showcase mode.'],
-          liveUrl: undefined,
-          repoDescription: undefined,
-          tech: [],
-          projectLabels: [],
-        }))
-      : [],
-    skills: [],
-    customSections: [],
-    warnings: document.warnings,
-    source: document.source,
-  };
-}
 
 async function getShowcaseResumeRepoLookup(options: {
   repoUrl: string;
@@ -198,7 +119,10 @@ async function buildRemoteShowcaseResumeDocument(options: {
       visibility: lookup.repo.visibility,
     });
 
-    return normalizeShowcaseResumeDocument(document, options.username);
+    return buildPublicShowcaseResumeDocument(document, {
+      locale: options.locale,
+      username: options.username,
+    });
   } catch {
     return null;
   }
@@ -212,7 +136,7 @@ const getCachedRemoteShowcaseResumeDocument = unstable_cache(
       username,
     }),
   ["showcase-public-resume-document"],
-  { revalidate: SHOWCASE_CACHE_SECONDS },
+  { revalidate: SHOWCASE_DOCUMENT_CACHE_SECONDS },
 );
 
 const getCachedPublicShowcaseResumeDocument = cache(
@@ -250,7 +174,7 @@ const getCachedRemoteShowcaseResumeAsset = unstable_cache(
       username,
     }),
   ["showcase-public-resume-asset"],
-  { revalidate: SHOWCASE_CACHE_SECONDS },
+  { revalidate: SHOWCASE_ASSET_CACHE_SECONDS },
 );
 
 const getCachedPublicShowcaseResumeAsset = cache(
@@ -280,7 +204,10 @@ export async function getPublicShowcaseResumeAsset(options: {
 
   const showcase = getShowcaseRecordByUsername(options.username);
 
-  if (!showcase) {
+  if (
+    !showcase ||
+    !showcase.publicResumeAssetPaths.includes(options.filePath)
+  ) {
     return null;
   }
 

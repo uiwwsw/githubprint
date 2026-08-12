@@ -126,7 +126,7 @@ function MarkdownContent({ markdown }: { markdown: string }) {
           key={`${section.heading ?? "group"}-${index}`}
         >
           {section.heading ? (
-            <h4 className="text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-950">
+            <h4 className="break-words text-[1.02rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-950">
               {section.heading}
             </h4>
           ) : null}
@@ -142,7 +142,7 @@ function MarkdownContent({ markdown }: { markdown: string }) {
                   className="rounded-[0.9rem] border border-black/[0.06] bg-white/70 px-4 py-3"
                   key={`${section.heading ?? "group"}-${index}-subgroup-${subgroupIndex}`}
                 >
-                  <h5 className="text-[0.95rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-900">
+                  <h5 className="break-words text-[0.95rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-900">
                     {subgroup.heading}
                   </h5>
                   {subgroup.blocks.length > 0 ? (
@@ -173,7 +173,7 @@ function ResumeSection({
     <section className={cn(bordered && "border-t border-black/[0.08] pt-6")}>
       <div className="space-y-4">
         <div className="print-break-after-avoid">
-          <h2 className="mt-0 font-serif text-2xl text-neutral-950">{title}</h2>
+          <h2 className="mt-0 break-words font-serif text-2xl text-neutral-950">{title}</h2>
         </div>
         {children}
       </div>
@@ -193,7 +193,7 @@ function HighlightSectionContent({
 
         return (
           <article
-            className="print-break-inside-avoid rounded-[1.2rem] border border-black/[0.08] bg-white p-5"
+            className="print-break-inside-avoid rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
             key={`${section.id}-${entry.title}`}
           >
             {entry.subtitle ? (
@@ -201,7 +201,7 @@ function HighlightSectionContent({
                 {entry.subtitle}
               </p>
             ) : null}
-            <h3 className="mt-2 text-[1.45rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-950">
+            <h3 className="mt-2 break-words text-[1.45rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-950">
               {entry.title}
             </h3>
             {detail ? (
@@ -248,15 +248,15 @@ function LinkRow({
     <div className="print-break-inside-avoid flex flex-wrap gap-2">
       {uniqueLinks.map((link, index) => (
         <a
-          className="inline-flex items-center gap-2 rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-700 transition hover:bg-black/[0.05]"
+          className="inline-flex max-w-full min-w-0 items-center gap-2 rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-700 transition hover:bg-black/[0.05]"
           href={link.url}
           key={`${link.kind}-${link.label}-${link.url}-${index}`}
           rel="noreferrer"
           target="_blank"
         >
-          <span>{link.label}</span>
+          <span className="min-w-0 break-all">{link.label}</span>
           {showVerifiedBadge && link.kind === "repo" ? (
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-900">
+            <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-900">
               {copy.template.repoVerified}
             </span>
           ) : null}
@@ -284,10 +284,10 @@ function ResumeEntryBlock({
   );
 
   return (
-    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-5">
+    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="text-xl font-semibold tracking-[-0.01em] text-neutral-950">{entry.title}</h3>
+          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{entry.title}</h3>
           {entry.subtitle ? (
             <p className="text-sm font-medium text-neutral-700">{entry.subtitle}</p>
           ) : null}
@@ -374,10 +374,10 @@ function ResumeProjectBlock({
     project.repoDescription !== project.subtitle;
 
   return (
-    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-5">
+    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.title}</h3>
+          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.title}</h3>
           {project.subtitle ? (
             <p className="text-sm font-medium text-neutral-700">{project.subtitle}</p>
           ) : null}
@@ -600,7 +600,7 @@ export function ResumeTemplate({
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
               Resume
             </p>
-            <h1 className="mt-3 font-serif text-[clamp(2.8rem,6vw,4.4rem)] leading-[1.02] text-neutral-950">
+            <h1 className="mt-3 break-words font-serif text-[clamp(2.25rem,8vw,4.4rem)] leading-[1.02] text-neutral-950">
               {resume.basics.name}
             </h1>
             {resume.basics.headline ? (
@@ -701,7 +701,7 @@ export function ResumeTemplate({
             <div className="space-y-4">
               {resume.skills.map((group, index) => (
                 <div
-                  className="rounded-[1.2rem] border border-black/[0.08] bg-white p-5"
+                  className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
                   key={`${group.title ?? "skills"}-${index}`}
                 >
                   {group.title ? (

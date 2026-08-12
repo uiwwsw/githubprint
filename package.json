@@ -22,7 +22,9 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test:resume": "node --import tsx --test tests/resume.test.ts",
-    "check": "npm run build && npm run typecheck && npm run quality:regress",
+    "test:showcase": "node --import tsx --test tests/showcase-resume.test.ts",
+    "test:proxy": "node --import tsx --test tests/proxy.test.ts",
+    "check": "npm run build && npm run typecheck && npm run test:resume && npm run test:showcase && npm run test:proxy && npm run quality:regress",
     "insights:aggregate": "node scripts/aggregate-insights.mjs",
     "quality:regress": "node scripts/run-quality-regressions.cjs"
   },
