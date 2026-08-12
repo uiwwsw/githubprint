@@ -44,7 +44,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
     resumeAvailability ?? (session ? { state: "locked_missing_repo" as const } : null);
 
   return (
-    <main className="min-h-screen px-4 py-10 sm:px-6 lg:px-10">
+    <main className="min-h-screen px-3 py-6 sm:px-6 sm:py-10 lg:px-10">
       <PageEnterScrollTop />
       {structuredData.map((entry) => (
         <script
@@ -64,7 +64,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
           <p className="text-[11px] uppercase tracking-[0.28em] text-neutral-500">
             {dict.home.eyebrow}
           </p>
-          <h1 className="mt-5 font-serif text-[clamp(3rem,7vw,5.8rem)] leading-[0.96] tracking-[-0.04em] text-neutral-950">
+          <h1 className="mt-5 break-words font-serif text-[clamp(2.5rem,12vw,5.8rem)] leading-[0.96] tracking-[-0.04em] text-neutral-950">
             {dict.home.titleTop}
             <br />
             {dict.home.titleBottom}
