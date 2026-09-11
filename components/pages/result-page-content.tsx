@@ -271,6 +271,7 @@ export async function ResultPageContent({
                 recovery={{
                   username: session.user.login,
                   canReadPrivate: hasPrivateRepoPermission(session.scopes),
+                  loginHref: buildGitHubLoginPath(`${homeHref}#generator`),
                   privateLoginHref: buildGitHubLoginPath(
                     `${homeHref}#generator`,
                     "private",

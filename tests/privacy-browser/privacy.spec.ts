@@ -163,7 +163,7 @@ for (const locale of ["ko", "en"] as const) {
       generator.getByRole("button", {
         name: getDictionary(locale).home.submit,
       }),
-    ).toBeEnabled();
+    ).toBeDisabled();
     await expect(
       generator.locator('input[name="resume-source"]').first(),
     ).toBeChecked();
@@ -262,5 +262,229 @@ for (const locale of ["ko", "en"] as const) {
         { exact: true },
       ),
     ).toBeVisible();
+  });
+}
+
+for (const locale of ["ko", "en"] as const) {
+  test(`${locale}: resume readiness replaces the reconnect loop and restores OAuth selections`, async ({
+    page,
+    context,
+  }) => {
+    await signIn(context);
+    const home = locale === "en" ? "/en/" : "/";
+    await page.goto(home);
+    const generator = page.locator("#generator");
+    await generator.getByRole("button", { name: /^Resume/ }).click();
+    await expect(
+      generator.getByText(
+        locale === "ko"
+          ? "공개 resume 저장소를 찾지 못했습니다."
+          : "No public resume repository was found.",
+        { exact: false },
+      ),
+    ).toBeVisible();
+    await expect(
+      generator.getByRole("button", {
+        name: getDictionary(locale).home.submit,
+      }),
+    ).toBeDisabled();
+    await page.evaluate(() =>
+      sessionStorage.setItem(
+        "githubprint:pending-configuration:privacy-fixture",
+        JSON.stringify({
+          savedAt: Date.now(),
+          options: {
+            template: "resume",
+            analysisScope: "public",
+            privateRepos: [],
+            resumeSource: "authorized",
+            resumeProjects: "public",
+          },
+        }),
+      ),
+    );
+    await page.goto(`${home}?github_auth=connected#generator`);
+    await expect(
+      generator.locator('input[name="resume-source"]').nth(1),
+    ).toBeChecked();
+    await expect(
+      generator.getByText(
+        locale === "ko" ? "이력서 원본 확인 완료" : "Resume source verified",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      generator.getByRole("link", { name: /다시 연결|Reconnect/ }),
+    ).toHaveCount(0);
+    await expect(
+      generator.getByRole("button", { name: /resume.yaml/ }),
+    ).toHaveCount(0);
+    await expect(
+      generator.getByRole("button", {
+        name: getDictionary(locale).home.submit,
+      }),
+    ).toBeEnabled();
+    expect(page.url()).not.toContain("github_auth");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await generator.screenshot({
+      path: path.join(output, `resume-ready-${locale}.png`),
+    });
+    await generator
+      .getByRole("button", { name: getDictionary(locale).home.submit })
+      .click();
+    await expect(page.locator("[data-document]")).toContainText(
+      "AUTHORED_SENTINEL",
+    );
+  });
+
+  test(`${locale}: invalid YAML has a preparation action and retry, not a permission loop`, async ({
+    page,
+    context,
+  }) => {
+    await signIn(context);
+    let repaired = false;
+    await page.route("**/api/resume-readiness", (route) =>
+      route.fulfill({
+        json: repaired
+          ? { state: "ready", repoVisibility: "public" }
+          : {
+              state: "invalid_schema",
+              detail: "resume.yaml: basics.name is required",
+            },
+      }),
+    );
+    await page.goto(locale === "en" ? "/en" : "/");
+    const generator = page.locator("#generator");
+    await generator.getByRole("button", { name: /^Resume/ }).click();
+    await expect(
+      generator.getByText("resume.yaml: basics.name is required"),
+    ).toBeVisible();
+    await expect(
+      generator.getByRole("link", { name: /다시 연결|Reconnect/ }),
+    ).toHaveCount(0);
+    await generator.getByRole("button", { name: /resume.yaml/ }).click();
+    await expect(page.locator("#resume-setup-guide")).toBeInViewport();
+    repaired = true;
+    await generator
+      .getByRole("button", {
+        name: locale === "ko" ? "원본 다시 확인" : "Check source again",
+      })
+      .click();
+    await expect(
+      generator.getByText(
+        locale === "ko" ? "이력서 원본 확인 완료" : "Resume source verified",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      generator.getByRole("button", {
+        name: getDictionary(locale).home.submit,
+      }),
+    ).toBeEnabled();
+  });
+}
+
+test("revoked sign-in offers an appropriate reconnect action, and cancellation is explicit", async ({
+  page,
+  context,
+}) => {
+  await signIn(context, ["read:user"]);
+  await page.route("**/api/resume-readiness", (route) =>
+    route.fulfill({ status: 401, json: { state: "authentication" } }),
+  );
+  await page.goto("/?github_auth=cancelled");
+  await expect(
+    page.getByRole("alert").filter({ hasText: "권한 연결을 취소" }),
+  ).toBeVisible();
+  const generator = page.locator("#generator");
+  await generator.getByRole("button", { name: /^Resume/ }).click();
+  await expect(
+    generator.getByRole("link", { name: "GitHub 연결 다시 하기" }),
+  ).toHaveAttribute("href", /access=public/);
+  await expect(
+    generator.getByRole("button", { name: "문서 생성" }),
+  ).toBeDisabled();
+});
+
+test("a stale source response cannot overwrite a newly selected private source", async ({
+  page,
+  context,
+}) => {
+  await signIn(context);
+  let release: (() => void) | undefined;
+  let received: (() => void) | undefined;
+  const publicRequest = new Promise<void>((resolve) => {
+    received = resolve;
+  });
+  await page.route("**/api/resume-readiness", async (route) => {
+    if (route.request().postDataJSON().source === "public") {
+      received!();
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      await route.fulfill({ json: { state: "missing_repo" } }).catch(() => {});
+    } else
+      await route.fulfill({
+        json: { state: "ready", repoVisibility: "private" },
+      });
+  });
+  await page.goto("/");
+  const generator = page.locator("#generator");
+  await generator.getByRole("button", { name: /^Resume/ }).click();
+  await publicRequest;
+  await generator.locator('input[name="resume-source"]').nth(1).check();
+  await expect(
+    generator.getByText("이력서 원본 확인 완료", { exact: true }),
+  ).toBeVisible();
+  release!();
+  await expect(
+    generator.getByRole("button", { name: "문서 생성" }),
+  ).toBeEnabled();
+});
+
+for (const locale of ["ko", "en"] as const) {
+  test(`${locale}: an existing result recovers a private resume inline after explicit source selection`, async ({
+    page,
+    context,
+  }) => {
+    await signIn(context);
+    const configuration = await context.request.post(
+      "/api/document-configuration",
+      {
+        headers: { origin: "http://localhost:3111" },
+        data: {
+          locale,
+          options: {
+            template: "resume",
+            analysisScope: "public",
+            privateRepos: [],
+            resumeSource: "public",
+            resumeProjects: "public",
+          },
+        },
+      },
+    );
+    expect(configuration.ok()).toBe(true);
+    await page.goto((await configuration.json()).url);
+    const generator = page.locator("#generator");
+    await expect(
+      generator.locator('input[name="resume-source"]').first(),
+    ).toBeChecked();
+    const generate = generator.getByRole("button", {
+      name: locale === "ko" ? "이력서 다시 불러오기" : "Load resume again",
+    });
+    await expect(generate).toBeDisabled();
+    await generator.locator('input[name="resume-source"]').nth(1).check();
+    await expect(
+      generator.getByText(
+        locale === "ko" ? "이력서 원본 확인 완료" : "Resume source verified",
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(generate).toBeEnabled();
+    await generate.click();
+    await expect(page.locator("[data-document]")).toContainText(
+      "AUTHORED_SENTINEL",
+    );
   });
 }

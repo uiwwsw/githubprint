@@ -7,6 +7,7 @@ import {
   getResumeRepoFileContents,
   getResumeRepoLookup,
   getReferencedPrivateResumeRepos,
+  GitHubFetchError,
   type GitHubSourceAuthContext,
 } from "@/lib/github";
 import {
@@ -301,6 +302,7 @@ export async function getResumeTemplateAvailability(options: {
       state: "ready",
     };
   } catch (error) {
+    if (error instanceof GitHubFetchError) throw error;
     return {
       detail:
         error instanceof Error

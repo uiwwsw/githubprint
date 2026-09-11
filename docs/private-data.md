@@ -30,3 +30,13 @@ Use anonymous summaries when public activity understates private implementation 
 `npm run test:privacy` exercises the API request trace, capability checks, expired/tampered/cross-account configurations, public-only reads with broad tokens, anonymous serialization, selected-only detail, public benchmarks, all eight resume source/enrichment combinations, foreign-owner name collisions, private images, legacy exports, configuration POSTs, and OAuth cancellation.
 
 `npm run test:privacy:browser` starts a separately instrumented test server with synthetic GitHub data. It checks authenticated ko/en configuration, permission gating, previews, and PDF/Word/HTML exports. The fixture is injected with a Node preload from the test command; no application route or production authentication bypass is added. Live OAuth approval and organization-specific GitHub restrictions still require the real account.
+
+## Resume source checks and access recovery
+
+The generator checks `resume.yaml` and its referenced authored content through the authenticated, same-origin `POST /api/resume-readiness` endpoint. The request specifies public or authorized source access; public mode never probes a private source, and the check never enriches linked private projects. Responses contain readiness metadata rather than the document or tokens and use `private, no-store`.
+
+A readable source enables the single document-generation action next to the source controls. Reconnect links appear only for actual authentication/access failures. Missing public sources explain the private-source choice; malformed YAML opens preparation help; temporary failures and rate limits offer a source retry. Changing source options cancels the previous check, and stale replies cannot overwrite the current selection.
+
+Resume file discovery reads the complete root listing instead of the 24-file sample used for analysis signals. Authentication, authorization, and transient errors reading the manifest or Markdown propagate as access/network failures instead of being mislabeled as missing YAML.
+
+OAuth redirects report connection, cancellation, expiry, failure, or a missing private grant. Granted scopes are read from the authenticated GitHub response headers, with the token response as fallback. Failed/cancelled upgrades preserve the previous session, and the existing account-bound, short-lived session-storage draft restores explicit source choices on return. The app does not revoke grants or expand permissions automatically. See [GitHub’s OAuth scope documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps).

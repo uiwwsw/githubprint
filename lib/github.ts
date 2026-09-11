@@ -191,16 +191,18 @@ export class GitHubFetchError extends Error {
     | "rate_limited"
     | "api_error";
   resetAt?: string;
+  status?: number;
 
   constructor(
     code: GitHubFetchError["code"],
     message: string,
-    options?: { resetAt?: string },
+    options?: { resetAt?: string; status?: number },
   ) {
     super(message);
     this.name = "GitHubFetchError";
     this.code = code;
     this.resetAt = options?.resetAt;
+    this.status = options?.status;
   }
 }
 
@@ -410,6 +412,8 @@ async function githubRequest(
       options?.init?.headers,
       options?.accessToken,
     ),
+  }).catch(() => {
+    throw new GitHubFetchError("api_error", "GitHub에 연결하지 못했습니다.");
   });
 
   if (response.status === 403 || response.status === 429) {
@@ -438,6 +442,7 @@ async function githubRequest(
     throw new GitHubFetchError(
       "api_error",
       "GitHub 데이터를 불러오는 중 오류가 발생했습니다.",
+      { status: response.status },
     );
   }
 
@@ -692,6 +697,7 @@ async function fetchRepoRootFiles(
   forceFresh?: boolean,
   accessToken?: string,
   disableCache?: boolean,
+  strict = false,
 ) {
   try {
     const response = await githubJson<
@@ -706,11 +712,14 @@ async function fetchRepoRootFiles(
       return [];
     }
 
-    return response
-      .map((item) => item.name)
-      .filter(Boolean)
-      .slice(0, 24);
-  } catch {
+    const names = response.map((item) => item.name).filter(Boolean);
+    return strict ? names : names.slice(0, 24);
+  } catch (error) {
+    if (
+      strict &&
+      !(error instanceof GitHubFetchError && error.code === "not_found")
+    )
+      throw error;
     return [];
   }
 }
@@ -744,6 +753,7 @@ async function fetchRepoFileContent(
   forceFresh?: boolean,
   accessToken?: string,
   disableCache?: boolean,
+  strict = false,
 ) {
   try {
     const response = await githubJson<GitHubReadmeResponse>(
@@ -757,7 +767,12 @@ async function fetchRepoFileContent(
     );
 
     return decodeGitHubTextContent(response);
-  } catch {
+  } catch (error) {
+    if (
+      strict &&
+      !(error instanceof GitHubFetchError && error.code === "not_found")
+    )
+      throw error;
     return null;
   }
 }
@@ -1049,6 +1064,7 @@ export async function getResumeRepoLookup(
     options?.forceFresh,
     authAccessToken,
     Boolean(authContext),
+    true,
   );
   return {
     repo: { ...entry, rootFiles },
@@ -1113,6 +1129,7 @@ export async function getResumeRepoFileContents(
             options?.forceFresh,
             authAccessToken,
             disableCache,
+            true,
           ),
         ] as const,
     ),

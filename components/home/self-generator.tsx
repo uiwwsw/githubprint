@@ -15,6 +15,7 @@ import { SELF_GENERATOR_TEMPLATE_KEY } from "@/lib/self-generator-preferences";
 import { getTemplateMeta } from "@/lib/templates";
 import type { Locale, TemplateId } from "@/lib/schemas";
 import { cn } from "@/lib/utils";
+import type { ResumeReadiness } from "@/lib/resume-readiness";
 
 type RepoChoice = { name: string; archived: boolean };
 
@@ -25,6 +26,7 @@ export function SelfGenerator({
   resumeOnly = false,
   locale,
   privateLoginHref,
+  loginHref,
   username,
 }: {
   canReadPrivate: boolean;
@@ -33,12 +35,16 @@ export function SelfGenerator({
   resumeOnly?: boolean;
   locale: Locale;
   privateLoginHref: string;
+  loginHref: string;
   username: string;
 }) {
   const router = useRouter();
   const dict = getDictionary(locale);
   const ko = locale === "ko";
   const t = (kr: string, en: string) => (ko ? kr : en);
+  const submitLabel = resumeOnly
+    ? t("이력서 다시 불러오기", "Load resume again")
+    : dict.home.submit;
   const [options, setOptions] = useState<DocumentOptions>(
     initialOptions ??
       defaultDocumentOptions(resumeOnly ? "resume" : initialTemplate),
@@ -50,6 +56,11 @@ export function SelfGenerator({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [showGuide, setShowGuide] = useState(false);
+  const [readiness, setReadiness] = useState<{
+    source: string;
+    result: ResumeReadiness;
+  } | null>(null);
+  const [sourceRetry, setSourceRetry] = useState(0);
   const resume = options.template === "resume";
   const privateAnalysis = !resume && options.analysisScope !== "public";
   const needsPermission = needsPrivatePermission(options);
@@ -81,6 +92,65 @@ export function SelfGenerator({
   }, [storageKey, resumeOnly]);
 
   useEffect(() => {
+    setReadiness(null);
+    if (!resume) return;
+    if (options.resumeSource === "authorized" && !canReadPrivate) {
+      setReadiness({
+        source: options.resumeSource,
+        result: { state: "permission" },
+      });
+      return;
+    }
+    const controller = new AbortController();
+    fetch("/api/resume-readiness", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: options.resumeSource, locale }),
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20_000)]),
+    })
+      .then(async (response) => {
+        const result = await response.json();
+        if (!controller.signal.aborted)
+          setReadiness({
+            source: options.resumeSource,
+            result: result.state ? result : { state: "unavailable" },
+          });
+      })
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setReadiness({
+            source: options.resumeSource,
+            result: { state: "unavailable" },
+          });
+      });
+    return () => controller.abort();
+  }, [resume, options.resumeSource, canReadPrivate, locale, sourceRetry]);
+
+  useEffect(() => {
+    if (showGuide && resume)
+      document
+        .getElementById("resume-setup-guide")
+        ?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [showGuide, resume]);
+
+  function rememberSelection() {
+    try {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({ options, savedAt: Date.now() }),
+      );
+    } catch {
+      /* optional draft */
+    }
+  }
+  const sourceState =
+    readiness?.source === options.resumeSource ? readiness.result.state : null;
+  useEffect(() => {
+    if (sourceState === "ready") setShowGuide(false);
+  }, [sourceState]);
+
+  useEffect(() => {
     if (!privateAnalysis || !canReadPrivate) return;
     const controller = new AbortController();
     setRepoError(false);
@@ -110,6 +180,7 @@ export function SelfGenerator({
   }, [privateAnalysis, canReadPrivate, retry]);
 
   function selectTemplate(template: TemplateId) {
+    setShowGuide(false);
     setOptions((current) => ({ ...current, template }));
     setError("");
     try {
@@ -128,11 +199,17 @@ export function SelfGenerator({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ options, locale }),
       });
-      if (!response.ok)
-        throw new Error(
-          response.status === 403 ? "permission" : "configuration",
-        );
       const data = await response.json();
+      if (!response.ok) {
+        if (data.error === "authentication" || data.error === "permission") {
+          rememberSelection();
+          window.location.assign(
+            needsPermission ? privateLoginHref : loginHref,
+          );
+          return;
+        }
+        throw new Error("configuration");
+      }
       router.push(data.url);
     } catch {
       setError(
@@ -204,41 +281,43 @@ export function SelfGenerator({
               "Choose your document and its sources",
             )}
       </h2>
-      {!resumeOnly && <div
-        className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4"
-        aria-label={t("문서 템플릿", "Document template")}
-      >
-        {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
-          (id) => (
-            <button
-              type="button"
-              key={id}
-              aria-pressed={options.template === id}
-              onClick={() => selectTemplate(id)}
-              className={cn(
-                "rounded-2xl border p-4 text-left transition",
-                options.template === id
-                  ? "border-emerald-800 bg-emerald-950 text-white"
-                  : "border-black/10 hover:bg-neutral-50",
-              )}
-            >
-              <span className="block font-serif text-2xl">
-                {getTemplateMeta(locale)[id].label}
-              </span>
-              <span
+      {!resumeOnly && (
+        <div
+          className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4"
+          aria-label={t("문서 템플릿", "Document template")}
+        >
+          {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
+            (id) => (
+              <button
+                type="button"
+                key={id}
+                aria-pressed={options.template === id}
+                onClick={() => selectTemplate(id)}
                 className={cn(
-                  "mt-2 block text-xs leading-5",
+                  "rounded-2xl border p-4 text-left transition",
                   options.template === id
-                    ? "text-emerald-100"
-                    : "text-neutral-500",
+                    ? "border-emerald-800 bg-emerald-950 text-white"
+                    : "border-black/10 hover:bg-neutral-50",
                 )}
               >
-                {getTemplateMeta(locale)[id].shortLabel}
-              </span>
-            </button>
-          ),
-        )}
-      </div>}
+                <span className="block font-serif text-2xl">
+                  {getTemplateMeta(locale)[id].label}
+                </span>
+                <span
+                  className={cn(
+                    "mt-2 block text-xs leading-5",
+                    options.template === id
+                      ? "text-emerald-100"
+                      : "text-neutral-500",
+                  )}
+                >
+                  {getTemplateMeta(locale)[id].shortLabel}
+                </span>
+              </button>
+            ),
+          )}
+        </div>
+      )}
       <p className="my-6 text-sm leading-7 text-neutral-600">
         {purpose[options.template]}
       </p>
@@ -325,13 +404,6 @@ export function SelfGenerator({
                   )}
                 </p>
               </fieldset>
-              <button
-                type="button"
-                className="text-sm underline underline-offset-4"
-                onClick={() => setShowGuide(!showGuide)}
-              >
-                {t("resume.yaml 준비 방법", "How to prepare resume.yaml")}
-              </button>
             </>
           ) : (
             <fieldset className="space-y-3">
@@ -401,26 +473,118 @@ export function SelfGenerator({
               </a>
             </div>
           ) : null}
-          {needsPermission && canReadPrivate ? (
-            <a
-              href={privateLoginHref}
-              onClick={() => {
-                try {
-                  sessionStorage.setItem(
-                    storageKey,
-                    JSON.stringify({ options, savedAt: Date.now() }),
-                  );
-                } catch {
-                  /* optional draft */
-                }
-              }}
-              className="text-xs text-neutral-500 underline underline-offset-4"
-            >
-              {t(
-                "접근 오류가 있다면 GitHub 권한 다시 연결",
-                "Reconnect GitHub access if a repository is unavailable",
+          {resume &&
+          !(options.resumeSource === "authorized" && !canReadPrivate) ? (
+            <div
+              className={cn(
+                "rounded-2xl border p-5 text-sm leading-6",
+                sourceState === "ready"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                  : "border-black/10 bg-neutral-50 text-neutral-700",
               )}
-            </a>
+              aria-live="polite"
+            >
+              <p className="font-semibold">
+                {sourceState === "ready"
+                  ? t("이력서 원본 확인 완료", "Resume source verified")
+                  : !sourceState
+                    ? t("이력서 원본 확인 중…", "Checking your resume source…")
+                    : t("원본을 확인해 주세요", "Check your resume source")}
+              </p>
+              <p className="mt-2">
+                {sourceState === "ready"
+                  ? t(
+                      `@${username}/resume 원본을 읽을 수 있습니다. 아래 ‘${submitLabel}’을 누르면 이력서 미리보기가 열립니다.`,
+                      `@${username}/resume is readable. Select ${submitLabel} below to open your resume preview.`,
+                    )
+                  : sourceState === "missing_repo"
+                    ? options.resumeSource === "public"
+                      ? t(
+                          "공개 resume 저장소를 찾지 못했습니다. 원본이 비공개라면 ‘내 비공개 resume 저장소도 읽기’를 선택하세요.",
+                          "No public resume repository was found. For a private source, select ‘Also allow my private resume repository’.",
+                        )
+                      : t(
+                          "연결한 계정에서 resume 저장소를 찾지 못했거나 접근할 수 없습니다. 저장소 이름·소유 계정과 GitHub의 앱 접근 설정을 확인하세요.",
+                          "The connected account’s resume repository was not found or is inaccessible. Check its name, owner, and app access on GitHub.",
+                        )
+                    : sourceState === "invalid_schema"
+                      ? t(
+                          "저장소에 접근했습니다. resume.yaml 파일이나 그 내용을 수정해야 합니다. 권한을 다시 연결할 필요는 없습니다.",
+                          "Repository access works. Fix resume.yaml or its contents; reconnecting permissions will not fix this.",
+                        )
+                      : sourceState === "authentication"
+                        ? t(
+                            "GitHub 로그인이 만료되었거나 취소되었습니다. 다시 로그인한 뒤 원본을 확인하세요.",
+                            "GitHub sign-in expired or was revoked. Sign in again, then check the source.",
+                          )
+                        : sourceState === "permission"
+                          ? t(
+                              "GitHub가 원본 읽기를 허용하지 않았습니다. 저장소의 앱 접근 권한을 확인한 뒤 다시 연결하세요.",
+                              "GitHub denied source access. Check the repository’s app permissions, then reconnect.",
+                            )
+                          : sourceState === "rate_limited"
+                            ? t(
+                                "GitHub 요청 한도에 도달했습니다. 잠시 기다렸다가 다시 확인하세요. 재연결은 필요하지 않습니다.",
+                                "GitHub’s request limit was reached. Wait before checking again; reconnecting is unnecessary.",
+                              )
+                            : sourceState === "unavailable"
+                              ? t(
+                                  "GitHub 응답을 받지 못했습니다. 잠시 후 원본을 다시 확인하세요.",
+                                  "GitHub did not respond. Check the source again shortly.",
+                                )
+                              : t(
+                                  "선택한 접근 범위에서 resume.yaml을 읽을 수 있는지 확인합니다.",
+                                  "Checking resume.yaml using the source access you selected.",
+                                )}
+              </p>
+              {sourceState === "invalid_schema" && readiness?.result.detail ? (
+                <p className="mt-2 break-words text-xs">
+                  {readiness.result.detail}
+                </p>
+              ) : null}
+              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+                {sourceState ? (
+                  <button
+                    type="button"
+                    className="underline underline-offset-4"
+                    onClick={() => setSourceRetry((value) => value + 1)}
+                  >
+                    {t("원본 다시 확인", "Check source again")}
+                  </button>
+                ) : null}
+                {sourceState === "authentication" ||
+                sourceState === "permission" ? (
+                  <a
+                    href={needsPermission ? privateLoginHref : loginHref}
+                    onClick={rememberSelection}
+                    className="underline underline-offset-4"
+                  >
+                    {t("GitHub 연결 다시 하기", "Reconnect GitHub")}
+                  </a>
+                ) : null}
+                {sourceState === "missing_repo" ||
+                sourceState === "invalid_schema" ? (
+                  <>
+                    <a
+                      href={`https://github.com/${username}/resume`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-4"
+                    >
+                      {t("GitHub에서 원본 확인", "Open source on GitHub")}
+                    </a>
+                    <button
+                      type="button"
+                      className="underline underline-offset-4"
+                      aria-expanded={showGuide}
+                      onClick={() => setShowGuide(!showGuide)}
+                    >
+                      {t("resume.yaml 준비 방법", "How to prepare resume.yaml")}
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </div>
           ) : null}
           {privateAnalysis && canReadPrivate ? (
             <div className="rounded-2xl border border-black/10 p-5">
@@ -449,6 +613,14 @@ export function SelfGenerator({
                   >
                     {t("다시 시도", "Retry")}
                   </button>
+                  {" · "}
+                  <a
+                    href={privateLoginHref}
+                    onClick={rememberSelection}
+                    className="underline"
+                  >
+                    {t("GitHub 연결 확인", "Check GitHub access")}
+                  </a>
                 </p>
               ) : repositories === null ? (
                 <p role="status" className="mt-3 text-sm">
@@ -530,6 +702,27 @@ export function SelfGenerator({
               )}
             </div>
           ) : null}
+          <Button
+            className="w-full bg-emerald-900 text-white hover:bg-emerald-950"
+            disabled={
+              pending ||
+              (resume && sourceState !== "ready") ||
+              (needsPermission && !canReadPrivate) ||
+              (privateAnalysis &&
+                (!options.privateRepos.length ||
+                  repositories === null ||
+                  repoError))
+            }
+            onClick={generate}
+            type="button"
+          >
+            {pending ? dict.home.submitting : submitLabel}
+          </Button>
+          {error ? (
+            <p role="alert" className="mt-3 text-sm leading-6 text-red-700">
+              {error}
+            </p>
+          ) : null}
         </div>
         <aside
           className="rounded-2xl bg-neutral-950 p-6 text-white"
@@ -573,34 +766,10 @@ export function SelfGenerator({
               )}
             </p>
           ) : null}
-          <Button
-            className="mt-6 w-full bg-emerald-300 text-emerald-950 hover:bg-emerald-200"
-            disabled={
-              pending ||
-              (needsPermission && !canReadPrivate) ||
-              (privateAnalysis &&
-                (!options.privateRepos.length ||
-                  repositories === null ||
-                  repoError))
-            }
-            onClick={generate}
-            type="button"
-          >
-            {pending
-              ? dict.home.submitting
-              : resumeOnly
-                ? t("이력서 다시 불러오기", "Load resume again")
-                : dict.home.submit}
-          </Button>
-          {error ? (
-            <p role="alert" className="mt-3 text-sm leading-6 text-amber-200">
-              {error}
-            </p>
-          ) : null}
         </aside>
       </div>
       {showGuide && resume ? (
-        <div className="mt-6">
+        <div id="resume-setup-guide" className="mt-6 scroll-mt-5">
           <ResumeActivationPanel
             setupOnly
             availability={{ state: "locked_missing_repo" }}

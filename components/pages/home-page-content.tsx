@@ -4,6 +4,7 @@ import { SelfGenerator } from "@/components/home/self-generator";
 import { LocaleSuggestion } from "@/components/ui/locale-suggestion";
 import { PageEnterScrollTop } from "@/components/ui/page-enter-scroll-top";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
+import { GitHubAuthFeedback } from "@/components/ui/github-auth-feedback";
 import { LanguageToggle } from "@/components/ui/language-toggle";
 import {
   buildGitHubLoginPath,
@@ -113,11 +114,13 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
           ))}
         </div>
         <div className="my-10">
+          <GitHubAuthFeedback locale={locale} />
           <GitHubAuthStatus locale={locale} />
         </div>
         {session ? (
           <SelfGenerator
             canReadPrivate={hasPrivateRepoPermission(session.scopes)}
+            loginHref={buildGitHubLoginPath(`${prefix}/#generator`)}
             privateLoginHref={buildGitHubLoginPath(
               `${prefix}/#generator`,
               "private",

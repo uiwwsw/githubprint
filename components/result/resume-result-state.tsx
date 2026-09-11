@@ -15,6 +15,7 @@ type ResumeResultStateProps = {
     username: string;
     canReadPrivate: boolean;
     privateLoginHref: string;
+    loginHref: string;
     initialOptions: DocumentOptions;
   };
 };

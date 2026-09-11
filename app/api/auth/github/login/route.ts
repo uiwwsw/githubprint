@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
   );
 
   if (!hasGitHubOAuthConfig()) {
-    return NextResponse.redirect(new URL(redirectTo, request.url));
+    const url = new URL(redirectTo, request.url);
+    url.searchParams.set("github_auth", "failed");
+    return NextResponse.redirect(url);
   }
 
   const access =
