@@ -324,11 +324,18 @@ export function ResultActions({
               </span>
             </p>
           </div>
-          {(dataMode === "private_enriched" &&
-            privateExposureMode === "include") ||
+          {dataMode === "private_enriched" ||
           resumeRepoVisibility === "private" ? (
             <span className="rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
-              {dict.result.privateExposureInclude}
+              {resumeRepoVisibility === "private"
+                ? locale === "ko"
+                  ? "비공개 원본"
+                  : "Private source"
+                : privateExposureMode === "include"
+                  ? dict.result.privateExposureInclude
+                  : locale === "ko"
+                    ? "비공개 익명 요약"
+                    : "Anonymous private summary"}
             </span>
           ) : null}
         </div>

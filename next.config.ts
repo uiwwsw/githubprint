@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
       { source: "/api/auth/:path*", headers: privateHeaders },
       { source: "/api/resume-docx", headers: privateHeaders },
       { source: "/api/resume-asset", headers: privateHeaders },
+      { source: "/api/document-configuration", headers: privateHeaders },
+      { source: "/api/github/:path*", headers: privateHeaders },
     ];
   },
 };

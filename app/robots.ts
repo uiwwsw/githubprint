@@ -9,7 +9,13 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         // Let crawlers read noindex on /result and /preview. Public profile images
         // remain crawlable; only authentication and private download routes are blocked.
-        disallow: ["/api/auth/", "/api/resume-docx", "/api/resume-asset"],
+        disallow: [
+          "/api/auth/",
+          "/api/resume-docx",
+          "/api/resume-asset",
+          "/api/document-configuration",
+          "/api/github/",
+        ],
       },
     ],
     sitemap: `${getSiteUrl()}/sitemap.xml`,

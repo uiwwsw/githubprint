@@ -250,7 +250,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       authEyebrow: "로그인 모드",
       authTitle: "GitHub 로그인으로 내 이력서와 프로필 바로 만들기",
       authDescription:
-        "로그인하면 GitHubPrint가 본인 계정을 바로 이력서형 문서로 만들고, 승인된 GitHub 데이터 범위 안에서 비공개 저장소와 비공개 프로필 신호까지 함께 읽을 수 있습니다.",
+        "공개 GitHub 자료로 문서를 만듭니다. 비공개 작업이 필요하면 템플릿에 맞는 자료 범위를 선택하고 별도로 접근 권한을 연결하세요.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
         "아래에서 템플릿과 비공개 포함 범위를 고른 뒤 본인 프로필 결과를 생성할 수 있습니다.",
@@ -265,10 +265,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       showcaseTitle: "로그인 없이 실제 결과 레이아웃 먼저 보기",
       generatorTitle: "문서 템플릿과 비공개 포함 범위 선택",
       generatorDescription:
-        "기본값은 비공개 저장소 상세를 숨기는 공유용 문서입니다. 토글을 켜면 비공개 저장소 이름과 설명도 결과에 직접 포함할 수 있습니다.",
+        "기본값은 공개 자료만 사용합니다. 선택한 비공개 작업은 익명 요약 또는 상세 소개로 추가할 수 있습니다.",
       privateToggleLabel: "비공개 저장소 포함하기",
       privateToggleHint:
-        "끄면 비공개 저장소는 집계형 신호로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다.",
+        "공개 모드에서는 비공개 저장소를 읽지 않습니다.",
       privateToggleWarning:
         "켜면 비공개 저장소 이름, 설명, 링크가 문서와 저장 파일에 직접 포함될 수 있습니다.",
       templateHeading: "문서 템플릿 선택",
@@ -291,11 +291,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       signedInDataScopeItems: {
         profile:
-          "로그인한 본인 계정인 경우, 승인된 범위 안에서 프로필 필드와 일부 비공개 사용자 정보까지 함께 읽을 수 있습니다.",
+          "프로필 정보는 공개 필드만 사용합니다. 비공개 이메일은 문서에 반영하지 않으며, 계정 전체의 비공개 기여 내역은 읽지 않습니다.",
         repositories:
-          "본인이 소유한 저장소는 공개/비공개를 함께 읽을 수 있으며, README, topic, 최근 업데이트, 일부 루트 파일, 최근 커밋 메시지를 반영합니다.",
+          "공개 저장소와 직접 선택한 비공개 저장소의 README, topic, 최근 업데이트, 일부 루트 파일, 최근 커밋 메시지를 사용합니다. 다른 비공개 저장소 내용은 읽지 않습니다.",
         limits:
-          "로그인 모드는 본인 계정 생성에만 적용하며, GitHub 밖 정보와 경력·협업 능력·비즈니스 성과는 여전히 단정하지 않습니다.",
+          "벤치마크는 공개 자료만 사용합니다. 선택한 비공개 작업은 외부 AI나 학습 기록에 전송하지 않으며, 경력·협업 능력·비즈니스 성과를 단정하지 않습니다.",
       },
     },
     result: {
@@ -305,7 +305,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModePublic: "공개 GitHub",
       dataModePrivate: "로그인한 본인 계정",
       privateExposureLabel: "비공개 상세",
-      privateExposureAggregate: "기본 공유 모드",
+      privateExposureAggregate: "비공개 익명 요약",
       privateExposureInclude: "비공개 상세 포함",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
@@ -358,9 +358,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       cohortLabel: "비교 집단",
       repoUnit: "개",
       followerUnit: "명",
-      privateInsightsTitle: "승인된 비공개 저장소 신호",
+      privateInsightsTitle: "선택한 비공개 작업",
       privateInsightsHint:
-        "로그인한 본인 계정에서만 계산되는 비공개 저장소 집계 신호입니다. 공개 결과와 달라지는 추가 스택, 작업 표면, 검증/자동화 흔적을 보수적으로 요약합니다.",
+        "직접 선택한 비공개 저장소만 집계했습니다. 전체 비공개 활동을 의미하지 않으며, 추가 기술과 문서·테스트·자동화 흔적을 요약합니다.",
       privateInsightsTopStack: "비공개 쪽에서 추가로 보이는 스택",
       privateInsightsAdditionalStack: "공개 결과에 덜 드러난 추가 스택",
       privateInsightsTopSurfaces: "비공개 쪽에서 더 선명한 작업 표면",
@@ -505,7 +505,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       authEyebrow: "Signed-in mode",
       authTitle: "Sign in with GitHub and generate your resume and profile right away",
       authDescription:
-        "When you sign in, GitHubPrint can immediately generate your own resume-style document using the GitHub data you authorized, including private repositories and private profile signals.",
+        "Create documents from public GitHub sources. If private work is relevant, choose the sources for your template and connect private access separately.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
         "Choose the template and private exposure below, then generate your own profile document.",
@@ -520,10 +520,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       showcaseTitle: "Preview the real layout before sign-in",
       generatorTitle: "Choose the template and private-repo exposure",
       generatorDescription:
-        "The default is a shareable document that keeps private repository details hidden. Turn the toggle on only if you want private repository names and descriptions to appear directly in the result.",
+        "The default uses public sources only. Selected private work can be added as an anonymous summary or detailed projects.",
       privateToggleLabel: "Include private repositories",
       privateToggleHint:
-        "When off, private repositories contribute only through aggregated signals and their names or links stay hidden in the result.",
+        "Public mode does not read private repositories.",
       privateToggleWarning:
         "When on, private repository names, descriptions, and links may appear directly in the document and exported files.",
       templateHeading: "Choose a document template",
@@ -546,11 +546,11 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       signedInDataScopeItems: {
         profile:
-          "For the signed-in user's own account, authorized profile fields and some private user details may also be included.",
+          "Profile information uses public fields only. Private email is not included; account-wide private contributions are not read.",
         repositories:
-          "Owned repositories can be read across public and private visibility, including README, topics, update recency, some root files, and recent commit messages.",
+          "Uses public repositories and explicitly selected private repositories: README, topics, update recency, some root files, and recent commit messages. Other private repository contents are not read.",
         limits:
-          "Signed-in mode applies only to the signed-in user's own account. Off-GitHub data, tenure, collaboration quality, and business impact are still not asserted.",
+          "Benchmarks use only public sources. Selected private work is not sent to external AI or learning records, and tenure, collaboration quality, and business impact are not asserted.",
       },
     },
     result: {
@@ -560,7 +560,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModePublic: "Public GitHub",
       dataModePrivate: "Signed-in self mode",
       privateExposureLabel: "Private detail",
-      privateExposureAggregate: "Default sharing mode",
+      privateExposureAggregate: "Anonymous private summary",
       privateExposureInclude: "Private details included",
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
@@ -613,9 +613,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       cohortLabel: "Cohort",
       repoUnit: "",
       followerUnit: "",
-      privateInsightsTitle: "Authorized private-repo signals",
+      privateInsightsTitle: "Selected private work",
       privateInsightsHint:
-        "These aggregate private-repository signals are calculated only for the signed-in user's own account. They summarize added stack, surface, validation, and automation signals conservatively.",
+        "These aggregates cover only selected private repositories, not all private activity. They summarize additional technology, documentation, testing, and automation signals.",
       privateInsightsTopStack: "Additional stack signals from private work",
       privateInsightsAdditionalStack: "Stack that is less visible in public work",
       privateInsightsTopSurfaces: "Work surfaces that become clearer in private work",

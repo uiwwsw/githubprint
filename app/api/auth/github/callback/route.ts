@@ -74,12 +74,7 @@ export async function GET(request: NextRequest) {
       maxAge: 0,
       path: "/",
     });
-    response.cookies.set({
-      name: GITHUB_SESSION_COOKIE_NAME,
-      value: "",
-      maxAge: 0,
-      path: "/",
-    });
+
     return response;
   }
 }

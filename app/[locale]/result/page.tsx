@@ -30,9 +30,11 @@ export default async function ResultRedirectPage({
     getFirstValue(resolvedSearchParams.template),
   );
   const nextParams = new URLSearchParams();
+  const configValue = getFirstValue(resolvedSearchParams.config);
   const privateValue = getFirstValue(resolvedSearchParams.private);
   const refreshValue = getFirstValue(resolvedSearchParams.refresh);
 
+  if (configValue) nextParams.set("config", configValue);
   if (privateValue === "1" || privateValue === "true") {
     nextParams.set("private", "1");
   }

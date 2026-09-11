@@ -1,3 +1,5 @@
+import { resolveDocumentConfiguration } from "@/lib/document-configuration";
+import type { DocumentOptions } from "@/lib/document-options";
 import { NextRequest, NextResponse } from "next/server";
 import { getGitHubSession } from "@/lib/auth";
 import { getResumeRepoBinaryAsset, getResumeRepoLookup } from "@/lib/github";
@@ -12,6 +14,17 @@ export async function GET(request: NextRequest) {
   if (!session) {
     return new NextResponse("Authentication is required.", {
       status: 401,
+    });
+  }
+
+  let configuration: DocumentOptions;
+  const config = request.nextUrl.searchParams.get("config") ?? undefined;
+  try {
+    configuration = resolveDocumentConfiguration(config, "resume", session);
+  } catch {
+    return new NextResponse("Choose your document sources again.", {
+      status: 403,
+      headers: { "Cache-Control": "private, no-store" },
     });
   }
 
@@ -41,6 +54,7 @@ export async function GET(request: NextRequest) {
   };
   const lookup = await getResumeRepoLookup(session.user.login, {
     authContext,
+    allowPrivate: configuration.resumeSource === "authorized",
   });
 
   if (!lookup) {
@@ -66,7 +80,7 @@ export async function GET(request: NextRequest) {
 
   return new NextResponse(new Uint8Array(asset.data), {
     headers: {
-      "Cache-Control": "private, max-age=300",
+      "Cache-Control": "private, no-store",
       "Content-Type": asset.contentType,
     },
   });

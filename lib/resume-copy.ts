@@ -101,7 +101,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       benefitsTitle: "resume 레포를 두면 좋은 점",
       close: "닫기",
       enabledFeatures: [
-        "ATS 친화 기본형 Word(.docx) 이력서 다운로드",
+        "같은 미리보기에서 PDF·Word(.docx)·HTML 이력서 저장",
         "경력, 프로젝트, 교육, 스킬, 커스텀 섹션 전체 표현",
         "repo/live/docs 링크를 근거 행으로 강조",
         "`resume.yaml`과 `resume.en.yaml`로 한국어/영어를 분리 관리",
@@ -111,9 +111,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       invalidMessage:
         "루트에 `resume.yaml`이 있어야 하고, 영어를 따로 관리하려면 `resume.en.yaml`을 추가하면 됩니다. 참조 Markdown 파일은 `content/` 아래에 있어야 합니다.",
       invalidReasonLabel: "확인된 문제",
-      missingTitle: "먼저 이름이 정확히 `resume`인 레포를 만들어야 합니다.",
+      missingTitle: "선택한 범위에서 `resume` 원본을 찾지 못했습니다.",
       missingMessage:
-        "공개 또는 비공개 둘 다 가능하지만, 비공개 레포는 로그인한 본인만 self mode에서 읽고 export할 수 있습니다.",
+        "공개 원본은 바로 사용할 수 있습니다. 비공개 원본은 홈의 Resume 설정에서 원본 접근을 허용하고 GitHub 권한을 연결하세요.",
       starterTitle: "starter 구조",
       stepsTitle: "빠른 활성화 순서",
       steps: [
@@ -121,16 +121,16 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         "루트에 `resume.yaml`을 추가한다.",
         "영문 이력서가 필요하면 `resume.en.yaml`을 추가한다.",
         "긴 요약이나 상세 설명은 `content/*.md`로 분리해 참조한다.",
-        "다시 돌아와 Resume 템플릿을 선택해 미리보기와 Word export를 연다.",
+        "다시 돌아와 Resume 템플릿을 선택해 자료 범위를 고르고 미리보기와 PDF·Word·HTML 저장을 연다.",
       ],
       subtitle:
         "Resume 템플릿은 GitHub 추론 문서가 아니라 사용자가 직접 관리하는 `resume` 레포를 기반으로 이력서를 만듭니다.",
       title: "Resume 템플릿 활성화",
       toggleHint:
-        "resume 레포는 공개/비공개 모두 가능하고, 비공개는 로그인한 본인 self mode에서만 읽고 export할 수 있습니다.",
+        "원본 저장소 공개 범위는 GitHub에서 설정합니다. GitHubPrint에서는 원본 접근과 연결 프로젝트 보강을 별도로 선택합니다.",
       togglePrivate: "비공개",
       togglePrivateHint:
-        "로그인한 본인만 읽고 export 가능합니다. self mode 전용으로 가장 유연합니다.",
+        "직접 작성한 연락처와 경력을 GitHub에 공개하지 않고 관리할 수 있습니다. 원본 접근을 허용하면 그 내용은 PDF·Word·HTML에 포함됩니다.",
       togglePublic: "공개",
       togglePublicHint:
         "레포 자체를 외부에 보여주기 쉽고 같은 구조를 누구나 참고할 수 있습니다.",
@@ -211,9 +211,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       invalidMessage:
         "A root-level `resume.yaml` is required. Add `resume.en.yaml` if you want a separate English version, and keep referenced Markdown files under `content/`.",
       invalidReasonLabel: "Detected issue",
-      missingTitle: "Create a GitHub repo named exactly `resume` first.",
+      missingTitle: "No `resume` source was found within the selected access scope.",
       missingMessage:
-        "Both public and private repos are supported, but private repos can only be read and exported in signed-in self mode.",
+        "Public sources work directly. For a private source, enable source access in the home page’s Resume settings and connect GitHub permissions.",
       starterTitle: "Starter structure",
       stepsTitle: "Fast activation steps",
       steps: [
@@ -221,16 +221,16 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         "Add `resume.yaml` at the repo root.",
         "Add `resume.en.yaml` if you want a separate English resume.",
         "Move long summaries or detailed descriptions into `content/*.md` files and reference them.",
-        "Return here, select Resume, and open the preview or Word export.",
+        "Return here, select Resume, and choose your sources and preview or save PDF, Word, or HTML.",
       ],
       subtitle:
         "The Resume template is not an inferred profile. It builds a resume from the `resume` repo that the user maintains directly.",
       title: "Activate the Resume template",
       toggleHint:
-        "The resume repo can be public or private. Private repos can only be read and exported in signed-in self mode.",
+        "Set repository visibility on GitHub. In GitHubPrint, select source access and linked-project enrichment separately.",
       togglePrivate: "Private",
       togglePrivateHint:
-        "Only the signed-in owner can read and export it. Best for self-mode only workflows.",
+        "Keep authored contact details and career history off public GitHub. When source access is allowed, that content is included in PDF, Word, and HTML.",
       togglePublic: "Public",
       togglePublicHint:
         "Easy to share as an open example and easier for others to inspect directly.",

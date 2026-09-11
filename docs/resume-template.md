@@ -11,7 +11,8 @@
 - 긴 본문은 `content/*.md`로 분리 가능
 - 사진은 `basics.avatar` 또는 `basics.avatarUrl`로 전달
 - `avatar`는 `assets/` 아래 상대경로를 권장
-- private 레포도 가능하지만 로그인한 본인 self mode에서만 읽고 export 가능
+- 비공개 원본은 홈의 Resume 설정에서 원본 접근을 허용하고 GitHub 권한을 연결해야 읽을 수 있음
+- 원본 저장소 접근과 원본에 연결한 비공개 프로젝트 보강은 별도로 선택하며, 직접 작성한 내용은 항상 출력됨. [자료 범위 안내](private-data.md)
 
 ## 권장 다국어 방식
 

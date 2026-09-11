@@ -51,16 +51,36 @@ export function SectionBlock({
   children: ReactNode;
 }) {
   const normalizedTitle = title.trim().replace(/\s+/g, " ").toLocaleLowerCase();
-  const normalizedEyebrow = eyebrow?.trim().replace(/\s+/g, " ").toLocaleLowerCase();
-  const showEyebrow = Boolean(normalizedEyebrow) && normalizedEyebrow !== normalizedTitle;
+  const normalizedEyebrow = eyebrow
+    ?.trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase();
+  const showEyebrow =
+    Boolean(normalizedEyebrow) && normalizedEyebrow !== normalizedTitle;
 
   return (
-    <section className={cn("document-section rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6", className)}>
+    <section
+      className={cn(
+        "document-section rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6",
+        className,
+      )}
+    >
       {showEyebrow ? (
-        <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{eyebrow}</p>
+        <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
+          {eyebrow}
+        </p>
       ) : null}
-      <h2 className={cn("font-serif text-[1.4rem] leading-tight text-neutral-950", showEyebrow ? "mt-2" : "mt-0")}>{title}</h2>
-      <div className="mt-4 text-[15px] leading-7 text-neutral-700">{children}</div>
+      <h2
+        className={cn(
+          "font-serif text-[1.4rem] leading-tight text-neutral-950",
+          showEyebrow ? "mt-2" : "mt-0",
+        )}
+      >
+        {title}
+      </h2>
+      <div className="mt-4 text-[15px] leading-7 text-neutral-700">
+        {children}
+      </div>
     </section>
   );
 }
@@ -108,7 +128,10 @@ export function FactGrid({
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <FactCard label={dict.common.factTech} value={analysis.facts.coreStack.slice(0, 3).join(", ")} />
+      <FactCard
+        label={dict.common.factTech}
+        value={analysis.facts.coreStack.slice(0, 3).join(", ")}
+      />
       <FactCard label={repoFact.label} value={repoFact.value} />
       <FactCard
         label={dict.common.factFollowers}
@@ -150,15 +173,24 @@ export function BenchmarkSnapshotBlock({
           label={dict.common.confidenceLabel}
           value={`${benchmark.confidenceScore}/100`}
         />
-        <FactCard label={dict.common.cohortLabel} value={benchmark.cohortLabel} />
+        <FactCard
+          label={dict.common.cohortLabel}
+          value={benchmark.cohortLabel}
+        />
         <FactCard
           label={dict.common.sampleSizeLabel}
           value={formatNumber(benchmark.sampleSize, locale)}
         />
       </div>
-      {showInsight ? <p className="text-sm leading-7 text-neutral-600">{benchmark.insight}</p> : null}
+      {showInsight ? (
+        <p className="text-sm leading-7 text-neutral-600">
+          {benchmark.insight}
+        </p>
+      ) : null}
       {interpretationNote ? (
-        <p className="text-sm leading-6 text-neutral-500">{interpretationNote}</p>
+        <p className="text-sm leading-6 text-neutral-500">
+          {interpretationNote}
+        </p>
       ) : null}
       <div className="benchmark-metrics space-y-3">
         {benchmark.metrics.map((metric) => (
@@ -168,7 +200,9 @@ export function BenchmarkSnapshotBlock({
             key={metric.id}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-medium text-neutral-900">{metric.label}</p>
+              <p className="text-sm font-medium text-neutral-900">
+                {metric.label}
+              </p>
               <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
                 {formatBenchmarkRankLabel({
                   percentile: metric.percentile,
@@ -178,7 +212,9 @@ export function BenchmarkSnapshotBlock({
                 })}
               </span>
             </div>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">{metric.note}</p>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">
+              {metric.note}
+            </p>
             {metric.evidence.length > 0 ? (
               <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-500">
                 {metric.evidence.map((item) => (
@@ -213,7 +249,10 @@ export function PublicDataScope({
       : dict.home.dataScopeItems;
 
   return (
-    <div className="space-y-3" data-document-group={dataMode === "public" || undefined}>
+    <div
+      className="space-y-3"
+      data-document-group={dataMode === "public" || undefined}
+    >
       {[items.profile, items.repositories, items.limits].map((item) => (
         <div
           className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
@@ -310,15 +349,11 @@ function AuthorizedPrivateInsightsCard({
   const visibilityNote =
     privateExposureMode === "include"
       ? locale === "ko"
-        ? "현재 결과에는 승인된 비공개 저장소의 이름과 설명이 직접 포함될 수 있습니다."
-        : "This result may directly include names and descriptions from authorized private repositories."
-      : authorizedPrivateInsights.hiddenRepresentativeCount > 0
-        ? locale === "ko"
-          ? `상위 후보였던 비공개 저장소 ${formatNumber(authorizedPrivateInsights.hiddenRepresentativeCount, locale)}개는 분석에 반영되지만, 기본 공유 모드에서는 이름과 링크를 숨깁니다.`
-          : `${formatNumber(authorizedPrivateInsights.hiddenRepresentativeCount, locale)} private repositories were strong enough to be representative candidates, but their names and links stay hidden in the default sharing mode.`
-        : locale === "ko"
-          ? "비공개 저장소 신호는 집계형으로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다."
-          : "Private-repository signals are reflected only in aggregate, while names and links stay hidden in the result.";
+        ? "선택한 비공개 프로젝트의 이름·설명·링크가 이 문서와 저장 파일에 포함됩니다. 링크를 열려면 별도의 GitHub 접근 권한이 필요합니다."
+        : "Selected private project names, descriptions, and links are included in this document and saved files. Opening the links requires separate GitHub access."
+      : locale === "ko"
+        ? "선택한 작업의 익명 집계입니다. 이름·설명·링크·README 문장은 포함하지 않았습니다. 조합된 기술 정보로 프로젝트가 유추될 수 있으므로 공유 전에 검토하세요."
+        : "Anonymous aggregates of selected work. Names, descriptions, links, and README text are excluded. Review before sharing: combinations of technology signals may still identify a project.";
 
   return (
     <div className="rounded-[1.1rem] border border-black/[0.08] bg-white p-4">
@@ -331,11 +366,17 @@ function AuthorizedPrivateInsightsCard({
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <FactCard
           label={dict.common.factAuthorizedRepos}
-          value={formatNumber(authorizedPrivateInsights.authorizedRepoCount, locale)}
+          value={formatNumber(
+            authorizedPrivateInsights.authorizedRepoCount,
+            locale,
+          )}
         />
         <FactCard
           label={dict.common.factPrivateRepos}
-          value={formatNumber(authorizedPrivateInsights.privateRepoCount, locale)}
+          value={formatNumber(
+            authorizedPrivateInsights.privateRepoCount,
+            locale,
+          )}
         />
         <FactCard
           label={dict.common.factRecentPrivateRepos}
@@ -406,67 +447,25 @@ function AuthorizedPrivateInsightsCard({
           />
         </div>
       ) : null}
-      {privateExposureMode === "include" &&
-      authorizedPrivateInsights.privateShowcaseRepos.length > 0 ? (
-        <div className="mt-5 space-y-3">
-          <div>
-            <p className="text-sm font-medium text-neutral-900">
-              {dict.common.privateInsightsShowcase}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-neutral-500">
-              {dict.common.privateInsightsShowcaseHint}
-            </p>
-          </div>
-          <div className="space-y-3">
-            {authorizedPrivateInsights.privateShowcaseRepos.map((repo) => (
-              <article
-                className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
-                key={repo.repoUrl}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-neutral-900">{repo.name}</p>
-                    <p className="mt-2 text-sm leading-6 text-neutral-600">
-                      {repo.description}
-                    </p>
-                  </div>
-                  <p className="text-xs text-neutral-500">
-                    {formatDate(repo.updatedAt, locale)}
-                  </p>
-                </div>
-                {repo.tech.length > 0 ? (
-                  <div className="mt-4">
-                    <ChipList items={repo.tech} />
-                  </div>
-                ) : null}
-                <p className="mt-4 text-sm leading-6 text-neutral-500">
-                  {repo.whyItStandsOut}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
-                  <a
-                    className="break-all underline decoration-black/20 underline-offset-4"
-                    href={repo.repoUrl}
-                    rel="noreferrer"
-                    target="_blank"
-                  >
-                    {dict.common.repoLink}
-                  </a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      <p className="mt-4 text-sm leading-6 text-neutral-500">{visibilityNote}</p>
+      <p className="mt-4 text-sm leading-6 text-neutral-500">
+        {visibilityNote}
+      </p>
     </div>
   );
 }
 
 function FactCard({ label, value }: { label: string; value: string }) {
   return (
-    <div data-document-fact className="rounded-[1.1rem] border border-black/[0.07] bg-black/[0.025] p-4">
-      <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">{label}</p>
-      <p className="mt-3 break-words text-sm font-medium text-neutral-900">{value}</p>
+    <div
+      data-document-fact
+      className="rounded-[1.1rem] border border-black/[0.07] bg-black/[0.025] p-4"
+    >
+      <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">
+        {label}
+      </p>
+      <p className="mt-3 break-words text-sm font-medium text-neutral-900">
+        {value}
+      </p>
     </div>
   );
 }
@@ -496,16 +495,23 @@ export function ProjectList({
         </div>
       ) : null}
       {analysis.projects.map((project) => (
-        <article className={cn("print-break-inside-avoid", cardClass)} key={project.repoUrl}>
+        <article
+          className={cn("print-break-inside-avoid", cardClass)}
+          key={project.repoUrl}
+        >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.name}</h3>
+                <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
+                  {project.name}
+                </h3>
                 <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] tracking-[0.18em] text-neutral-500 uppercase">
                   {project.stars} {dict.common.starsLabel}
                 </span>
               </div>
-              <p className="mt-3 break-words text-sm leading-6 text-neutral-600">{project.description}</p>
+              <p className="mt-3 break-words text-sm leading-6 text-neutral-600">
+                {project.description}
+              </p>
             </div>
             <div className="shrink-0 text-sm text-neutral-500">
               <p>{formatDate(project.updatedAt, locale)}</p>
@@ -514,14 +520,28 @@ export function ProjectList({
           <div className="mt-4">
             <ChipList items={project.tech} />
           </div>
-          <p className="mt-4 text-sm leading-7 text-neutral-700">{project.whyItMatters}</p>
-          <p className="mt-3 text-sm leading-7 text-neutral-500">{project.evidence}</p>
+          <p className="mt-4 text-sm leading-7 text-neutral-700">
+            {project.whyItMatters}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-neutral-500">
+            {project.evidence}
+          </p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
-            <a className="break-all underline decoration-black/20 underline-offset-4" href={project.repoUrl} rel="noreferrer" target="_blank">
+            <a
+              className="break-all underline decoration-black/20 underline-offset-4"
+              href={project.repoUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
               {dict.common.repoLink}
             </a>
             {project.homepageUrl ? (
-              <a className="break-all underline decoration-black/20 underline-offset-4" href={project.homepageUrl} rel="noreferrer" target="_blank">
+              <a
+                className="break-all underline decoration-black/20 underline-offset-4"
+                href={project.homepageUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
                 {dict.common.liveLink}
               </a>
             ) : null}
@@ -536,20 +556,22 @@ export function EvidenceList({ analysis }: { analysis: GitHubPrintAnalysis }) {
   return (
     <div className="space-y-3">
       {analysis.evidence.map((item) => (
-        <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" data-document-group key={`${item.label}-${item.detail}`}>
+        <div
+          className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+          data-document-group
+          key={`${item.label}-${item.detail}`}
+        >
           <p className="text-sm font-medium text-neutral-900">{item.label}</p>
-          <p className="mt-2 text-sm leading-6 text-neutral-600">{item.detail}</p>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            {item.detail}
+          </p>
         </div>
       ))}
     </div>
   );
 }
 
-export function DocumentFooter({
-  disclaimer,
-}: {
-  disclaimer: string;
-}) {
+export function DocumentFooter({ disclaimer }: { disclaimer: string }) {
   return (
     <footer className="mt-8 border-t border-black/[0.08] pt-5 text-sm leading-6 text-neutral-500">
       <p>{disclaimer}</p>

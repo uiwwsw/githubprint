@@ -92,10 +92,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function noteLegacyLocalizedManifestValue(
-  value: unknown,
-  warnings?: string[],
-) {
+function noteLegacyLocalizedManifestValue(value: unknown, warnings?: string[]) {
   if (!warnings || !isRecord(value)) {
     return;
   }
@@ -108,7 +105,8 @@ function noteLegacyLocalizedManifestValue(
   const markdownValue = value.markdown;
   const hasLocalizedMarkdownShape =
     isRecord(markdownValue) &&
-    (typeof markdownValue.ko === "string" || typeof markdownValue.en === "string");
+    (typeof markdownValue.ko === "string" ||
+      typeof markdownValue.en === "string");
 
   if (hasLocalizedObjectShape || hasLocalizedMarkdownShape) {
     pushResumeWarning(warnings, LEGACY_LOCALIZED_MANIFEST_WARNING);
@@ -119,14 +117,14 @@ export function getResumeManifestCandidates(locale: Locale) {
   return [...RESUME_MANIFEST_CANDIDATES[locale]];
 }
 
-export function pickResumeManifestFile(
-  rootFiles: string[],
-  locale: Locale,
-) {
-  const available = new Set(rootFiles.map((file) => file.trim()).filter(Boolean));
+export function pickResumeManifestFile(rootFiles: string[], locale: Locale) {
+  const available = new Set(
+    rootFiles.map((file) => file.trim()).filter(Boolean),
+  );
 
   return (
-    getResumeManifestCandidates(locale).find((file) => available.has(file)) ?? null
+    getResumeManifestCandidates(locale).find((file) => available.has(file)) ??
+    null
   );
 }
 
@@ -356,6 +354,7 @@ export type ResumeProject = ResumeEntry & {
   repoUrl?: string;
   repoUpdatedAt?: string;
   repoVerified: boolean;
+  repoVisibility?: ResumeRepoVisibility;
   tech: string[];
 };
 
@@ -390,6 +389,8 @@ export type ResumeDocumentData = {
   projects: ResumeProject[];
   skills: ResumeSkillGroup[];
   source: {
+    assetContext?: string;
+    linkedPrivateRepoCount?: number;
     repoName: "resume";
     repoUrl: string;
     updatedAt?: string;
@@ -449,6 +450,7 @@ type BuildResumeDocumentOptions = {
     homepageUrl: string;
     language: string | null;
     name: string;
+    visibility?: ResumeRepoVisibility;
     projectLabels: string[];
     pushedAt: string;
     repoUrl: string;
@@ -516,11 +518,7 @@ function sanitizeLocalizedTextArray(
   });
 }
 
-function sanitizeLinks(
-  value: unknown,
-  path: string,
-  warnings: string[],
-) {
+function sanitizeLinks(value: unknown, path: string, warnings: string[]) {
   if (value === undefined) {
     return undefined;
   }
@@ -696,7 +694,10 @@ function sanitizeResumeEducation(
   path: string,
   warnings: string[],
 ): z.infer<typeof resumeEducationSchema> | null {
-  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "school")) {
+  if (
+    !isRecord(value) ||
+    !Object.prototype.hasOwnProperty.call(value, "school")
+  ) {
     return sanitizeResumeItem(value, path, warnings);
   }
 
@@ -761,12 +762,16 @@ function sanitizeResumeSkill(
   path: string,
   warnings: string[],
 ): z.infer<typeof resumeSkillSchema> | null {
-  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "items")) {
+  if (
+    !isRecord(value) ||
+    !Object.prototype.hasOwnProperty.call(value, "items")
+  ) {
     const item = parseOptionalField(localizedTextSchema, value, path, warnings);
     return item ?? null;
   }
 
-  const items = sanitizeLocalizedTextArray(value.items, `${path}.items`, warnings) ?? [];
+  const items =
+    sanitizeLocalizedTextArray(value.items, `${path}.items`, warnings) ?? [];
 
   if (items.length === 0) {
     pushResumeWarning(
@@ -798,7 +803,10 @@ function sanitizeCustomSectionItem(
   path: string,
   warnings: string[],
 ): z.infer<typeof customSectionItemSchema> | null {
-  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, "date")) {
+  if (
+    !isRecord(value) ||
+    !Object.prototype.hasOwnProperty.call(value, "date")
+  ) {
     return sanitizeResumeItem(value, path, warnings);
   }
 
@@ -1053,10 +1061,7 @@ function sanitizeBasics(
   };
 }
 
-function pickLocalizedText(
-  value: ResumeLocalizedTextInput,
-  locale: Locale,
-) {
+function pickLocalizedText(value: ResumeLocalizedTextInput, locale: Locale) {
   if (typeof value === "string") {
     return value.trim();
   }
@@ -1066,10 +1071,7 @@ function pickLocalizedText(
   return (preferred ?? fallback ?? "").trim();
 }
 
-export function formatResumeProjectLabel(
-  label: string,
-  locale: Locale,
-) {
+export function formatResumeProjectLabel(label: string, locale: Locale) {
   const normalized = label.trim().toLowerCase();
   const mapped = RESUME_PROJECT_LABELS[normalized];
 
@@ -1226,7 +1228,10 @@ function readTextSource(
     return undefined;
   }
 
-  const hasContentFile = Object.prototype.hasOwnProperty.call(contentFiles, filePath);
+  const hasContentFile = Object.prototype.hasOwnProperty.call(
+    contentFiles,
+    filePath,
+  );
 
   if (!hasContentFile) {
     pushResumeWarning(
@@ -1301,7 +1306,11 @@ function isGroupedSkill(
   items: ResumeLocalizedTextInput[];
   title?: ResumeLocalizedTextInput;
 } {
-  return typeof skillGroup === "object" && skillGroup !== null && "items" in skillGroup;
+  return (
+    typeof skillGroup === "object" &&
+    skillGroup !== null &&
+    "items" in skillGroup
+  );
 }
 
 function isResumeEducationRecord(
@@ -1336,8 +1345,9 @@ function normalizeEntry(
 ): ResumeEntry {
   return {
     bullets:
-      item.bullets?.map((bullet) => pickLocalizedText(bullet, locale)).filter(Boolean) ??
-      [],
+      item.bullets
+        ?.map((bullet) => pickLocalizedText(bullet, locale))
+        .filter(Boolean) ?? [],
     current: Boolean(item.current),
     detailsMarkdown: readOptionalTextSource(
       item.detailsMarkdown,
@@ -1429,6 +1439,7 @@ type ResumeRepoCatalogEntry = {
   homepageUrl: string;
   language: string | null;
   name: string;
+  visibility?: ResumeRepoVisibility;
   projectLabels: string[];
   pushedAt: string;
   repoUrl: string;
@@ -1442,18 +1453,22 @@ function resolveProjectRepoReference(
   repoCatalog: Map<string, ResumeRepoCatalogEntry>,
 ) {
   const trimmed = repo.trim();
-  const matched =
-    trimmed.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git|\/)?$/i);
+  const matched = trimmed.match(
+    /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(?:\.git|\/)?$/i,
+  );
   const normalizedSlug = matched
     ? `${matched[1]}/${matched[2]}`
     : trimmed.includes("/")
       ? trimmed.replace(/\.git$/i, "")
       : `${username}/${trimmed}`;
   const repoName = normalizedSlug.split("/").at(-1)?.toLowerCase() ?? "";
-  const ownedRepo = repoCatalog.get(repoName);
+  const ownedRepo =
+    normalizedSlug.toLowerCase() === `${username}/${repoName}`.toLowerCase()
+      ? repoCatalog.get(repoName)
+      : undefined;
   const repoUrl = matched
     ? trimmed.replace(/\.git$/i, "")
-    : ownedRepo?.repoUrl ?? `https://github.com/${normalizedSlug}`;
+    : (ownedRepo?.repoUrl ?? `https://github.com/${normalizedSlug}`);
   const repoVerified = Boolean(
     ownedRepo &&
       normalizedSlug.toLowerCase() ===
@@ -1495,12 +1510,14 @@ function normalizeProject(
 ): ResumeProject {
   const entry = normalizeEntry(item, locale, contentFiles, warnings, path);
   const tech =
-    item.tech?.map((value) => pickLocalizedText(value, locale)).filter(Boolean) ??
-    [];
+    item.tech
+      ?.map((value) => pickLocalizedText(value, locale))
+      .filter(Boolean) ?? [];
   const projectLinks = [...entry.links];
   let repoSlug: string | undefined;
   let repoUrl: string | undefined;
   let repoVerified = false;
+  let repoVisibility: ResumeRepoVisibility | undefined;
   let repoCreatedAt: string | undefined;
   let repoUpdatedAt: string | undefined;
   let repoDescription: string | undefined;
@@ -1517,14 +1534,24 @@ function normalizeProject(
     repoSlug = resolvedRepo.normalizedSlug;
     repoUrl = resolvedRepo.repoUrl;
     repoVerified = resolvedRepo.repoVerified;
+    repoVisibility = ownedRepo?.visibility;
     repoCreatedAt = ownedRepo?.createdAt;
     repoUpdatedAt = ownedRepo?.updatedAt;
     repoDescription = ownedRepo?.description ?? undefined;
     projectLabels = ownedRepo?.projectLabels ?? [];
+    if (ownedRepo?.language && !tech.includes(ownedRepo.language))
+      tech.push(ownedRepo.language);
 
     projectLinks.unshift({
       kind: "repo",
-      label: repoVerified ? "GitHub" : "GitHub repo",
+      label:
+        repoVisibility === "private"
+          ? locale === "ko"
+            ? "GitHub · 비공개"
+            : "GitHub · Private"
+          : repoVerified
+            ? "GitHub"
+            : "GitHub repo",
       url: repoUrl,
     });
   }
@@ -1550,6 +1577,7 @@ function normalizeProject(
     repoUrl,
     repoUpdatedAt,
     repoVerified,
+    repoVisibility,
     sortDate: entry.start ?? repoCreatedAt ?? repoUpdatedAt ?? entry.end,
     subtitle: entry.subtitle ?? repoDescription,
     tech,
@@ -1568,7 +1596,14 @@ function buildRepoBackedProject(
   const links: ResumeLink[] = [
     {
       kind: "repo",
-      label: resolvedRepo.repoVerified ? "GitHub" : "GitHub repo",
+      label:
+        ownedRepo?.visibility === "private"
+          ? locale === "ko"
+            ? "GitHub · 비공개"
+            : "GitHub · Private"
+          : resolvedRepo.repoVerified
+            ? "GitHub"
+            : "GitHub repo",
       url: resolvedRepo.repoUrl,
     },
   ];
@@ -1595,6 +1630,7 @@ function buildRepoBackedProject(
     repoUrl: resolvedRepo.repoUrl,
     repoUpdatedAt: ownedRepo?.updatedAt,
     repoVerified: resolvedRepo.repoVerified,
+    repoVisibility: ownedRepo?.visibility,
     sortDate: ownedRepo?.createdAt ?? ownedRepo?.updatedAt,
     start: undefined,
     subtitle: ownedRepo?.description ?? undefined,
@@ -1643,9 +1679,7 @@ function sortResumeEntries<T extends ResumeEntry>(entries: T[]) {
     const rightDate = getComparableDate(
       right.sortDate ?? right.start ?? right.end,
     );
-    const leftDate = getComparableDate(
-      left.sortDate ?? left.start ?? left.end,
-    );
+    const leftDate = getComparableDate(left.sortDate ?? left.start ?? left.end);
 
     if (leftDate !== null && rightDate !== null && leftDate !== rightDate) {
       return rightDate - leftDate;
@@ -1700,7 +1734,10 @@ function linkProjectsToExperience(
 ) {
   return projects.map((project) => {
     const projectDate = getComparableDate(
-      project.start ?? project.repoCreatedAt ?? project.repoUpdatedAt ?? project.end,
+      project.start ??
+        project.repoCreatedAt ??
+        project.repoUpdatedAt ??
+        project.end,
     );
 
     if (projectDate === null) {
@@ -1727,7 +1764,9 @@ function findExplicitProjectByReference(
 
   return (
     projects.find((project) => project.id?.toLowerCase() === normalized) ??
-    projects.find((project) => project.repoSlug?.toLowerCase() === normalized) ??
+    projects.find(
+      (project) => project.repoSlug?.toLowerCase() === normalized,
+    ) ??
     projects.find(
       (project) =>
         project.repoSlug?.toLowerCase() === `${username}/${normalized}`,
@@ -1736,7 +1775,9 @@ function findExplicitProjectByReference(
       (project) =>
         project.repoSlug?.split("/").at(-1)?.toLowerCase() === normalized,
     ) ??
-    projects.find((project) => project.title.trim().toLowerCase() === normalized)
+    projects.find(
+      (project) => project.title.trim().toLowerCase() === normalized,
+    )
   );
 }
 
@@ -1823,7 +1864,7 @@ function resolveFeaturedProjects(
           explicitProjects,
           username,
         ) ??
-        buildRepoBackedProject(reference.repo, locale, username, repoCatalog)
+          buildRepoBackedProject(reference.repo, locale, username, repoCatalog),
       ];
     } catch (error) {
       pushResumeWarning(
@@ -2311,4 +2352,39 @@ export function formatResumeDateRange(
     return endLabel;
   }
   return undefined;
+}
+
+/** Only repo fields are access instructions; prose, links, and other owners are not. */
+export function collectResumeOwnedRepoNames(
+  input: unknown,
+  username: string,
+): string[] {
+  const names = new Set<string>();
+  function visit(value: unknown) {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (!isRecord(value)) return;
+    if (typeof value.repo === "string") {
+      const ref = value.repo
+        .trim()
+        .replace(/^https:\/\/github\.com\//i, "")
+        .replace(/(?:\.git)?\/$|\.git$/i, "");
+      const parts = ref.split("/");
+      const name =
+        parts.length === 1
+          ? parts[0]
+          : parts.length === 2 &&
+              parts[0].toLowerCase() === username.toLowerCase()
+            ? parts[1]
+            : "";
+      if (/^[a-zA-Z0-9_.-]{1,100}$/.test(name) && name !== "." && name !== "..")
+        names.add(name.toLowerCase());
+    }
+    Object.values(value).forEach(visit);
+  }
+  if (isRecord(input))
+    [input.projects, input.experience, input.featuredProjects].forEach(visit);
+  return [...names];
 }

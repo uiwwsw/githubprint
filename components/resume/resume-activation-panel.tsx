@@ -96,12 +96,14 @@ type ResumeActivationPanelProps = {
   availability: ResumeTemplateAvailability;
   locale: Locale;
   onClose?: () => void;
+  setupOnly?: boolean;
 };
 
 export function ResumeActivationPanel({
   availability,
   locale,
   onClose,
+  setupOnly = false,
 }: ResumeActivationPanelProps) {
   const copy = getResumeCopy(locale);
   const isInvalid = availability.state === "locked_invalid_schema";
@@ -146,36 +148,38 @@ export function ResumeActivationPanel({
         </p>
       </div>
 
-      <div
-        className={cn(
-          "mt-5 rounded-[1.2rem] border px-4 py-3 text-sm leading-6",
-          isInvalid
-            ? "border-amber-300 bg-amber-50 text-amber-900"
-            : "border-sky-200 bg-sky-50 text-sky-900",
-        )}
-      >
-        <p className="font-medium">
-          {isInvalid ? copy.panel.invalidTitle : copy.panel.missingTitle}
-        </p>
-        <p className="mt-1">
-          {isInvalid ? copy.panel.invalidMessage : copy.panel.missingMessage}
-        </p>
-        {availability.state === "locked_invalid_schema" ? (
-          <p className="mt-2 text-sm">
-            {copy.panel.invalidReasonLabel}: {availability.detail}
+      {!setupOnly ? (
+        <div
+          className={cn(
+            "mt-5 rounded-[1.2rem] border px-4 py-3 text-sm leading-6",
+            isInvalid
+              ? "border-amber-300 bg-amber-50 text-amber-900"
+              : "border-sky-200 bg-sky-50 text-sky-900",
+          )}
+        >
+          <p className="font-medium">
+            {isInvalid ? copy.panel.invalidTitle : copy.panel.missingTitle}
           </p>
-        ) : null}
-        {"repoUrl" in availability ? (
-          <a
-            className="mt-2 inline-flex break-all underline decoration-current/30 underline-offset-4"
-            href={availability.repoUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {availability.repoUrl}
-          </a>
-        ) : null}
-      </div>
+          <p className="mt-1">
+            {isInvalid ? copy.panel.invalidMessage : copy.panel.missingMessage}
+          </p>
+          {availability.state === "locked_invalid_schema" ? (
+            <p className="mt-2 text-sm">
+              {copy.panel.invalidReasonLabel}: {availability.detail}
+            </p>
+          ) : null}
+          {"repoUrl" in availability ? (
+            <a
+              className="mt-2 inline-flex break-all underline decoration-current/30 underline-offset-4"
+              href={availability.repoUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {availability.repoUrl}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.05fr,0.95fr]">
         <div className="space-y-5">
@@ -185,7 +189,10 @@ export function ResumeActivationPanel({
             </p>
             <ul className="mt-3 space-y-2 text-sm leading-6 text-neutral-600">
               {copy.panel.benefits.map((item) => (
-                <li key={item} className="rounded-[1rem] bg-black/[0.025] px-4 py-3">
+                <li
+                  key={item}
+                  className="rounded-[1rem] bg-black/[0.025] px-4 py-3"
+                >
                   {item}
                 </li>
               ))}

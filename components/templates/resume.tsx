@@ -593,7 +593,7 @@ export function ResumeTemplate({
 }) {
   const copy = getResumeCopy(locale);
   const resolvedAvatarUrl = resume.basics.avatarPath
-    ? `/api/resume-asset?path=${encodeURIComponent(resume.basics.avatarPath)}`
+    ? `/api/resume-asset?path=${encodeURIComponent(resume.basics.avatarPath)}${resume.source.assetContext ? `&config=${encodeURIComponent(resume.source.assetContext)}` : ""}`
     : (resume.basics.avatarUrl ?? avatarUrl);
   const topLinks = resume.basics.links.filter(
     (link) => link.kind !== "contact",
