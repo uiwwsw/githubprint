@@ -125,6 +125,10 @@ for (const locale of ["ko", "en"] as const) {
         expect(await page.locator(".document-project").count()).toBe(2);
         expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
       }
+      if (template === "insight") {
+        // Named introduction evidence must not leave only the source notes on a fourth page.
+        expect((pdf.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length).toBeLessThanOrEqual(3);
+      }
       await page.screenshot({
         path: path.join(output, `${filename}-screen.png`),
         fullPage: true,

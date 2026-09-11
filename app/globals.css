@@ -1420,3 +1420,14 @@ body:has(.export-dialog[open]) { overflow: hidden; }
 .mini-metrics i:last-child { width: 70%; }
 .mini-document-brief .mini-project-row > span { display: none; }
 .mini-document-brief .mini-identity { padding-top: 12px; }
+
+.document-page .identity-summary-label { margin-top: 22px; font-size: 10px; font-weight: 600; color: var(--document-accent); letter-spacing: .04em; }
+.document-page .identity-introduction .identity-summary { margin-top: 7px; }
+@media print {
+  .document-page .identity-summary-label { margin-top: 10pt; font-size: 8pt; break-after: avoid-page; }
+  .document-page .identity-introduction .identity-summary { margin-top: 4pt; }
+  .document-page[data-template="insight"] .document-project { padding: 6pt 0; }
+  .document-page[data-template="insight"] .document-project > .mt-4 { margin-top: 5pt; }
+  .document-page[data-template="insight"] .document-project .mt-3 { margin-top: 4pt; }
+  .document-page[data-template="insight"] .document-project:not(:last-child) { margin-block-end: 6pt; }
+}

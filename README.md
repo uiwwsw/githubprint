@@ -39,6 +39,8 @@ GitHubPrint turns GitHub evidence into a readable developer document for sharing
 
 Each template serves a different reading task: Brief introduces two selected projects, Profile puts project case studies first, Insight separates observed patterns from comparison metrics, and Resume preserves authored experience and section order. PDF, offline HTML, and editable Word capture the selected template's layout, typography, and colors. Word pagination can vary with the editor's font metrics.
 
+Automatic introductions cite the repositories and technologies behind each description. A specialty needs supporting implementation signals in at least two distinct, non-fork repositories; topic labels or popularity alone are insufficient. Work-pattern descriptions refer to actual README, project-link, test, or workspace evidence. Both AI and fallback output preserve these grounded identity fields, while authored Resume text remains under the author's control. Wording and evidence thresholds live in `data/templates/introductions.json`.
+
 ### Scope
 
 GitHubPrint defaults to public GitHub information:

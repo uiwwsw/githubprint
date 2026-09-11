@@ -623,10 +623,12 @@ export function DocumentIdentity({
   analysis,
   profileUrl,
   summary,
+  locale,
 }: {
   analysis: GitHubPrintAnalysis;
   profileUrl: string;
   summary?: string;
+  locale: Locale;
 }) {
   return (
     <header className="document-identity">
@@ -647,7 +649,16 @@ export function DocumentIdentity({
           github.com/{analysis.profile.username}
         </a>
       </div>
-      {summary ? <p className="identity-summary">{summary}</p> : null}
+      {summary ? (
+        <div className="identity-introduction">
+          <p className="identity-summary-label">
+            {locale === "ko"
+              ? "프로젝트 기반 소개"
+              : "Introduction from project evidence"}
+          </p>
+          <p className="identity-summary">{summary}</p>
+        </div>
+      ) : null}
     </header>
   );
 }
