@@ -185,6 +185,49 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
             )}
           </div>
         </section>
+        <section
+          className="studio-export-formats"
+          aria-labelledby="formats-title"
+        >
+          <div>
+            <p className="studio-eyebrow">ONE DOCUMENT, THREE WAYS</p>
+            <h2 id="formats-title">{copy.formatTitle}</h2>
+            <p>{copy.formatSubtitle}</p>
+          </div>
+          <div className="studio-format-options">
+            {[
+              {
+                name: "PDF",
+                use: copy.pdfUse,
+                description: copy.pdfDescription,
+                extension: ".pdf",
+              },
+              {
+                name: "Word",
+                use: copy.wordUse,
+                description: copy.wordDescription,
+                extension: ".docx",
+              },
+              {
+                name: "HTML",
+                use: copy.htmlUse,
+                description: copy.htmlDescription,
+                extension: ".html",
+              },
+            ].map((format) => (
+              <div key={format.name}>
+                <span className="format-file" aria-hidden="true">
+                  {format.extension}
+                </span>
+                <h3>
+                  {format.name}
+                  <span>{format.use}</span>
+                </h3>
+                <p>{format.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
         <section className="studio-faq" aria-labelledby="faq-title">
           <p className="studio-eyebrow">BEFORE YOU START</p>
           <h2 id="faq-title">{guideCopy[locale].faqTitle}</h2>

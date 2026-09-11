@@ -24,12 +24,13 @@
     "test:resume": "node --import tsx --test tests/resume.test.ts",
     "test:showcase": "node --import tsx --test tests/showcase-resume.test.ts",
     "test:proxy": "node --import tsx --test tests/proxy.test.ts",
-    "check": "npm run build && npm run typecheck && npm run test:resume && npm run test:showcase && npm run test:proxy && npm run test:seo && npm run quality:regress",
+    "check": "npm run build && npm run typecheck && npm run test:resume && npm run test:showcase && npm run test:proxy && npm run test:seo && npm run test:html && npm run quality:regress",
     "insights:aggregate": "node scripts/aggregate-insights.mjs",
     "quality:regress": "node scripts/run-quality-regressions.cjs",
     "test:documents": "playwright test",
     "test:seo": "node --import tsx --test tests/seo.test.ts",
-    "test:seo:browser": "playwright test tests/browser/seo.spec.ts"
+    "test:seo:browser": "playwright test tests/browser/seo.spec.ts",
+    "test:html": "node --import tsx --test tests/document-html.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/noto-serif-kr": "^5.2.10",

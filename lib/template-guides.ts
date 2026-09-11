@@ -247,15 +247,15 @@ export const guideCopy = {
     audience: "이런 상황에 적합합니다",
     structure: "문서에 담기는 내용",
     preparation: "준비와 사용 방법",
-    exports: "PDF·Word·Google Docs로 활용하기",
+    exports: "PDF·Word·HTML로 활용하기",
     related: "다른 문서 형식 살펴보기",
     exportBody:
-      "PDF로 저장을 누른 뒤 인쇄 창에서 PDF 저장을 선택하세요. A4, 배율 100%, 브라우저 머리글·바닥글 끄기를 권장합니다. Word는 현재 미리보기 내용으로 .docx 파일을 만듭니다. Google Docs에서는 이 파일을 업로드해 편집할 수 있으며, 가져올 때 글꼴이나 페이지 나눔이 달라질 수 있습니다.",
+      "PDF로 저장을 누른 뒤 인쇄 창에서 PDF 저장을 선택하세요. A4, 배율 100%, 브라우저 머리글·바닥글 끄기를 권장합니다. Word는 현재 미리보기 내용으로 .docx 파일을 만듭니다. Google Docs에서는 이 파일을 업로드해 편집할 수 있으며, 가져올 때 글꼴이나 페이지 나눔이 달라질 수 있습니다. 저장·공유 메뉴에서 HTML을 고르면 글꼴과 사진을 포함한 파일을 내려받습니다. 목차와 모바일 레이아웃을 갖춘 문서로, 브라우저에서 인터넷 없이 읽을 수 있습니다. HTML 저장만으로 공개 링크가 만들어지지는 않습니다.",
     faqTitle: "GitHub 문서 만들기, 자주 묻는 질문",
     faq: [
       {
         q: "GitHubPrint로 어떤 문서를 만들 수 있나요?",
-        a: "개발자 소개서 Brief, 포트폴리오 Profile, 개발 활동 리포트 Insight, 직접 작성한 이력서 Resume를 만들 수 있습니다. 네 가지 템플릿 모두 한국어·영어와 PDF·Word 내보내기를 지원합니다.",
+        a: "개발자 소개서 Brief, 포트폴리오 Profile, 개발 활동 리포트 Insight, 직접 작성한 이력서 Resume를 만들 수 있습니다. 네 가지 템플릿 모두 한국어·영어와 PDF·Word·HTML 내보내기를 지원합니다.",
       },
       {
         q: "모든 템플릿에 resume 저장소가 필요한가요?",
@@ -263,7 +263,7 @@ export const guideCopy = {
       },
       {
         q: "로그인 없이 예시 파일을 받아볼 수 있나요?",
-        a: "예시 문서 미리보기에서 로그인 없이 PDF와 Word 저장을 시험할 수 있습니다. 예시는 가상의 데이터이며, 내 계정의 문서를 만들 때는 GitHub 로그인이 필요합니다.",
+        a: "예시 문서 미리보기에서 로그인 없이 PDF, Word, HTML 저장을 시험할 수 있습니다. 예시는 가상의 데이터이며, 내 계정의 문서를 만들 때는 GitHub 로그인이 필요합니다.",
       },
       {
         q: "Google Docs에서도 편집할 수 있나요?",
@@ -283,15 +283,15 @@ export const guideCopy = {
     audience: "When to use this format",
     structure: "What the document includes",
     preparation: "Preparation and workflow",
-    exports: "Working with PDF, Word, and Google Docs",
+    exports: "Working with PDF, Word, and HTML",
     related: "Explore other document formats",
     exportBody:
-      "Choose Save PDF, then save as PDF in the browser print dialog. Use A4 paper, 100% scale, and turn off browser headers and footers. Word exports use the current preview to create an editable .docx file. Upload that file to Google Docs to edit it there; fonts and page breaks can change during import.",
+      "Choose Save PDF, then save as PDF in the browser print dialog. Use A4 paper, 100% scale, and turn off browser headers and footers. Word exports use the current preview to create an editable .docx file. Upload that file to Google Docs to edit it there; fonts and page breaks can change during import. Choose HTML from Save & share for a file with fonts and photos included, a table of contents, and a mobile layout. It opens offline in a browser. Saving HTML does not publish a link.",
     faqTitle: "Questions about creating GitHub documents",
     faq: [
       {
         q: "What can I create with GitHubPrint?",
-        a: "Create a Brief introduction, a Profile portfolio, an Insight activity report, or an authored Resume. All four formats support Korean and English, with PDF and editable Word exports.",
+        a: "Create a Brief introduction, a Profile portfolio, an Insight activity report, or an authored Resume. All four formats support Korean and English, with PDF, editable Word, and portable HTML exports.",
       },
       {
         q: "Does every template require a resume repository?",
@@ -299,7 +299,7 @@ export const guideCopy = {
       },
       {
         q: "Can I download examples without signing in?",
-        a: "The example preview lets you try PDF and Word downloads without signing in. Examples use fictional data. Creating a document from your own account requires GitHub sign-in.",
+        a: "The example preview lets you try PDF, Word, and HTML downloads without signing in. Examples use fictional data. Creating a document from your own account requires GitHub sign-in.",
       },
       {
         q: "Can I edit the file in Google Docs?",

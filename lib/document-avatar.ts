@@ -1,5 +1,8 @@
 /** Rasterize only the profile image already displayed in the document. */
-export async function readDocumentAvatar(root: HTMLElement) {
+export async function readDocumentAvatar(
+  root: HTMLElement,
+  signal?: AbortSignal,
+) {
   const image = root.querySelector<HTMLImageElement>("img");
   if (!image) return null;
   const url = new URL(image.currentSrc || image.src, window.location.href);
@@ -7,7 +10,9 @@ export async function readDocumentAvatar(root: HTMLElement) {
     throw new Error("Unsupported image");
   const response = await fetch(url, {
     credentials: url.origin === window.location.origin ? "same-origin" : "omit",
-    signal: AbortSignal.timeout(5000),
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(5000)])
+      : AbortSignal.timeout(5000),
   });
   if (!response.ok) throw new Error("Profile image is unavailable");
   const blob = await response.blob();
