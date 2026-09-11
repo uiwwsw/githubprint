@@ -49,12 +49,14 @@ export function createDesignedDocument({
   locale,
   fontData,
   headingFontData,
+  templateLayout = false,
 }: {
   children: ISectionOptions["children"];
   title: string;
   locale: Locale;
   fontData?: Uint8Array;
   headingFontData?: Uint8Array;
+  templateLayout?: boolean;
 }) {
   return new Document({
     creator: "GitHubPrint",
@@ -118,9 +120,16 @@ export function createDesignedDocument({
           },
           paragraph: {
             spacing: { before: 260, after: 120 },
-            border: {
-              bottom: { color: "DCE5DF", style: "single", size: 4, space: 6 },
-            },
+            border: templateLayout
+              ? undefined
+              : {
+                  bottom: {
+                    color: "DCE5DF",
+                    style: "single",
+                    size: 4,
+                    space: 6,
+                  },
+                },
             keepNext: true,
             keepLines: true,
           },

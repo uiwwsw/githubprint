@@ -5,6 +5,13 @@ export async function readDocumentAvatar(
 ) {
   const image = root.querySelector<HTMLImageElement>("img");
   if (!image) return null;
+  return readDocumentImage(image, signal);
+}
+
+export async function readDocumentImage(
+  image: HTMLImageElement,
+  signal?: AbortSignal,
+) {
   const url = new URL(image.currentSrc || image.src, window.location.href);
   if (!["https:", "http:", "data:"].includes(url.protocol))
     throw new Error("Unsupported image");
@@ -23,22 +30,15 @@ export async function readDocumentAvatar(
     bitmap.src = objectUrl;
     await bitmap.decode();
     const canvas = document.createElement("canvas");
-    canvas.width = 192;
-    canvas.height = 192;
+    const ratio = Math.min(
+      1,
+      1200 / Math.max(bitmap.naturalWidth, bitmap.naturalHeight),
+    );
+    canvas.width = Math.max(1, Math.round(bitmap.naturalWidth * ratio));
+    canvas.height = Math.max(1, Math.round(bitmap.naturalHeight * ratio));
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Image conversion is unavailable");
-    const side = Math.min(bitmap.naturalWidth, bitmap.naturalHeight);
-    context.drawImage(
-      bitmap,
-      (bitmap.naturalWidth - side) / 2,
-      (bitmap.naturalHeight - side) / 2,
-      side,
-      side,
-      0,
-      0,
-      192,
-      192,
-    );
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     const png = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(
         (value) =>

@@ -4,7 +4,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const output = path.join(process.cwd(), ".cache/document-qa");
-const plain = (value: string) => value.replace(/\s+/g, "");
+const plain = (value: string) => value.replace(/\s+/g, "").toLocaleLowerCase();
 const unescapeXml = (value: string) =>
   value
     .replace(/&amp;/g, "&")
@@ -75,6 +75,10 @@ for (const locale of ["ko", "en"] as const) {
       expect(xml).toContain('w:pStyle w:val="Heading1"');
       expect(xml).toContain("w:keepNext");
       expect(xml).toContain("w:widowControl");
+      // A text-only rebuild would pass content checks but lose the template.
+      expect((xml.match(/<w:tbl>/g) ?? []).length).toBeGreaterThan(2);
+      expect(xml).toContain("w:shd");
+      expect(xml).toContain('w:color="27674C"');
       const fonts = await zip.file("word/fontTable.xml")!.async("string");
       expect(fonts).toContain("w:embedRegular");
       expect(
@@ -155,13 +159,20 @@ test("PDF uses the filename and restores the title after print, including a canc
       window.dispatchEvent(new Event("afterprint"));
     };
   });
-  await page.getByRole("button", { name: "PDF로 저장" }).click();
-  await expect(page.getByRole("button", { name: "PDF로 저장" })).toBeEnabled();
+  await expect(page.locator(".export-toolbar").getByRole("button")).toHaveCount(
+    1,
+  );
+  await page.getByRole("button", { name: "저장·공유" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "PDF로 저장" })
+    .click();
+  await expect(page.getByRole("button", { name: "저장·공유" })).toBeEnabled();
   expect(await page.title()).toBe(originalTitle);
   expect(await page.locator("html").getAttribute("data-test-print-title")).toBe(
     "githubprint-example-resume-2026-09-01",
   );
-  await page.getByLabel("PDF 간격").selectOption("compact");
+  await page.getByLabel("인쇄 간격").selectOption("compact");
   await page.emulateMedia({ media: "print" });
   expect(
     await page

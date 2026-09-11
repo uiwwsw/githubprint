@@ -70,7 +70,7 @@ Current product limits:
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
 - Editable Word / Google Docs-compatible `.docx` exports for all four templates, with embedded Korean fonts
-- Responsive, offline HTML files with an embedded font, photos, table of contents, and A4 print styles
+- Responsive, offline HTML files preserving the template markup, fonts, photos, cards, and A4 print styles
 - A purpose-based save dialog, document navigation, and link copying for explicitly public examples/showcases
 - Public example previews at `/preview` and `/en/preview` without sign-in
 - A starter `resume` repository guide with photo support in [`docs/resume-template.md`](./docs/resume-template.md)
@@ -121,7 +121,7 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 - AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
 - 모든 템플릿의 편집 가능한 Word / Google Docs 호환 `.docx` 내보내기와 한글 글꼴 포함
-- 글꼴·사진·목차·모바일 레이아웃을 포함한 오프라인 HTML 내보내기
+- 템플릿의 글꼴·사진·카드·모바일 및 인쇄 레이아웃을 보존하는 오프라인 HTML 내보내기
 - 용도별 저장 메뉴, 문서 목차 탐색, 공개 사례와 예시 문서의 링크 복사
 - 로그인 없이 사용하는 `/preview`, `/en/preview` 예시 문서
 - 사진 필드까지 포함한 `resume` starter 가이드를 [`docs/resume-template.md`](./docs/resume-template.md)로 제공
