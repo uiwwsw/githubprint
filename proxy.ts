@@ -2,7 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { routing } from "@/i18n/routing";
-import { getLocalizedPathname, resolveLocale } from "@/lib/i18n";
+import { resolveLocale } from "@/lib/i18n";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -20,12 +20,16 @@ export function proxy(request: NextRequest) {
   if (langParam && !isApiRoute) {
     const locale = resolveLocale(langParam);
     const redirectUrl = nextUrl.clone();
-    const isResultIndexPath = pathname === "/result" || pathname === "/en/result";
-
-    redirectUrl.pathname = getLocalizedPathname(isResultIndexPath ? "/result" : "/", locale);
+    const unprefixed = pathname.replace(/^\/(en|ko)(?=\/|$)/, "") || "/";
+    redirectUrl.pathname =
+      locale === "en"
+        ? unprefixed === "/"
+          ? "/en"
+          : `/en${unprefixed}`
+        : unprefixed;
     redirectUrl.searchParams.delete("lang");
 
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(redirectUrl, 308);
   }
 
   if (isApiRoute) {
@@ -33,6 +37,13 @@ export function proxy(request: NextRequest) {
   }
 
   const response = handleI18nRouting(request);
+
+  if (
+    process.env.VERCEL_ENV === "preview" ||
+    /^(\/en)?\/preview(?:\/|$)/.test(pathname)
+  ) {
+    response.headers.set("X-Robots-Tag", "noindex, follow");
+  }
 
   if (isResultPath) {
     // Result pages are private to the signed-in user and should never appear in search.

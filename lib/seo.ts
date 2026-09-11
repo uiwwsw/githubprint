@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import { buildResultDocumentTitle } from "@/lib/result-document";
 import type { ResumeDocumentData } from "@/lib/resume";
 import type { Locale, TemplateId } from "@/lib/schemas";
-import { getDictionary, getLocalizedPathname, getLocalizedResultPath } from "@/lib/i18n";
+import {
+  getDictionary,
+  getLocalizedPathname,
+  getLocalizedResultPath,
+} from "@/lib/i18n";
 import {
   getShowcaseDisplayName,
   getShowcaseKeywords,
@@ -16,6 +20,92 @@ import {
   type ShowcaseSlug,
 } from "@/lib/showcase";
 import { getSiteUrl } from "@/lib/site-url";
+import {
+  getTemplateGuide,
+  getTemplateGuidePath,
+  PUBLIC_CONTENT_UPDATED_AT,
+} from "@/lib/template-guides";
+
+export function serializeStructuredData(value: unknown) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
+export function getPublicUrl(pathname: string, locale: Locale) {
+  const path =
+    locale === "en" ? (pathname === "/" ? "/en" : `/en${pathname}`) : pathname;
+  return new URL(path, getSiteUrl()).toString();
+}
+
+export function getPublicAlternates(pathname: string) {
+  return {
+    ko: getPublicUrl(pathname, "ko"),
+    en: getPublicUrl(pathname, "en"),
+    "x-default": getPublicUrl(pathname, "ko"),
+  };
+}
+
+export function getPublicRobots(): Metadata["robots"] {
+  const index = process.env.VERCEL_ENV !== "preview";
+  return {
+    index,
+    follow: true,
+    googleBot: {
+      index,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  };
+}
+
+export function getSocialImageUrl(
+  locale: Locale,
+  kind: TemplateId | "home" = "home",
+) {
+  return new URL(`/share/${locale}/${kind}.png`, getSiteUrl()).toString();
+}
+
+function buildPublicPageMetadata(
+  locale: Locale,
+  pathname: string,
+  title: string,
+  description: string,
+  kind: TemplateId | "home" = "home",
+): Metadata {
+  const image = {
+    url: getSocialImageUrl(locale, kind),
+    width: 1200,
+    height: 630,
+    alt: title,
+    type: "image/png",
+  };
+  return {
+    title,
+    description,
+    robots: getPublicRobots(),
+    alternates: {
+      canonical: getPublicUrl(pathname, locale),
+      languages: getPublicAlternates(pathname),
+    },
+    openGraph: {
+      type: "website",
+      siteName: "GitHubPrint",
+      title,
+      description,
+      url: getPublicUrl(pathname, locale),
+      locale: locale === "ko" ? "ko_KR" : "en_US",
+      alternateLocale: [locale === "ko" ? "en_US" : "ko_KR"],
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+  };
+}
 
 function localePath(
   pathname: "/" | "/result" | `/result/${TemplateId}`,
@@ -37,6 +127,20 @@ function localePath(
 export function getBaseMetadata(): Metadata {
   return {
     metadataBase: new URL(getSiteUrl()),
+    applicationName: "GitHubPrint",
+    title: { default: "GitHubPrint", template: "%s | GitHubPrint" },
+    robots: getPublicRobots(),
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+      other: {
+        ...(process.env.NAVER_SITE_VERIFICATION
+          ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION }
+          : {}),
+        ...(process.env.BING_SITE_VERIFICATION
+          ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION }
+          : {}),
+      },
+    },
     icons: {
       icon: [
         { url: "/favicon.svg", type: "image/svg+xml" },
@@ -44,7 +148,9 @@ export function getBaseMetadata(): Metadata {
         { url: "/favicon.ico", sizes: "any" },
       ],
       shortcut: ["/favicon.ico"],
-      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      ],
     },
   };
 }
@@ -55,33 +161,12 @@ export function buildHomeMetadata(locale: Locale): Metadata {
   const description = dict.metadata.homeDescription;
 
   return {
+    ...buildPublicPageMetadata(locale, "/", title, description),
     applicationName: dict.siteName,
-    category: locale === "ko" ? "개발자 이력서 생성기" : "Developer resume builder",
-    title,
-    description,
+    category:
+      locale === "ko" ? "개발자 이력서 생성기" : "Developer resume builder",
+    title: { absolute: title },
     keywords: dict.metadata.homeKeywords,
-    alternates: {
-      canonical: getLocalizedPathname("/", locale),
-      languages: {
-        ko: "/",
-        en: "/en",
-        "x-default": "/",
-      },
-    },
-    openGraph: {
-      type: "website",
-      siteName: dict.siteName,
-      title,
-      description,
-      url: localePath("/", locale),
-      locale: locale === "ko" ? "ko_KR" : "en_US",
-      alternateLocale: locale === "ko" ? ["en_US"] : ["ko_KR"],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
   };
 }
 
@@ -95,13 +180,15 @@ export function buildHomeStructuredData(locale: Locale) {
       ? [
           "GitHub를 이력서와 개발자 소개 문서로 변환",
           "공유 가능한 개발자 포트폴리오 PDF 생성",
-          "resume 저장소 기반 ATS 친화 Word 이력서 생성",
+          "네 가지 템플릿의 편집 가능한 Word 문서 생성",
+          "resume 저장소에 직접 작성한 경력으로 이력서 구성",
           "한국어와 영어 결과 문서 지원",
         ]
       : [
           "Turn GitHub into a developer resume and profile document",
           "Generate shareable developer portfolio PDFs",
-          "Create an ATS-friendly Word resume from a GitHub resume repository",
+          "Export editable Word documents from all four templates",
+          "Build a resume from authored content in a GitHub resume repository",
           "Support Korean and English output",
         ];
 
@@ -109,14 +196,17 @@ export function buildHomeStructuredData(locale: Locale) {
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
+      "@id": `${getSiteUrl()}/#website`,
       name: dict.siteName,
-      url,
-      inLanguage,
+      alternateName: "GitHub Print",
+      url: `${getSiteUrl()}/`,
+      inLanguage: ["ko-KR", "en-US"],
       description,
     },
     {
       "@context": "https://schema.org",
       "@type": "WebApplication",
+      "@id": `${getSiteUrl()}/#application`,
       name: dict.siteName,
       url,
       operatingSystem: "Web",
@@ -124,6 +214,18 @@ export function buildHomeStructuredData(locale: Locale) {
       inLanguage,
       description,
       featureList,
+      image: getSocialImageUrl(locale),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      url,
+      name: dict.metadata.homeTitle,
+      description,
+      inLanguage,
+      isPartOf: { "@id": `${getSiteUrl()}/#website` },
+      about: { "@id": `${getSiteUrl()}/#application` },
     },
   ];
 }
@@ -146,7 +248,7 @@ export function buildResultMetadata(
   const description = dict.metadata.resultDescription;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     robots: {
       index: false,
@@ -169,7 +271,9 @@ export function buildResultMetadata(
       languages: {
         ko: options?.template ? `/result/${options.template}` : "/result",
         en: options?.template ? `/en/result/${options.template}` : "/en/result",
-        "x-default": options?.template ? `/result/${options.template}` : "/result",
+        "x-default": options?.template
+          ? `/result/${options.template}`
+          : "/result",
       },
     },
     openGraph: {
@@ -197,10 +301,14 @@ export function buildShowcaseStructuredData(
   slug: ShowcaseSlug,
   resume?: ResumeDocumentData | null,
 ) {
+  if (!resume) return [];
   const showcase = getShowcaseRecord(slug);
   const pageUrl = absolutePathUrl(getShowcasePath(slug, locale));
-  const profileImageUrl = absolutePathUrl(getShowcaseProfileImage(slug, resume));
-  const occupationName = locale === "ko" ? "프론트엔드 개발자" : "Frontend developer";
+  const profileImageUrl = absolutePathUrl(
+    getShowcaseProfileImage(slug, resume),
+  );
+  const occupationName =
+    locale === "ko" ? "프론트엔드 개발자" : "Frontend developer";
   const seoTitle = getShowcaseSeoTitle(slug, locale, resume);
   const seoDescription = getShowcaseSeoDescription(slug, locale, resume);
   const displayName = getShowcaseDisplayName(slug, resume);
@@ -296,25 +404,18 @@ export function buildShowcaseMetadata(
   const canonicalPath = getShowcasePath(slug, locale);
   const alternateKoPath = getShowcasePath(slug, "ko");
   const alternateEnPath = getShowcasePath(slug, "en");
-  const profileImageUrl = absolutePathUrl(getShowcaseProfileImage(slug, resume));
+  const profileImageUrl = absolutePathUrl(
+    getShowcaseProfileImage(slug, resume),
+  );
   const seoTitle = getShowcaseSeoTitle(slug, locale, resume);
   const seoDescription = getShowcaseSeoDescription(slug, locale, resume);
   const displayName = getShowcaseDisplayName(slug, resume);
 
   return {
-    title: seoTitle,
+    title: { absolute: seoTitle },
     description: seoDescription,
     keywords: getShowcaseKeywords(slug, locale, resume),
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: resume ? getPublicRobots() : { index: false, follow: true },
     authors: [
       {
         name: displayName,
@@ -333,6 +434,7 @@ export function buildShowcaseMetadata(
     },
     openGraph: {
       type: "profile",
+      siteName: "GitHubPrint",
       title: seoTitle,
       description: seoDescription,
       url: absolutePathUrl(canonicalPath),
@@ -341,8 +443,6 @@ export function buildShowcaseMetadata(
       images: [
         {
           url: profileImageUrl,
-          width: 1029,
-          height: 1029,
           alt:
             locale === "ko"
               ? `${displayName} 공개 이력서 프로필 이미지`
@@ -360,5 +460,66 @@ export function buildShowcaseMetadata(
 }
 
 export function buildPreviewMetadata(locale: Locale): Metadata {
-  return { title: `${getDictionary(locale).studio.sampleTitle} | GitHubPrint`, robots: { index: false, follow: false } };
+  return {
+    title: getDictionary(locale).studio.sampleTitle,
+    description: getDictionary(locale).studio.sampleSubtitle,
+    robots: { index: false, follow: true },
+    alternates: { canonical: getPublicUrl("/preview", locale) },
+  };
+}
+
+export function buildTemplateMetadata(
+  locale: Locale,
+  template: TemplateId,
+): Metadata {
+  const guide = getTemplateGuide(template, locale);
+  return buildPublicPageMetadata(
+    locale,
+    `/templates/${template}`,
+    guide.title,
+    guide.description,
+    template,
+  );
+}
+
+export function buildTemplateStructuredData(
+  locale: Locale,
+  template: TemplateId,
+) {
+  const guide = getTemplateGuide(template, locale);
+  const url = absolutePathUrl(getTemplateGuidePath(template, locale));
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": `${url}#webpage`,
+      url,
+      name: guide.title,
+      description: guide.description,
+      inLanguage: locale === "ko" ? "ko-KR" : "en-US",
+      dateModified: PUBLIC_CONTENT_UPDATED_AT,
+      isPartOf: { "@id": `${getSiteUrl()}/#website` },
+      about: {
+        "@type": "WebApplication",
+        "@id": `${getSiteUrl()}/#application`,
+        name: "GitHubPrint",
+        url: `${getSiteUrl()}/`,
+      },
+      breadcrumb: { "@id": `${url}#breadcrumb` },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "@id": `${url}#breadcrumb`,
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "GitHubPrint",
+          item: getPublicUrl("/", locale),
+        },
+        { "@type": "ListItem", position: 2, name: guide.title, item: url },
+      ],
+    },
+  ];
 }

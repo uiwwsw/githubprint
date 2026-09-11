@@ -6,7 +6,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/en", "/showcase", "/en/showcase", "/result", "/en/result"],
+        allow: "/",
+        // Let crawlers read noindex on /result and /preview. Public profile images
+        // remain crawlable; only authentication and private download routes are blocked.
+        disallow: ["/api/auth/", "/api/resume-docx", "/api/resume-asset"],
       },
     ],
     sitemap: `${getSiteUrl()}/sitemap.xml`,
