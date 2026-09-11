@@ -59,6 +59,7 @@ export function InsightTemplate({
       }
     >
       <DocumentIdentity
+        locale={locale}
         analysis={analysis}
         profileUrl={profileUrl}
         summary={view.opening}

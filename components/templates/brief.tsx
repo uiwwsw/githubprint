@@ -58,6 +58,7 @@ export function BriefTemplate({
       }
     >
       <DocumentIdentity
+        locale={locale}
         analysis={analysis}
         profileUrl={profileUrl}
         summary={view.summary}

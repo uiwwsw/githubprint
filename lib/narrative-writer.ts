@@ -1,6 +1,7 @@
 import "server-only";
 
 import { localizeText } from "@/lib/data-loader";
+import { buildProfileIntroduction } from "@/lib/profile-introduction";
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
 import { buildRepoTechStack, summarizeRepoStack } from "@/lib/repo-identity";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
@@ -35,13 +36,6 @@ function repoSignalText(repo: GitHubRepoSnapshot, locale: Locale) {
   ].filter(Boolean);
 
   return parts.join(" / ");
-}
-
-function fillTemplate(template: string, replacements: Record<string, string>) {
-  return Object.entries(replacements).reduce(
-    (result, [key, value]) => result.replaceAll(`{${key}}`, value),
-    template,
-  );
 }
 
 function joinReadable(values: string[], locale: Locale) {
@@ -81,159 +75,6 @@ function localizePrivateFacet(value: string, locale: Locale) {
 
 function getStackSummary(source: GitHubSourceData) {
   return source.stackSummary ?? summarizeRepoStack(source.repos);
-}
-
-function buildDeveloperTypeText(
-  scoring: ProfileScoringResult,
-  config: ProfileEngineConfig,
-  locale: Locale,
-) {
-  const primary = scoring.primaryOrientation;
-  const secondary = scoring.secondaryOrientation;
-  const base =
-    primary && primary.score >= 45
-      ? primary.developerType
-      : localizeText(config.templates.generalist.developerType, locale);
-
-  if (!secondary || secondary.id === primary?.id || secondary.score < 50) {
-    return base;
-  }
-
-  return locale === "ko"
-    ? `${base} ${secondary.label} 관련 구현도 함께 확인됩니다.`
-    : `${base} The work also includes ${secondary.label} implementation.`;
-}
-
-function buildWorkingStyleText(scoring: ProfileScoringResult, locale: Locale) {
-  const primary = scoring.primaryWorkingStyle;
-  const secondary = scoring.secondaryWorkingStyle;
-
-  if (!primary) {
-    return locale === "ko"
-      ? "작업 방식은 공개 저장소 기준으로는 제한적으로만 드러납니다."
-      : "Working-style signals are only partially visible from repositories.";
-  }
-
-  if (!secondary || secondary.id === primary.id || secondary.score < 45) {
-    return primary.text;
-  }
-
-  return `${primary.text} ${secondary.text}`;
-}
-
-function buildSummaryText(
-  source: GitHubSourceData,
-  scoring: ProfileScoringResult,
-  config: ProfileEngineConfig,
-  locale: Locale,
-) {
-  const template = localizeText(
-    config.templates.summary[scoring.confidenceBand],
-    locale,
-  );
-  const projectNames = source.representativeRepos
-    .slice(0, 2)
-    .map((repo) => repo.name);
-  const stackSummary = getStackSummary(source);
-  const projectFallback =
-    source.dataMode === "private_enriched"
-      ? locale === "ko"
-        ? "주요 저장소"
-        : "visible repositories"
-      : locale === "ko"
-        ? "주요 공개 저장소"
-        : "visible public repositories";
-
-  if (!projectNames.length && source.repos.length === 0) {
-    return locale === "ko"
-      ? "현재 확인할 수 있는 프로젝트가 없습니다. 저장소에 설명과 사용 기술을 남기면 다음 문서에 반영됩니다."
-      : "No projects are currently available to describe. Repository descriptions and technologies can be included when available.";
-  }
-
-  const base = fillTemplate(template, {
-    languages: joinReadable(
-      (stackSummary.coreStack.length > 0
-        ? stackSummary.coreStack
-        : source.topLanguages.slice(0, 3).map((item) => item.name)
-      ).slice(0, 3),
-      locale,
-    ),
-    name: source.account.name ?? source.account.username,
-    primaryOrientation:
-      scoring.primaryOrientation?.label ??
-      (locale === "ko" ? "폭넓은 구현" : "general implementation"),
-    primaryStyle:
-      scoring.primaryWorkingStyle?.label ??
-      (locale === "ko" ? "구현 중심 작업" : "implementation-led work"),
-    projects:
-      projectNames.length > 0
-        ? joinReadable(projectNames, locale)
-        : projectFallback,
-  });
-
-  if (
-    source.dataMode !== "private_enriched" ||
-    !source.authorizedPrivateInsights
-  ) {
-    return base;
-  }
-
-  const insights = source.authorizedPrivateInsights;
-
-  if (insights.privateOnlyStack.length > 0) {
-    return `${base} ${
-      locale === "ko"
-        ? `선택한 비공개 작업에서 ${joinReadable(
-            insights.privateOnlyStack.slice(0, 2),
-            locale,
-          )} 기술도 확인됩니다.`
-        : `Selected private work also uses ${joinReadable(
-            insights.privateOnlyStack.slice(0, 2),
-            locale,
-          )}.`
-    }`;
-  }
-
-  if (insights.topPrivateSurfaces.length > 0) {
-    return `${base} ${
-      locale === "ko"
-        ? `선택한 비공개 저장소에는 ${joinReadable(
-            insights.topPrivateSurfaces
-              .slice(0, 2)
-              .map((item) => localizePrivateFacet(item, locale)),
-            locale,
-          )} 관련 작업도 있습니다.`
-        : `Selected private repositories also include ${joinReadable(
-            insights.topPrivateSurfaces
-              .slice(0, 2)
-              .map((item) => localizePrivateFacet(item, locale)),
-            locale,
-          )} work.`
-    }`;
-  }
-
-  return base;
-}
-
-function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
-  const stack = getStackSummary(source).coreStack.slice(0, 3);
-  const projects = source.representativeRepos;
-  return [
-    stack.length
-      ? locale === "ko"
-        ? `확인된 기술: ${stack.join(" · ")}`
-        : `Technologies: ${stack.join(" · ")}`
-      : locale === "ko"
-        ? "주력 기술을 판단할 자료가 적습니다."
-        : "There is little evidence to identify a main stack.",
-    projects.length
-      ? locale === "ko"
-        ? `살펴볼 수 있는 대표 프로젝트 ${projects.length}개`
-        : `${projects.length} selected projects to explore`
-      : locale === "ko"
-        ? "프로젝트 소개에 필요한 자료가 적습니다."
-        : "Project information is limited.",
-  ];
 }
 
 function buildFallbackRoles(scoring: ProfileScoringResult, locale: Locale) {
@@ -458,10 +299,7 @@ export function buildRuleBasedAnalysis(
   locale: Locale,
 ): GitHubPrintAnalysis {
   const name = source.account.name ?? source.account.username;
-  const strengths = [
-    ...scoring.strengths,
-    ...buildFallbackStrengths(source, locale),
-  ].slice(0, 4);
+  const introduction = buildProfileIntroduction(source, scoring, locale);
   const roles = [
     ...scoring.roles,
     ...buildFallbackRoles(scoring, locale),
@@ -477,10 +315,6 @@ export function buildRuleBasedAnalysis(
       : topLanguages.length > 0
         ? topLanguages
         : ["GitHub"];
-  const headline =
-    scoring.primaryOrientation && scoring.primaryOrientation.score >= 45
-      ? scoring.primaryOrientation.headline
-      : localizeText(config.templates.generalist.headline, locale);
   const evidence = [
     {
       detail: source.activity.note,
@@ -549,22 +383,16 @@ export function buildRuleBasedAnalysis(
         roles.length >= 2
           ? roles
           : [...roles, ...buildFallbackRoles(scoring, locale)].slice(0, 2),
-      cautionNote: localizeText(
-        config.templates.caution[scoring.confidenceBand],
-        locale,
-      ),
-      developerType: buildDeveloperTypeText(scoring, config, locale),
-      strengths:
-        strengths.length >= 2
-          ? strengths
-          : buildFallbackStrengths(source, locale).slice(0, 2),
-      workingStyle: buildWorkingStyleText(scoring, locale),
+      cautionNote: introduction.cautionNote,
+      developerType: introduction.developerType,
+      strengths: introduction.strengths,
+      workingStyle: introduction.workingStyle,
     },
     profile: {
       avatarUrl: source.account.avatarUrl,
-      headline,
+      headline: introduction.headline,
       name,
-      summary: buildSummaryText(source, scoring, config, locale),
+      summary: introduction.summary,
       username: source.account.username,
     },
     projects: buildProjects(source, locale),

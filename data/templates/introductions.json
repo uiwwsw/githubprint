@@ -1,0 +1,179 @@
+{
+  "specialties": [
+    {
+      "id": "frontend",
+      "minScore": 65,
+      "minRepositories": 2,
+      "signals": [
+        "topic:react",
+        "topic:nextjs",
+        "topic:frontend",
+        "file:next-config",
+        "file:tailwind-config",
+        "file:storybook",
+        "keyword:design-system"
+      ],
+      "headline": {
+        "ko": "웹 인터페이스를 만드는 개발자",
+        "en": "A developer building web interfaces"
+      },
+      "area": {
+        "ko": "웹 인터페이스",
+        "en": "web interfaces"
+      }
+    },
+    {
+      "id": "backend",
+      "minScore": 65,
+      "minRepositories": 2,
+      "signals": [
+        "topic:backend",
+        "language:go",
+        "file:go-mod",
+        "keyword:backend-domain"
+      ],
+      "headline": {
+        "ko": "API와 데이터 흐름을 구현하는 개발자",
+        "en": "A developer building APIs and data services"
+      },
+      "area": {
+        "ko": "API와 서버 기능",
+        "en": "APIs and server features"
+      }
+    },
+    {
+      "id": "mobile",
+      "minScore": 65,
+      "minRepositories": 2,
+      "signals": [
+        "topic:mobile",
+        "file:mobile-dir",
+        "keyword:mobile-app"
+      ],
+      "headline": {
+        "ko": "모바일 앱을 만드는 개발자",
+        "en": "A developer building mobile apps"
+      },
+      "area": {
+        "ko": "모바일 앱",
+        "en": "mobile apps"
+      }
+    },
+    {
+      "id": "ai",
+      "minScore": 65,
+      "minRepositories": 2,
+      "signals": [
+        "topic:ai",
+        "keyword:ai-domain"
+      ],
+      "headline": {
+        "ko": "AI를 제품과 도구에 연결하는 개발자",
+        "en": "A developer bringing AI into products and tools"
+      },
+      "area": {
+        "ko": "AI 기능",
+        "en": "AI features"
+      }
+    },
+    {
+      "id": "devtools",
+      "minScore": 65,
+      "minRepositories": 2,
+      "signals": [
+        "topic:devtools",
+        "keyword:tooling"
+      ],
+      "headline": {
+        "ko": "개발 도구와 자동화를 만드는 개발자",
+        "en": "A developer building tools and automation"
+      },
+      "area": {
+        "ko": "개발 도구와 자동화",
+        "en": "developer tools and automation"
+      }
+    }
+  ],
+  "patterns": [
+    {
+      "id": "published-docs",
+      "minRepositories": 2,
+      "strength": {
+        "ko": "결과물과 설명을 함께 보여주는 프로젝트",
+        "en": "Projects presented with links and context"
+      },
+      "text": {
+        "ko": "{projects}에는 결과물 링크와 README가 함께 있어, 코드와 사용 맥락을 연결해 살펴볼 수 있습니다.",
+        "en": "{projects} pair project links with READMEs, making the work and its context easier to explore."
+      },
+      "reading": {
+        "ko": "소스와 설명, 결과물로 이어지는 경로를 함께 제공하는 작업 방식입니다.",
+        "en": "The work is presented through connected source code, documentation, and project links."
+      }
+    },
+    {
+      "id": "verification",
+      "minRepositories": 1,
+      "strength": {
+        "ko": "코드와 함께 제공하는 테스트·검증 설정",
+        "en": "Test setup alongside the implementation"
+      },
+      "text": {
+        "ko": "{projects}에 테스트·검증 설정을 포함해, 구현을 확인하는 절차도 함께 보여줍니다.",
+        "en": "{projects} {include} test or verification setup, showing how the implementation can be checked."
+      },
+      "reading": {
+        "ko": "구현 코드와 검증 설정을 함께 관리하는 방식입니다.",
+        "en": "Implementation and verification setup are maintained together."
+      }
+    },
+    {
+      "id": "documentation",
+      "minRepositories": 2,
+      "strength": {
+        "ko": "프로젝트의 맥락을 남긴 README",
+        "en": "READMEs that accompany the work"
+      },
+      "text": {
+        "ko": "{projects}에 README를 함께 제공해, 코드를 살펴볼 때 참고할 설명을 남겼습니다.",
+        "en": "{projects} include READMEs that provide context alongside the code."
+      },
+      "reading": {
+        "ko": "프로젝트를 이해할 수 있도록 코드에 설명을 곁들이는 방식입니다.",
+        "en": "The code is accompanied by written project context."
+      }
+    },
+    {
+      "id": "demo",
+      "minRepositories": 1,
+      "strength": {
+        "ko": "코드에서 결과물로 이어지는 링크",
+        "en": "Links from code to project output"
+      },
+      "text": {
+        "ko": "{projects}에서 결과물 링크를 제공해, 저장소 밖에서도 프로젝트를 살펴볼 수 있습니다.",
+        "en": "{projects} {provide} project links for exploring the work beyond its repository."
+      },
+      "reading": {
+        "ko": "저장소와 결과물을 연결해 작업을 둘러볼 경로를 제공하는 방식입니다.",
+        "en": "Repository and project links provide connected ways to explore the work."
+      }
+    },
+    {
+      "id": "workspace",
+      "minRepositories": 1,
+      "strength": {
+        "ko": "설정으로 드러나는 작업 공간 구성",
+        "en": "Workspace structure recorded in configuration"
+      },
+      "text": {
+        "ko": "{projects}에 작업 공간 설정을 포함해, 프로젝트가 어떻게 나뉘고 연결되는지 보여줍니다.",
+        "en": "{projects} {include} workspace configuration that shows how the project is organized."
+      },
+      "reading": {
+        "ko": "작업 단위를 설정 파일로 명시해 프로젝트 구성을 드러내는 방식입니다.",
+        "en": "Workspace configuration makes the organization of the project explicit."
+      }
+    }
+  ]
+}
