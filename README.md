@@ -189,8 +189,8 @@ Repository identity inference is intentionally data-driven.
 | Variable                              | Required    | Purpose                                                     |
 | ------------------------------------- | ----------- | ----------------------------------------------------------- |
 | `GITHUB_TOKEN`                        | Recommended | Raises GitHub API limits and improves local reliability     |
-| `GITHUB_CLIENT_ID`                    | Optional    | Enables GitHub OAuth sign-in for private-enriched self mode |
-| `GITHUB_CLIENT_SECRET`                | Optional    | Enables GitHub OAuth sign-in for private-enriched self mode |
+| `GITHUB_CLIENT_ID`                    | Optional    | Enables GitHub sign-in; private access is an optional upgrade |
+| `GITHUB_CLIENT_SECRET`                | Optional    | Enables GitHub sign-in; private access is an optional upgrade |
 | `GITHUB_SESSION_SECRET`               | Optional    | Encrypts the server-side GitHub session cookie              |
 | `OPENAI_API_KEY`                      | Optional    | Enables AI analysis; fallback still works without it        |
 | `OPENAI_MODEL`                        | Optional    | Overrides the default model, currently `gpt-5-mini`         |
@@ -272,3 +272,7 @@ The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `l
 The homepages link to indexable Korean and English guides for all four templates under `/templates/{brief,profile,insight,resume}` and `/en/templates/...`. Canonical URLs, reciprocal language alternatives, stable sitemap dates, structured data, and ten generated social preview images are maintained together. Private results and fictional previews remain excluded from indexing.
 
 Run `npm run test:seo:browser` for crawler and social-image checks. See [SEO configuration and verification](docs/seo.md) for canonical-domain settings, search ownership verification variables, sitemap submission, and the route indexing policy.
+
+### Private sources
+
+Public-only is the default, even after sign-in. Brief, Profile, and Insight can optionally summarize or display up to three selected private projects. Resume separates private source storage from explicitly linked project enrichment. See [private data choices and verification](docs/private-data.md).

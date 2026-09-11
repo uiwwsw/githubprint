@@ -1,3 +1,5 @@
+import { resolveDocumentConfiguration } from "@/lib/document-configuration";
+import type { DocumentOptions } from "@/lib/document-options";
 import { NextRequest, NextResponse } from "next/server";
 import { getGitHubSession } from "@/lib/auth";
 import { buildResumeDocx } from "@/lib/resume-docx";
@@ -18,8 +20,22 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  let configuration: DocumentOptions;
+  const config = request.nextUrl.searchParams.get("config") ?? undefined;
+  try {
+    configuration = resolveDocumentConfiguration(config, "resume", session);
+  } catch {
+    return new NextResponse("Choose your document sources again.", {
+      status: 403,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+  }
+
   const locale = resolveLocale(request.nextUrl.searchParams.get("lang"));
   const availability = await getResumeTemplateAvailability({
+    allowPrivateSource: configuration.resumeSource === "authorized",
+    allowPrivateProjects: configuration.resumeProjects === "authorized",
+    assetContext: config,
     authContext: {
       accessToken: session.accessToken,
       scopes: session.scopes,
@@ -45,11 +61,13 @@ export async function GET(request: NextRequest) {
         availability.document.basics.avatarPath,
       )
     : null;
-  const lookup = !localAvatarAsset && availability.document.basics.avatarPath
-    ? await getResumeRepoLookup(session.user.login, {
-        authContext,
-      })
-    : null;
+  const lookup =
+    !localAvatarAsset && availability.document.basics.avatarPath
+      ? await getResumeRepoLookup(session.user.login, {
+          authContext,
+          allowPrivate: configuration.resumeSource === "authorized",
+        })
+      : null;
   const avatarAsset =
     localAvatarAsset ??
     (lookup && availability.document.basics.avatarPath
@@ -60,14 +78,10 @@ export async function GET(request: NextRequest) {
           { authContext },
         )
       : null);
-  const buffer = await buildResumeDocx(
-    availability.document,
-    locale,
-    {
-      avatarAsset,
-      fallbackAvatarUrl: session.user.avatarUrl,
-    },
-  );
+  const buffer = await buildResumeDocx(availability.document, locale, {
+    avatarAsset,
+    fallbackAvatarUrl: session.user.avatarUrl,
+  });
   const fileName = `${buildDownloadFileName({
     generatedAt: new Date().toISOString(),
     template: "resume",

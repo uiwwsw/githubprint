@@ -11,13 +11,11 @@ import {
   hasGitHubOAuthConfig,
 } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
-import { getResumeTemplateAvailability } from "@/lib/resume-source";
+import { hasPrivateRepoPermission } from "@/lib/document-options";
 import { buildHomeStructuredData } from "@/lib/seo";
 import {
   DEFAULT_SELF_GENERATOR_TEMPLATE,
-  parseStoredPrivatePreference,
   parseStoredTemplatePreference,
-  SELF_GENERATOR_PRIVATE_KEY,
   SELF_GENERATOR_TEMPLATE_KEY,
 } from "@/lib/self-generator-preferences";
 import type { Locale, TemplateId } from "@/lib/schemas";
@@ -33,26 +31,6 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
   const storedTemplate = parseStoredTemplatePreference(
     cookieStore.get(SELF_GENERATOR_TEMPLATE_KEY)?.value,
   );
-  const storedPrivate = parseStoredPrivatePreference(
-    cookieStore.get(SELF_GENERATOR_PRIVATE_KEY)?.value,
-  );
-  const hasStoredPreferences =
-    storedTemplate !== null || storedPrivate !== null;
-  const resumeAvailability = session
-    ? await getResumeTemplateAvailability({
-        authContext: {
-          accessToken: session.accessToken,
-          scopes: session.scopes,
-          viewerUsername: session.user.login,
-        },
-        locale,
-        username: session.user.login,
-      }).catch(() => null)
-    : null;
-  const resolvedResumeAvailability =
-    resumeAvailability ??
-    (session ? { state: "locked_missing_repo" as const } : null);
-
   const copy = dict.studio;
   const prefix = locale === "en" ? "/en" : "";
   return (
@@ -139,11 +117,13 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
         </div>
         {session ? (
           <SelfGenerator
-            hasStoredPreferences={hasStoredPreferences}
-            initialIncludePrivate={storedPrivate ?? false}
+            canReadPrivate={hasPrivateRepoPermission(session.scopes)}
+            privateLoginHref={buildGitHubLoginPath(
+              `${prefix}/#generator`,
+              "private",
+            )}
             initialTemplate={storedTemplate ?? DEFAULT_SELF_GENERATOR_TEMPLATE}
             locale={locale}
-            resumeAvailability={resolvedResumeAvailability}
             username={session.user.login}
           />
         ) : null}

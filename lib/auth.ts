@@ -29,6 +29,7 @@ type GitHubViewerResponse = {
 type GitHubStatePayload = {
   redirectTo: string;
   state: string;
+  access?: "public" | "private";
 };
 
 export type GitHubAuthSession = {
@@ -48,7 +49,7 @@ const GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
 const GITHUB_ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
 const GITHUB_API_BASE = "https://api.github.com";
 
-export const GITHUB_AUTH_SCOPES = ["read:user", "user:email", "repo"];
+export const GITHUB_AUTH_SCOPES = ["read:user"];
 
 export const GITHUB_SESSION_COOKIE_NAME = `${PRODUCT_SLUG}-github-session`;
 export const GITHUB_STATE_COOKIE_NAME = `${PRODUCT_SLUG}-github-oauth-state`;
@@ -57,7 +58,12 @@ export const GITHUB_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 14;
 export const GITHUB_STATE_MAX_AGE_SECONDS = 60 * 10;
 
 export function sanitizeRedirectPath(value?: string | null) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\")
+  ) {
     return "/";
   }
 
@@ -101,7 +107,9 @@ function sealValue<T>(value: T, secret: string) {
   const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   const tag = cipher.getAuthTag();
 
-  return [iv, tag, ciphertext].map((part) => part.toString("base64url")).join(".");
+  return [iv, tag, ciphertext]
+    .map((part) => part.toString("base64url"))
+    .join(".");
 }
 
 function unsealValue<T>(value: string, secret: string) {
@@ -142,7 +150,9 @@ function buildGitHubHeaders(accessToken: string, extraHeaders?: HeadersInit) {
 
 export function hasGitHubOAuthConfig() {
   const config = getOAuthConfig();
-  return Boolean(config.clientId && config.clientSecret && config.sessionSecret);
+  return Boolean(
+    config.clientId && config.clientSecret && config.sessionSecret,
+  );
 }
 
 export function createGitHubOAuthState() {
@@ -176,10 +186,13 @@ export function getGitHubCallbackUrl() {
   return new URL("/api/auth/github/callback", getSiteUrl()).toString();
 }
 
-export function buildGitHubLoginPath(redirectTo?: string | null) {
+export function buildGitHubLoginPath(
+  redirectTo?: string | null,
+  access: "public" | "private" = "public",
+) {
   return `/api/auth/github/login?redirect=${encodeURIComponent(
     sanitizeRedirectPath(redirectTo),
-  )}`;
+  )}&access=${access}`;
 }
 
 export function buildGitHubLogoutPath(redirectTo?: string | null) {
@@ -188,13 +201,22 @@ export function buildGitHubLogoutPath(redirectTo?: string | null) {
   )}`;
 }
 
-export function buildGitHubAuthorizeUrl(state: string) {
+export function buildGitHubAuthorizeUrl(
+  state: string,
+  access: "public" | "private" = "public",
+) {
   const { clientId } = getRequiredOAuthConfig();
   const url = new URL(GITHUB_AUTHORIZE_URL);
 
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", getGitHubCallbackUrl());
-  url.searchParams.set("scope", GITHUB_AUTH_SCOPES.join(" "));
+  url.searchParams.set(
+    "scope",
+    (access === "private"
+      ? [...GITHUB_AUTH_SCOPES, "repo"]
+      : GITHUB_AUTH_SCOPES
+    ).join(" "),
+  );
   url.searchParams.set("state", state);
 
   return url.toString();
@@ -234,9 +256,10 @@ export async function exchangeGitHubCodeForSession(code: string) {
   }
 
   const viewer = (await viewerResponse.json()) as GitHubViewerResponse;
-  const scopeHeader = tokenJson.scope ?? viewerResponse.headers.get("x-oauth-scopes") ?? "";
+  const scopeHeader =
+    tokenJson.scope ?? viewerResponse.headers.get("x-oauth-scopes") ?? "";
   const scopes = scopeHeader
-    .split(",")
+    .split(/[,\s]+/)
     .map((item) => item.trim())
     .filter(Boolean);
 
@@ -246,7 +269,7 @@ export async function exchangeGitHubCodeForSession(code: string) {
     scopes,
     user: {
       avatarUrl: viewer.avatar_url,
-      email: viewer.email,
+      email: null,
       login: viewer.login,
       name: viewer.name,
       profileUrl: viewer.html_url,
@@ -272,4 +295,14 @@ export async function getGitHubSession() {
   }
 
   return unsealValue<GitHubAuthSession>(sessionCookie, sessionSecret);
+}
+
+export function createProtectedValue<T>(value: T) {
+  const { sessionSecret } = getRequiredOAuthConfig();
+  return sealValue(value, sessionSecret);
+}
+
+export function readProtectedValue<T>(value: string) {
+  const secret = getSessionSecret();
+  return secret ? unsealValue<T>(value, secret) : null;
 }

@@ -1,10 +1,16 @@
+import { resolveDocumentConfiguration } from "@/lib/document-configuration";
+import { DocumentConfigurationError } from "@/lib/document-options";
+import { DataUseReceipt } from "@/components/result/data-use-receipt";
 import type { Metadata } from "next";
 import { buildGitHubLogoutPath, getGitHubSession } from "@/lib/auth";
 import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
-import { RequestThrottleError, assertResultRequestAllowed } from "@/lib/request-throttle";
+import {
+  RequestThrottleError,
+  assertResultRequestAllowed,
+} from "@/lib/request-throttle";
 import { getResumeCopy } from "@/lib/resume-copy";
 import { getResumeTemplateAvailability } from "@/lib/resume-source";
 import { buildResultMetadata } from "@/lib/seo";
@@ -32,6 +38,18 @@ function getFirstValue(value: string | string[] | undefined) {
 function getErrorPresentation(error: unknown, locale: Locale) {
   const dict = getDictionary(locale);
 
+  if (error instanceof DocumentConfigurationError) {
+    return {
+      title:
+        locale === "ko"
+          ? "자료 범위를 다시 선택해 주세요"
+          : "Choose your sources again",
+      message:
+        locale === "ko"
+          ? "이 설정은 만료되었거나 현재 계정·권한과 맞지 않습니다. 홈에서 템플릿과 사용할 자료를 다시 선택하면 새 문서를 만들 수 있습니다."
+          : "This configuration has expired or does not match your account or access. Return home to choose the template and sources for a new document.",
+    };
+  }
   if (error instanceof GitHubFetchError) {
     if (error.code === "not_found") {
       return {
@@ -106,9 +124,7 @@ export async function ResultPageContent({
   const dict = getDictionary(locale);
   const homeHref = getLocalizedPathname("/", locale);
   const session = await getGitHubSession();
-  const logoutHref = session
-    ? buildGitHubLogoutPath(homeHref)
-    : undefined;
+  const logoutHref = session ? buildGitHubLogoutPath(homeHref) : undefined;
   const requestedPrivateInclude =
     getFirstValue(rawParams.private) === "1" ||
     getFirstValue(rawParams.private) === "true";
@@ -142,12 +158,25 @@ export async function ResultPageContent({
   }
 
   try {
+    const configToken = getFirstValue(rawParams.config);
+    if (requestedPrivateInclude && !configToken)
+      throw new DocumentConfigurationError();
+    const configuration = resolveDocumentConfiguration(
+      configToken,
+      template,
+      session,
+    );
     const forceFresh =
       Boolean(parsed.refresh) &&
       (process.env.NODE_ENV !== "production" ||
-        readEnv("GITHUBPRINT_ALLOW_RESULT_REFRESH", "GITFOLIO_ALLOW_RESULT_REFRESH") === "1");
+        readEnv(
+          "GITHUBPRINT_ALLOW_RESULT_REFRESH",
+          "GITFOLIO_ALLOW_RESULT_REFRESH",
+        ) === "1");
     const privateExposureMode: PrivateExposureMode =
-      requestedPrivateInclude ? "include" : "aggregate";
+      configuration.analysisScope === "private-details"
+        ? "include"
+        : "aggregate";
     const authContext = {
       accessToken: session.accessToken,
       scopes: session.scopes,
@@ -159,6 +188,9 @@ export async function ResultPageContent({
     if (template === "resume") {
       const availability = await getResumeTemplateAvailability({
         authContext,
+        allowPrivateSource: configuration.resumeSource === "authorized",
+        allowPrivateProjects: configuration.resumeProjects === "authorized",
+        assetContext: configToken,
         forceFresh,
         locale,
         username: session.user.login,
@@ -189,6 +221,15 @@ export async function ResultPageContent({
                   : undefined
               }
               template={template}
+            />
+            <DataUseReceipt
+              locale={locale}
+              options={configuration}
+              resume={
+                availability.state === "ready"
+                  ? availability.document
+                  : undefined
+              }
             />
             {availability.state === "ready" ? (
               <>
@@ -229,6 +270,7 @@ export async function ResultPageContent({
       forceFresh,
       locale,
       privateExposureMode,
+      privateRepoNames: configuration.privateRepos,
     });
     const analysisResult = await analyzeGitHubSource(source, {
       forceFresh,
@@ -255,6 +297,13 @@ export async function ResultPageContent({
             mode={analysisResult.mode}
             privateExposureMode={source.privateExposureMode}
             template={template}
+          />
+          <DataUseReceipt
+            locale={locale}
+            options={configuration}
+            privateCount={
+              source.authorizedPrivateInsights?.privateRepoCount ?? 0
+            }
           />
           <RenderTemplate
             analysisResult={analysisResult}

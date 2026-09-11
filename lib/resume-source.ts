@@ -6,11 +6,13 @@ import { readEnv } from "@/lib/env";
 import {
   getResumeRepoFileContents,
   getResumeRepoLookup,
+  getReferencedPrivateResumeRepos,
   type GitHubSourceAuthContext,
 } from "@/lib/github";
 import {
   DEFAULT_RESUME_MANIFEST,
   buildResumeDocument,
+  collectResumeOwnedRepoNames,
   collectResumeMarkdownPaths,
   parseResumeYamlDocument,
   getResumeManifestCandidates,
@@ -41,9 +43,7 @@ async function getLocalResumeRepoRoot() {
     "GITFOLIO_LOCAL_RESUME_REPO_PATH",
     "GITHUBPRINT_LOCAL_RESUME_REPO_PATH",
   );
-  const candidates = configuredRoot
-    ? [path.resolve(configuredRoot)]
-    : [path.resolve(process.cwd(), "../resume")];
+  const candidates = configuredRoot ? [path.resolve(configuredRoot)] : [];
 
   for (const candidate of candidates) {
     if (await pathExists(path.join(candidate, DEFAULT_RESUME_MANIFEST))) {
@@ -80,10 +80,7 @@ function resolveLocalResumeFilePath(rootPath: string, relativePath: string) {
   return resolvedPath;
 }
 
-async function readLocalResumeTextFile(
-  rootPath: string,
-  relativePath: string,
-) {
+async function readLocalResumeTextFile(rootPath: string, relativePath: string) {
   try {
     return await readFile(
       resolveLocalResumeFilePath(rootPath, relativePath),
@@ -100,10 +97,13 @@ async function readLocalResumeTextFiles(
 ) {
   const uniquePaths = [...new Set(relativePaths.filter(Boolean))];
   const filePairs = await Promise.all(
-    uniquePaths.map(async (relativePath) => [
-      relativePath,
-      await readLocalResumeTextFile(rootPath, relativePath),
-    ] as const),
+    uniquePaths.map(
+      async (relativePath) =>
+        [
+          relativePath,
+          await readLocalResumeTextFile(rootPath, relativePath),
+        ] as const,
+    ),
   );
 
   return Object.fromEntries(
@@ -145,10 +145,14 @@ export async function getResumeTemplateAvailability(options: {
   forceFresh?: boolean;
   locale: Locale;
   username: string;
+  allowPrivateSource?: boolean;
+  allowPrivateProjects?: boolean;
+  assetContext?: string;
 }): Promise<ResumeTemplateAvailability> {
   const localResumeRepoRoot = await getLocalResumeRepoRoot();
   const lookup = await getResumeRepoLookup(options.username, {
     authContext: options.authContext,
+    allowPrivate: options.allowPrivateSource,
     forceFresh: options.forceFresh,
   });
 
@@ -215,7 +219,10 @@ export async function getResumeTemplateAvailability(options: {
 
   try {
     const parseWarnings = [...parsed.warnings];
-    const markdownPaths = collectResumeMarkdownPaths(parsed.data, parseWarnings);
+    const markdownPaths = collectResumeMarkdownPaths(
+      parsed.data,
+      parseWarnings,
+    );
     const referencedFiles =
       markdownPaths.length > 0
         ? localResumeRepoRoot
@@ -231,6 +238,33 @@ export async function getResumeTemplateAvailability(options: {
             )
         : {};
 
+    const referencedRepoNames = collectResumeOwnedRepoNames(
+      parsed.data,
+      options.username,
+    );
+    const missingNames = referencedRepoNames.filter(
+      (name) =>
+        !lookup.repoCatalog.some((repo) => repo.name.toLowerCase() === name),
+    );
+    if (options.allowPrivateProjects && missingNames.length) {
+      lookup.repoCatalog.push(
+        ...(await getReferencedPrivateResumeRepos(
+          options.username,
+          missingNames,
+          options.authContext,
+        )),
+      );
+      const unresolved = missingNames.filter(
+        (name) =>
+          !lookup.repoCatalog.some((repo) => repo.name.toLowerCase() === name),
+      );
+      if (unresolved.length)
+        parseWarnings.push(
+          options.locale === "ko"
+            ? `연결 저장소 ${unresolved.length}개의 정보를 읽지 못했습니다. 직접 작성한 내용만 유지합니다.`
+            : `Metadata for ${unresolved.length} linked repositories was unavailable. Authored content is preserved.`,
+        );
+    }
     const document = buildResumeDocument(parsed.data, {
       contentFiles: referencedFiles,
       locale: options.locale,
@@ -241,6 +275,7 @@ export async function getResumeTemplateAvailability(options: {
         homepageUrl: repo.homepageUrl,
         language: repo.language,
         name: repo.name,
+        visibility: repo.visibility,
         projectLabels: repo.projectLabels,
         pushedAt: repo.pushedAt,
         repoUrl: repo.repoUrl,
@@ -253,6 +288,12 @@ export async function getResumeTemplateAvailability(options: {
       visibility: lookup.repo.visibility,
     });
 
+    document.source.assetContext = options.assetContext;
+    document.source.linkedPrivateRepoCount = new Set(
+      document.allProjects
+        .filter((project) => project.repoVisibility === "private")
+        .map((project) => project.repoSlug),
+    ).size;
     return {
       document,
       repoUrl: lookup.repo.repoUrl,

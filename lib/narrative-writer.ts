@@ -38,10 +38,7 @@ function repoSignalText(repo: GitHubRepoSnapshot, locale: Locale) {
   return parts.join(" / ");
 }
 
-function fillTemplate(
-  template: string,
-  replacements: Record<string, string>,
-) {
+function fillTemplate(template: string, replacements: Record<string, string>) {
   return Object.entries(replacements).reduce(
     (result, [key, value]) => result.replaceAll(`{${key}}`, value),
     template,
@@ -114,10 +111,7 @@ function buildDeveloperTypeText(
     : `${base} Secondary signals around ${secondary.label} are also visible.`;
 }
 
-function buildWorkingStyleText(
-  scoring: ProfileScoringResult,
-  locale: Locale,
-) {
+function buildWorkingStyleText(scoring: ProfileScoringResult, locale: Locale) {
   const primary = scoring.primaryWorkingStyle;
   const secondary = scoring.secondaryWorkingStyle;
 
@@ -144,7 +138,9 @@ function buildSummaryText(
     config.templates.summary[scoring.confidenceBand],
     locale,
   );
-  const projectNames = source.representativeRepos.slice(0, 2).map((repo) => repo.name);
+  const projectNames = source.representativeRepos
+    .slice(0, 2)
+    .map((repo) => repo.name);
   const stackSummary = getStackSummary(source);
   const projectFallback =
     source.dataMode === "private_enriched"
@@ -223,7 +219,8 @@ function buildSummaryText(
 function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   const strengths: string[] = [];
   const stackSummary = getStackSummary(source);
-  const primaryLanguage = stackSummary.topLanguages[0] ?? source.topLanguages[0]?.name;
+  const primaryLanguage =
+    stackSummary.topLanguages[0] ?? source.topLanguages[0]?.name;
 
   if (primaryLanguage) {
     strengths.push(
@@ -246,10 +243,7 @@ function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
   return strengths;
 }
 
-function buildFallbackRoles(
-  scoring: ProfileScoringResult,
-  locale: Locale,
-) {
+function buildFallbackRoles(scoring: ProfileScoringResult, locale: Locale) {
   const fallback: string[] = [];
 
   if (scoring.primaryOrientation?.id === "frontend") {
@@ -266,7 +260,9 @@ function buildFallbackRoles(
     );
   } else if (scoring.primaryOrientation?.id === "mobile") {
     fallback.push(
-      locale === "ko" ? "모바일 제품 MVP 개발" : "Mobile MVP product development",
+      locale === "ko"
+        ? "모바일 제품 MVP 개발"
+        : "Mobile MVP product development",
     );
   } else if (scoring.primaryOrientation?.id === "ai") {
     fallback.push(
@@ -283,9 +279,7 @@ function buildFallbackRoles(
   }
 
   fallback.push(
-    locale === "ko"
-      ? "초기 제품 MVP 구현"
-      : "Early-stage MVP implementation",
+    locale === "ko" ? "초기 제품 MVP 구현" : "Early-stage MVP implementation",
   );
   fallback.push(
     locale === "ko"
@@ -340,25 +334,27 @@ function buildProjects(
             ? "저장소 설명, stars, 최근 업데이트 시점을 기준으로 선정했습니다."
             : "Selection is based on repository description, stars, and recent update timing."),
       homepageUrl: repo.homepageUrl,
-      name: repo.name,
+      name:
+        repo.visibility === "private"
+          ? `${repo.name} (${locale === "ko" ? "비공개" : "Private"})`
+          : repo.name,
       repoUrl: repo.repoUrl,
       stars: repo.stars,
-      tech:
-        (() => {
-          const tech = buildRepoTechStack({
-            description: repo.description,
-            githubLanguage: repo.language,
-            identity: repo.identity,
-            manifestContents: repo.manifestContents,
-            name: repo.name,
-            readme: repo.readme,
-            recentCommitMessages: repo.recentCommitMessages,
-            rootFiles: repo.rootFiles,
-            topics: repo.topics,
-          });
+      tech: (() => {
+        const tech = buildRepoTechStack({
+          description: repo.description,
+          githubLanguage: repo.language,
+          identity: repo.identity,
+          manifestContents: repo.manifestContents,
+          name: repo.name,
+          readme: repo.readme,
+          recentCommitMessages: repo.recentCommitMessages,
+          rootFiles: repo.rootFiles,
+          topics: repo.topics,
+        });
 
-          return tech.length > 0 ? tech : ["GitHub"];
-        })(),
+        return tech.length > 0 ? tech : ["GitHub"];
+      })(),
       updatedAt: repo.updatedAt,
       whyItMatters: evidenceText
         ? locale === "ko"
@@ -375,10 +371,7 @@ function buildProjects(
   });
 }
 
-function buildPrivateEvidenceEntries(
-  source: GitHubSourceData,
-  locale: Locale,
-) {
+function buildPrivateEvidenceEntries(source: GitHubSourceData, locale: Locale) {
   if (
     source.dataMode !== "private_enriched" ||
     !source.authorizedPrivateInsights
@@ -489,13 +482,18 @@ export function buildRuleBasedAnalysis(
 ): GitHubPrintAnalysis {
   const name = source.account.name ?? source.account.username;
   const repoFeatureMap = new Map(
-    scoring.repoFeatures.map((item) => [item.repo.name.toLowerCase(), item] as const),
+    scoring.repoFeatures.map(
+      (item) => [item.repo.name.toLowerCase(), item] as const,
+    ),
   );
   const strengths = [
     ...scoring.strengths,
     ...buildFallbackStrengths(source, locale),
   ].slice(0, 4);
-  const roles = [...scoring.roles, ...buildFallbackRoles(scoring, locale)].slice(0, 4);
+  const roles = [
+    ...scoring.roles,
+    ...buildFallbackRoles(scoring, locale),
+  ].slice(0, 4);
   const stackSummary = getStackSummary(source);
   const topLanguages =
     stackSummary.topLanguages.length > 0
@@ -552,7 +550,10 @@ export function buildRuleBasedAnalysis(
   source.evidenceSignals.slice(0, 2).forEach((signal, index) => {
     evidence.push({
       detail: signal,
-      label: locale === "ko" ? `추가 근거 ${index + 1}` : `Additional evidence ${index + 1}`,
+      label:
+        locale === "ko"
+          ? `추가 근거 ${index + 1}`
+          : `Additional evidence ${index + 1}`,
     });
   });
 
@@ -560,8 +561,8 @@ export function buildRuleBasedAnalysis(
     disclaimer:
       source.dataMode === "private_enriched"
         ? locale === "ko"
-          ? "이 문서는 로그인한 사용자가 승인한 GitHub 데이터 범위 안에서 작성되었습니다. 승인된 비공개 저장소와 비공개 프로필 신호가 포함될 수 있으며, 경력 연차, 협업 방식, 비즈니스 임팩트 등은 여전히 확인되지 않는 한 단정하지 않았습니다."
-          : "This document is based on GitHub data authorized by the signed-in user. It may include approved private repositories and private profile signals, while career tenure, collaboration style, and business impact are still not asserted unless clearly evidenced."
+          ? "이 문서는 공개 자료와 사용자가 선택한 비공개 작업을 바탕으로 작성되었습니다. 비공개 작업은 선택한 공개 범위로만 표시하며, 벤치마크는 공개 근거만 사용합니다. 경력, 협업 능력, 비즈니스 성과를 단정하지 않습니다."
+          : "This document uses public sources and selected private work, displayed at the chosen level of detail. Benchmarks use only public evidence. Career tenure, collaboration quality, and business impact are not asserted."
         : localizeText(config.templates.disclaimer, locale),
     evidence: evidence.slice(0, 6),
     facts: {

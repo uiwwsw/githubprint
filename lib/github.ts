@@ -7,6 +7,11 @@ import { mockGitHubProfile } from "@/fixtures/mock-profile";
 import { PRODUCT_NAME, PRODUCT_SLUG, LEGACY_PRODUCT_SLUG } from "@/lib/brand";
 import { readEnv } from "@/lib/env";
 import {
+  DocumentConfigurationError,
+  hasPrivateRepoPermission,
+  MAX_PRIVATE_REPOS,
+} from "@/lib/document-options";
+import {
   buildRepoDisplayLanguages,
   buildRepoTechStack,
   inferRepoIdentity,
@@ -87,6 +92,7 @@ type GitHubPinnedResponse = {
     user?: {
       pinnedItems: {
         nodes: Array<{
+          isPrivate: boolean;
           description: string | null;
           homepageUrl: string | null;
           name: string;
@@ -101,25 +107,6 @@ type GitHubPinnedResponse = {
           updatedAt: string;
           url: string;
         }>;
-      };
-    } | null;
-  };
-  errors?: Array<{ message: string }>;
-};
-
-type GitHubViewerContributionResponse = {
-  data?: {
-    viewer?: {
-      contributionsCollection: {
-        contributionCalendar: {
-          totalContributions: number;
-        };
-        endedAt: string;
-        startedAt: string;
-        totalCommitContributions: number;
-        totalIssueContributions: number;
-        totalPullRequestContributions: number;
-        totalPullRequestReviewContributions: number;
       };
     } | null;
   };
@@ -269,7 +256,12 @@ const ROOT_MANIFEST_FILE_NAMES = [
   "build.gradle.kts",
 ];
 const MANIFEST_CONTENT_LIMIT = 4;
-const DEV_CACHE_DIR = path.join(process.cwd(), ".cache", PRODUCT_SLUG, "github");
+const DEV_CACHE_DIR = path.join(
+  process.cwd(),
+  ".cache",
+  PRODUCT_SLUG,
+  "github",
+);
 const LEGACY_DEV_CACHE_DIR = path.join(
   process.cwd(),
   ".cache",
@@ -283,6 +275,7 @@ const GRAPHQL_PINNED_QUERY = `
         nodes {
           ... on Repository {
             name
+            isPrivate
             url
             description
             homepageUrl
@@ -301,24 +294,6 @@ const GRAPHQL_PINNED_QUERY = `
     }
   }
 `;
-const GRAPHQL_VIEWER_CONTRIBUTIONS_QUERY = `
-  query GitHubPrintViewerContributions {
-    viewer {
-      contributionsCollection {
-        startedAt
-        endedAt
-        totalCommitContributions
-        totalIssueContributions
-        totalPullRequestContributions
-        totalPullRequestReviewContributions
-        contributionCalendar {
-          totalContributions
-        }
-      }
-    }
-  }
-`;
-
 function isLocalDevelopment() {
   return process.env.NODE_ENV !== "production";
 }
@@ -365,7 +340,10 @@ async function readDevCachedSource(username: string, locale: Locale) {
     return JSON.parse(file) as GitHubSourceData;
   } catch {
     try {
-      const legacyFile = await readFile(getLegacyDevCachePath(username, locale), "utf-8");
+      const legacyFile = await readFile(
+        getLegacyDevCachePath(username, locale),
+        "utf-8",
+      );
       return JSON.parse(legacyFile) as GitHubSourceData;
     } catch {
       return null;
@@ -562,9 +540,13 @@ async function fetchPinnedRepos(
       forceFresh || disableCache
         ? undefined
         : { revalidate: CACHE_WINDOW_SECONDS },
-    headers: buildGitHubHeaders("application/json", {
-      "Content-Type": "application/json",
-    }, token),
+    headers: buildGitHubHeaders(
+      "application/json",
+      {
+        "Content-Type": "application/json",
+      },
+      token,
+    ),
     body: JSON.stringify({
       query: GRAPHQL_PINNED_QUERY,
       variables: { login: username },
@@ -580,66 +562,17 @@ async function fetchPinnedRepos(
     return [];
   }
 
-  return json.data.user.pinnedItems.nodes.map((repo) => ({
-    name: repo.name,
-    description: repo.description,
-    homepageUrl: sanitizeExternalUrl(repo.homepageUrl ?? ""),
-    stars: repo.stargazerCount,
-    topics: repo.repositoryTopics.nodes.map((node) => node.topic.name),
-    updatedAt: repo.updatedAt,
-    url: repo.url,
-  }));
-}
-
-async function fetchViewerContributionSummary(
-  forceFresh?: boolean,
-  accessToken?: string,
-  disableCache?: boolean,
-) {
-  const token = accessToken?.trim() || readEnv("GITHUB_TOKEN");
-  if (!token) {
-    return null;
-  }
-
-  const response = await fetch(`${GITHUB_API_BASE}/graphql`, {
-    method: "POST",
-    cache: forceFresh || disableCache ? "no-store" : "force-cache",
-    next:
-      forceFresh || disableCache
-        ? undefined
-        : { revalidate: CACHE_WINDOW_SECONDS },
-    headers: buildGitHubHeaders(
-      "application/json",
-      {
-        "Content-Type": "application/json",
-      },
-      token,
-    ),
-    body: JSON.stringify({
-      query: GRAPHQL_VIEWER_CONTRIBUTIONS_QUERY,
-    }),
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const json = (await response.json()) as GitHubViewerContributionResponse;
-  const contributions = json.data?.viewer?.contributionsCollection;
-  if (json.errors?.length || !contributions) {
-    return null;
-  }
-
-  return {
-    endedAt: contributions.endedAt,
-    startedAt: contributions.startedAt,
-    totalCommitContributions: contributions.totalCommitContributions,
-    totalContributions: contributions.contributionCalendar.totalContributions,
-    totalIssueContributions: contributions.totalIssueContributions,
-    totalPullRequestContributions: contributions.totalPullRequestContributions,
-    totalPullRequestReviewContributions:
-      contributions.totalPullRequestReviewContributions,
-  } satisfies ContributionSummary;
+  return json.data.user.pinnedItems.nodes
+    .filter((repo) => !repo.isPrivate)
+    .map((repo) => ({
+      name: repo.name,
+      description: repo.description,
+      homepageUrl: sanitizeExternalUrl(repo.homepageUrl ?? ""),
+      stars: repo.stargazerCount,
+      topics: repo.repositoryTopics.nodes.map((node) => node.topic.name),
+      updatedAt: repo.updatedAt,
+      url: repo.url,
+    }));
 }
 
 function decodeReadme(readme: GitHubReadmeResponse | null) {
@@ -761,10 +694,13 @@ async function fetchRepoRootFiles(
   disableCache?: boolean,
 ) {
   try {
-    const response = await githubJson<GitHubContentItemResponse[] | GitHubContentItemResponse>(
-      `/repos/${username}/${repo.name}/contents?ref=${repo.defaultBranch}`,
-      { accessToken, disableCache, forceFresh },
-    );
+    const response = await githubJson<
+      GitHubContentItemResponse[] | GitHubContentItemResponse
+    >(`/repos/${username}/${repo.name}/contents?ref=${repo.defaultBranch}`, {
+      accessToken,
+      disableCache,
+      forceFresh,
+    });
 
     if (!Array.isArray(response)) {
       return [];
@@ -811,7 +747,12 @@ async function fetchRepoFileContent(
 ) {
   try {
     const response = await githubJson<GitHubReadmeResponse>(
-      buildGitHubRepoContentsPath(username, repo.name, filePath, repo.defaultBranch),
+      buildGitHubRepoContentsPath(
+        username,
+        repo.name,
+        filePath,
+        repo.defaultBranch,
+      ),
       { accessToken, disableCache, forceFresh },
     );
 
@@ -889,19 +830,17 @@ function canUsePrivateRepoScope(
 ) {
   return Boolean(
     isSignedInViewerForUsername(username, authContext) &&
-      authContext?.scopes.some(
-        (scope) => scope === "repo" || scope === "public_repo",
-      ),
+      hasPrivateRepoPermission(authContext?.scopes ?? []),
   );
 }
 
-function getOwnedRepoListPath(username: string, usePrivateRepoScope: boolean) {
-  return usePrivateRepoScope
-    ? "/user/repos?per_page=100&sort=updated&direction=desc&visibility=all&affiliation=owner"
-    : `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`;
+function getPublicRepoListPath(username: string) {
+  return `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`;
 }
 
-function mapRepoCatalogEntry(repo: GitHubRepoResponse): GitHubOwnedRepoCatalogEntry {
+function mapRepoCatalogEntry(
+  repo: GitHubRepoResponse,
+): GitHubOwnedRepoCatalogEntry {
   const topics = repo.topics ?? [];
   const identity = inferRepoIdentity({
     description: repo.description,
@@ -1004,50 +943,146 @@ export async function getRepoEntryFromUrl(
   }
 }
 
+/** The picker reads names only, and is called only after an explicit private-mode choice. */
+export async function listPrivateRepositoryChoices(
+  username: string,
+  authContext: GitHubSourceAuthContext,
+) {
+  if (!canUsePrivateRepoScope(username, authContext))
+    throw new DocumentConfigurationError();
+  const repos = await githubJsonPaginated<GitHubRepoResponse>(
+    "/user/repos?per_page=100&sort=updated&direction=desc&visibility=private&affiliation=owner",
+    { accessToken: authContext.accessToken, disableCache: true },
+  );
+  return repos
+    .filter((repo) => repo.private)
+    .map((repo) => ({ name: repo.name, archived: repo.archived }));
+}
+
+async function fetchSelectedPrivateRepos(
+  username: string,
+  names: string[],
+  authContext?: GitHubSourceAuthContext,
+) {
+  if (!names.length) return [];
+  if (
+    names.length > MAX_PRIVATE_REPOS ||
+    !canUsePrivateRepoScope(username, authContext) ||
+    names.some(
+      (name) =>
+        !/^[a-zA-Z0-9_.-]{1,100}$/.test(name) || name === "." || name === "..",
+    )
+  )
+    throw new DocumentConfigurationError();
+  return Promise.all(
+    [...new Set(names.map((name) => name.toLowerCase()))].map(async (name) => {
+      const repo = await githubJson<GitHubRepoResponse>(
+        `/repos/${username}/${name}`,
+        { accessToken: authContext!.accessToken, disableCache: true },
+      ).catch((error: unknown) => {
+        if (error instanceof GitHubFetchError && error.code === "not_found")
+          throw new DocumentConfigurationError();
+        throw error;
+      });
+      // A rename, transfer, or visibility change needs a new selection rather than a silent scope change.
+      if (
+        !repo.private ||
+        repo.html_url.toLowerCase() !==
+          `https://github.com/${username}/${name}`.toLowerCase()
+      )
+        throw new DocumentConfigurationError();
+      return repo;
+    }),
+  );
+}
+
 export async function getResumeRepoLookup(
   username: string,
   options?: {
     authContext?: GitHubSourceAuthContext;
     forceFresh?: boolean;
+    allowPrivate?: boolean;
   },
 ): Promise<GitHubResumeRepoLookup | null> {
   const authContext = options?.authContext;
-  const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
-  const usePrivateRepoScope = canUsePrivateRepoScope(username, authContext);
-  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
-  const disableCache = Boolean(isSignedInViewer);
-  const reposResponse = await githubJsonPaginated<GitHubRepoResponse>(
-    getOwnedRepoListPath(username, usePrivateRepoScope),
-    {
-      accessToken: authAccessToken,
-      disableCache,
-      forceFresh: options?.forceFresh,
-    },
-  );
-  const repoCatalog = reposResponse.map(mapRepoCatalogEntry);
-  const resumeRepo = repoCatalog.find(
+  const authAccessToken = isSignedInViewerForUsername(username, authContext)
+    ? authContext?.accessToken
+    : undefined;
+  const requestOptions = {
+    accessToken: authAccessToken,
+    disableCache: Boolean(authContext),
+    forceFresh: options?.forceFresh,
+  };
+  if (options?.allowPrivate && !canUsePrivateRepoScope(username, authContext))
+    throw new DocumentConfigurationError();
+  // This endpoint lists public repositories even when the token also has private access.
+  const publicRepos = (
+    await githubJsonPaginated<GitHubRepoResponse>(
+      getPublicRepoListPath(username),
+      requestOptions,
+    )
+  ).filter((repo) => !repo.private);
+  let resumeRepo = publicRepos.find(
     (repo) => repo.name.toLowerCase() === "resume",
   );
-
-  if (!resumeRepo) {
-    return null;
+  if (!resumeRepo && options?.allowPrivate) {
+    try {
+      resumeRepo = await githubJson<GitHubRepoResponse>(
+        `/repos/${username}/resume`,
+        { ...requestOptions, disableCache: true },
+      );
+      if (
+        resumeRepo.html_url.toLowerCase() !==
+        `https://github.com/${username}/resume`.toLowerCase()
+      )
+        throw new DocumentConfigurationError();
+    } catch (error) {
+      if (!(error instanceof GitHubFetchError && error.code === "not_found"))
+        throw error;
+    }
   }
-
+  if (!resumeRepo) return null;
+  const entry = mapRepoCatalogEntry(resumeRepo);
   const rootFiles = await fetchRepoRootFiles(
     username,
-    resumeRepo,
+    entry,
     options?.forceFresh,
     authAccessToken,
-    disableCache,
+    Boolean(authContext),
   );
-
   return {
-    repo: {
-      ...resumeRepo,
-      rootFiles,
-    },
-    repoCatalog,
+    repo: { ...entry, rootFiles },
+    repoCatalog: publicRepos.map(mapRepoCatalogEntry),
   };
+}
+
+/** Enrich only owner-qualified references authored in the selected resume manifest. */
+export async function getReferencedPrivateResumeRepos(
+  username: string,
+  names: string[],
+  authContext: GitHubSourceAuthContext,
+) {
+  if (!canUsePrivateRepoScope(username, authContext))
+    throw new DocumentConfigurationError();
+  const entries: GitHubOwnedRepoCatalogEntry[] = [];
+  // Sequential requests bound API pressure for manifests with many references.
+  for (const name of [...new Set(names)].slice(0, 30)) {
+    try {
+      const repo = await githubJson<GitHubRepoResponse>(
+        `/repos/${username}/${name}`,
+        { accessToken: authContext.accessToken, disableCache: true },
+      );
+      if (
+        repo.html_url.toLowerCase() ===
+        `https://github.com/${username}/${name}`.toLowerCase()
+      )
+        entries.push(mapRepoCatalogEntry(repo));
+    } catch (error) {
+      if (!(error instanceof GitHubFetchError && error.code === "not_found"))
+        throw error;
+    }
+  }
+  return entries;
 }
 
 export async function getResumeRepoFileContents(
@@ -1061,21 +1096,26 @@ export async function getResumeRepoFileContents(
 ) {
   const authContext = options?.authContext;
   const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
-  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const authAccessToken = isSignedInViewer
+    ? authContext?.accessToken
+    : undefined;
   const disableCache = Boolean(isSignedInViewer);
   const uniquePaths = [...new Set(filePaths.filter(Boolean))];
   const filePairs = await Promise.all(
-    uniquePaths.map(async (filePath) => [
-      filePath,
-      await fetchRepoFileContent(
-        username,
-        repo,
-        filePath,
-        options?.forceFresh,
-        authAccessToken,
-        disableCache,
-      ),
-    ] as const),
+    uniquePaths.map(
+      async (filePath) =>
+        [
+          filePath,
+          await fetchRepoFileContent(
+            username,
+            repo,
+            filePath,
+            options?.forceFresh,
+            authAccessToken,
+            disableCache,
+          ),
+        ] as const,
+    ),
   );
 
   return Object.fromEntries(
@@ -1105,12 +1145,19 @@ export async function getResumeRepoBinaryAsset(
 ) {
   const authContext = options?.authContext;
   const isSignedInViewer = isSignedInViewerForUsername(username, authContext);
-  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const authAccessToken = isSignedInViewer
+    ? authContext?.accessToken
+    : undefined;
   const disableCache = Boolean(isSignedInViewer);
 
   try {
     const response = await githubJson<GitHubReadmeResponse>(
-      buildGitHubRepoContentsPath(username, repo.name, filePath, repo.defaultBranch),
+      buildGitHubRepoContentsPath(
+        username,
+        repo.name,
+        filePath,
+        repo.defaultBranch,
+      ),
       {
         accessToken: authAccessToken,
         disableCache,
@@ -1134,7 +1181,9 @@ export async function getResumeRepoBinaryAsset(
 function recencyScore(updatedAt: string) {
   const diffDays = Math.max(
     0,
-    Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)),
+    Math.floor(
+      (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24),
+    ),
   );
 
   if (diffDays <= 30) return 20;
@@ -1298,7 +1347,8 @@ function hasAutomationSignal(repo: GitHubRepoSnapshot) {
   const text = normalizedRepoText(repo);
   return (
     repo.rootFiles.some((file) => file === ".github") ||
-    repo.identity?.domains.some((item) => item.label === "Automation") === true ||
+    repo.identity?.domains.some((item) => item.label === "Automation") ===
+      true ||
     /(^|[^a-z])(workflow|workflows|deploy|deployment|ci|cd|actions)(?=$|[^a-z])/i.test(
       text,
     )
@@ -1382,10 +1432,7 @@ function sortByUpdatedAtDesc(
   );
 }
 
-function dedupeRepos(
-  groups: GitHubRepoSnapshot[][],
-  limit: number,
-) {
+function dedupeRepos(groups: GitHubRepoSnapshot[][], limit: number) {
   const pool = new Map<string, GitHubRepoSnapshot>();
 
   groups.forEach((group) => {
@@ -1420,7 +1467,9 @@ function buildSignalRepoPool(
   dataMode: DataMode,
 ) {
   const allowedRepos = repos.filter(
-    (repo) => !repo.archived && (dataMode === "private_enriched" || repo.visibility === "public"),
+    (repo) =>
+      !repo.archived &&
+      (dataMode === "private_enriched" || repo.visibility === "public"),
   );
   const allowedRepoMap = new Map(
     allowedRepos.map((repo) => [repo.name.toLowerCase(), repo] as const),
@@ -1460,13 +1509,13 @@ function buildPublicShowcaseRepos(
     .filter((repo): repo is GitHubRepoSnapshot => Boolean(repo));
   const fallback = publicRepos
     .filter((repo) => !repo.isPinned)
-    .sort((left, right) => right.score - left.score || sortByUpdatedAtDesc(left, right))
+    .sort(
+      (left, right) =>
+        right.score - left.score || sortByUpdatedAtDesc(left, right),
+    )
     .slice(0, REPRESENTATIVE_REPO_LIMIT);
 
-  return dedupeRepos(
-    [pinnedCandidates, fallback],
-    REPRESENTATIVE_REPO_LIMIT,
-  );
+  return dedupeRepos([pinnedCandidates, fallback], REPRESENTATIVE_REPO_LIMIT);
 }
 
 function buildRecentShowcaseRepos(
@@ -1501,7 +1550,9 @@ function formatActivityNote(
 
   const diffDays = Math.max(
     0,
-    Math.floor((Date.now() - new Date(lastActiveAt).getTime()) / (1000 * 60 * 60 * 24)),
+    Math.floor(
+      (Date.now() - new Date(lastActiveAt).getTime()) / (1000 * 60 * 60 * 24),
+    ),
   );
 
   if (recentRepoCount >= 5 && diffDays <= 30) {
@@ -1576,7 +1627,10 @@ function buildTopLanguages(repos: GitHubRepoSnapshot[]) {
       });
 
       rankedLanguages.slice(0, 2).forEach((language, index) => {
-        const existing = languageMap.get(language.label) ?? { repoCount: 0, score: 0 };
+        const existing = languageMap.get(language.label) ?? {
+          repoCount: 0,
+          score: 0,
+        };
         existing.repoCount += index === 0 ? 1 : 0;
         existing.score +=
           language.score * 0.8 +
@@ -1622,7 +1676,10 @@ function rankIdentityLabels(
 
   return [...scores.entries()]
     .map(([label, score]) => ({ label, score }))
-    .sort((left, right) => right.score - left.score || left.label.localeCompare(right.label))
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.label.localeCompare(right.label),
+    )
     .slice(0, limit)
     .map((item) => item.label);
 }
@@ -1649,10 +1706,7 @@ function formatPrivateSurfaceLabel(label: string, locale: Locale) {
   return label;
 }
 
-function buildPrivateShowcaseReason(
-  repo: GitHubRepoSnapshot,
-  locale: Locale,
-) {
+function buildPrivateShowcaseReason(repo: GitHubRepoSnapshot, locale: Locale) {
   const signals: string[] = [];
   const topFramework = repo.identity?.frameworks[0]?.label;
   const topSurface = repo.identity?.surfaces[0]?.label;
@@ -1713,28 +1767,31 @@ function buildPrivateShowcaseRepos(
         scorePrivateShowcaseRepo(right) - scorePrivateShowcaseRepo(left),
     )
     .slice(0, PRIVATE_SHOWCASE_LIMIT)
-    .map((repo) => ({
-      description:
-        repo.description ??
-        (locale === "ko"
-          ? "설명이 짧아 기술 스택과 구조 단서 중심으로 해석했습니다."
-          : "The description is limited, so this reading relies mostly on stack and structural clues."),
-      name: repo.name,
-      repoUrl: repo.repoUrl,
-      tech: buildRepoTechStack({
-        description: repo.description,
-        githubLanguage: repo.language,
-        identity: repo.identity,
-        manifestContents: repo.manifestContents,
-        name: repo.name,
-        readme: repo.readme,
-        recentCommitMessages: repo.recentCommitMessages,
-        rootFiles: repo.rootFiles,
-        topics: repo.topics,
-      }).slice(0, 4),
-      updatedAt: repo.updatedAt,
-      whyItStandsOut: buildPrivateShowcaseReason(repo, locale),
-    }) satisfies AuthorizedPrivateRepoHighlight);
+    .map(
+      (repo) =>
+        ({
+          description:
+            repo.description ??
+            (locale === "ko"
+              ? "설명이 짧아 기술 스택과 구조 단서 중심으로 해석했습니다."
+              : "The description is limited, so this reading relies mostly on stack and structural clues."),
+          name: repo.name,
+          repoUrl: repo.repoUrl,
+          tech: buildRepoTechStack({
+            description: repo.description,
+            githubLanguage: repo.language,
+            identity: repo.identity,
+            manifestContents: repo.manifestContents,
+            name: repo.name,
+            readme: repo.readme,
+            recentCommitMessages: repo.recentCommitMessages,
+            rootFiles: repo.rootFiles,
+            topics: repo.topics,
+          }).slice(0, 4),
+          updatedAt: repo.updatedAt,
+          whyItStandsOut: buildPrivateShowcaseReason(repo, locale),
+        }) satisfies AuthorizedPrivateRepoHighlight,
+    );
 }
 
 function buildAuthorizedPrivateInsights(
@@ -1749,6 +1806,15 @@ function buildAuthorizedPrivateInsights(
 
   const publicRepos = repos.filter((repo) => repo.visibility === "public");
   const privateStackSummary = summarizeRepoStack(privateRepos);
+  // Only recognized framework/language labels enter anonymous output; arbitrary repo topics cannot.
+  const privateCoreStack = [
+    ...new Set(
+      privateRepos.flatMap((repo) => [
+        ...(repo.identity?.frameworks ?? []).map((item) => item.label),
+        ...(repo.identity?.languages ?? []).map((item) => item.label),
+      ]),
+    ),
+  ].slice(0, 4);
   const publicStackSummary =
     publicRepos.length > 0 ? summarizeRepoStack(publicRepos) : null;
   const publicStackSet = new Set(
@@ -1758,10 +1824,11 @@ function buildAuthorizedPrivateInsights(
   return {
     authorizedRepoCount: repos.length,
     automatedPrivateRepoCount: privateRepos.filter(hasAutomationSignal).length,
-    documentedPrivateRepoCount: privateRepos.filter(hasDocumentationSignal).length,
+    documentedPrivateRepoCount: privateRepos.filter(hasDocumentationSignal)
+      .length,
     hiddenRepresentativeCount,
     privateRepoCount: privateRepos.length,
-    privateOnlyStack: privateStackSummary.coreStack
+    privateOnlyStack: privateCoreStack
       .filter((item) => !publicStackSet.has(item.toLowerCase()))
       .slice(0, 4),
     privateShowcaseRepos: buildPrivateShowcaseRepos(privateRepos, locale),
@@ -1773,12 +1840,7 @@ function buildAuthorizedPrivateInsights(
       (repo) => repo.identity?.domains ?? [],
       3,
     ),
-    topPrivateStack:
-      privateStackSummary.coreStack.length > 0
-        ? privateStackSummary.coreStack.slice(0, 4)
-        : buildTopLanguages(privateRepos)
-            .map((item) => item.name)
-            .slice(0, 4),
+    topPrivateStack: privateCoreStack,
     topPrivateSurfaces: privateStackSummary.topSurfaces.slice(0, 3),
     verifiedPrivateRepoCount: privateRepos.filter(hasVerificationSignal).length,
   } satisfies AuthorizedPrivateInsights;
@@ -1887,11 +1949,11 @@ function buildEvidenceSignals(
   if ((source.stackSummary?.coreStack.length ?? 0) > 0) {
     signals.push(
       locale === "ko"
-        ? `핵심 스택은 ${source.stackSummary!.coreStack
-            .slice(0, 3)
+        ? `핵심 스택은 ${source
+            .stackSummary!.coreStack.slice(0, 3)
             .join(", ")} 순으로 나타났습니다.`
-        : `The clearest stack signals appear in the order of ${source.stackSummary!.coreStack
-            .slice(0, 3)
+        : `The clearest stack signals appear in the order of ${source
+            .stackSummary!.coreStack.slice(0, 3)
             .join(", ")}.`,
     );
   } else if (source.topLanguages.length > 0) {
@@ -1908,7 +1970,11 @@ function buildEvidenceSignals(
     );
   }
 
-  if (source.representativeRepos.some((repo) => repo.readme && repo.readme.length > 500)) {
+  if (
+    source.representativeRepos.some(
+      (repo) => repo.readme && repo.readme.length > 500,
+    )
+  ) {
     signals.push(
       locale === "ko"
         ? "대표 저장소 중 README가 비교적 충실한 프로젝트가 확인됩니다."
@@ -1941,7 +2007,9 @@ function buildEvidenceSignals(
 
 function buildMockSource(
   locale: Locale,
-  overrides?: Partial<GitHubSourceData["account"]> & { cacheKeySuffix?: string },
+  overrides?: Partial<GitHubSourceData["account"]> & {
+    cacheKeySuffix?: string;
+  },
 ): GitHubSourceData {
   const account = {
     ...mockGitHubProfile.account,
@@ -2051,6 +2119,7 @@ async function fetchGitHubSourceInternal(
   forceFresh?: boolean,
   authContext?: GitHubSourceAuthContext,
   privateExposureMode: PrivateExposureMode = "aggregate",
+  privateRepoNames: string[] = [],
 ): Promise<GitHubSourceData> {
   const useFixture =
     process.env.NODE_ENV !== "production" &&
@@ -2060,14 +2129,15 @@ async function fetchGitHubSourceInternal(
     authContext &&
       authContext.viewerUsername.toLowerCase() === username.toLowerCase(),
   );
-  const dataMode: DataMode = isSignedInViewer ? "private_enriched" : "public";
-  const usePrivateRepoScope = Boolean(
-    isSignedInViewer &&
-      authContext?.scopes.some(
-        (scope) => scope === "repo" || scope === "public_repo",
-      ),
-  );
-  const authAccessToken = isSignedInViewer ? authContext?.accessToken : undefined;
+  const dataMode: DataMode = privateRepoNames.length
+    ? "private_enriched"
+    : "public";
+  const usePrivateRepoScope = privateRepoNames.length > 0;
+  if (usePrivateRepoScope && !canUsePrivateRepoScope(username, authContext))
+    throw new DocumentConfigurationError();
+  const authAccessToken = isSignedInViewer
+    ? authContext?.accessToken
+    : undefined;
   const disableCache = Boolean(isSignedInViewer);
 
   if (useFixture) {
@@ -2075,14 +2145,11 @@ async function fetchGitHubSourceInternal(
   }
 
   try {
-    const user = await githubJson<GitHubUserResponse>(
-      isSignedInViewer ? "/user" : `/users/${username}`,
-      {
-        accessToken: authAccessToken,
-        disableCache,
-        forceFresh,
-      },
-    );
+    const user = await githubJson<GitHubUserResponse>(`/users/${username}`, {
+      accessToken: authAccessToken,
+      disableCache,
+      forceFresh,
+    });
 
     if (user.type === "Organization") {
       throw new GitHubFetchError(
@@ -2091,33 +2158,30 @@ async function fetchGitHubSourceInternal(
       );
     }
 
-    const reposResponse = await githubJsonPaginated<GitHubRepoResponse>(
-      usePrivateRepoScope
-        ? "/user/repos?per_page=100&sort=updated&direction=desc&visibility=all&affiliation=owner"
-        : `/users/${username}/repos?per_page=100&sort=updated&direction=desc&type=owner`,
-      {
-        accessToken: authAccessToken,
-        disableCache,
-        forceFresh,
-      },
+    const publicReposResponse = await githubJsonPaginated<GitHubRepoResponse>(
+      getPublicRepoListPath(username),
+      { accessToken: authAccessToken, disableCache, forceFresh },
     );
-
-    const [pinnedRepos, contributionSummary] = await Promise.all([
-      fetchPinnedRepos(
-        username,
-        forceFresh,
-        authAccessToken,
-        disableCache,
-      ),
-      isSignedInViewer
-        ? fetchViewerContributionSummary(
-            forceFresh,
-            authAccessToken,
-            disableCache,
-          )
-        : Promise.resolve(null),
-    ]);
-    const pinnedNames = new Set(pinnedRepos.map((repo) => repo.name.toLowerCase()));
+    const selectedPrivateRepos = await fetchSelectedPrivateRepos(
+      username,
+      privateRepoNames,
+      authContext,
+    );
+    const reposResponse = [
+      ...publicReposResponse.filter((repo) => !repo.private),
+      ...selectedPrivateRepos,
+    ];
+    const pinnedRepos = await fetchPinnedRepos(
+      username,
+      forceFresh,
+      authAccessToken,
+      disableCache,
+    );
+    // Account-wide private contributions would exceed the repository selection.
+    const contributionSummary: ContributionSummary | null = null;
+    const pinnedNames = new Set(
+      pinnedRepos.map((repo) => repo.name.toLowerCase()),
+    );
 
     const repos: GitHubRepoSnapshot[] = reposResponse.map((repo) => ({
       archived: repo.archived,
@@ -2146,24 +2210,35 @@ async function fetchGitHubSourceInternal(
       visibility: repo.private ? "private" : "public",
     }));
 
-    const readmeTargetRepos = getRepoPoolForReadmes(repos, usePrivateRepoScope);
+    const readmeTargetRepos = [
+      ...new Map(
+        [
+          ...getRepoPoolForReadmes(repos, usePrivateRepoScope),
+          ...repos.filter((repo) => repo.visibility === "private"),
+        ].map((repo) => [repo.name.toLowerCase(), repo]),
+      ).values(),
+    ];
     const readmes = await Promise.all(
-      readmeTargetRepos.map(async (repo) => [
-        repo.name,
-        await fetchRepoReadme(
-          username,
-          repo,
-          forceFresh,
-          authAccessToken,
-          disableCache,
-        ),
-      ] as const),
+      readmeTargetRepos.map(
+        async (repo) =>
+          [
+            repo.name,
+            await fetchRepoReadme(
+              username,
+              repo,
+              forceFresh,
+              authAccessToken,
+              disableCache,
+            ),
+          ] as const,
+      ),
     );
 
     const readmeMap = new Map(readmes);
     const reposWithSignals = repos.map((repo) => {
       const pinnedFromGraph = pinnedRepos.find(
-        (pinnedRepo) => pinnedRepo.name.toLowerCase() === repo.name.toLowerCase(),
+        (pinnedRepo) =>
+          pinnedRepo.name.toLowerCase() === repo.name.toLowerCase(),
       );
 
       const mergedRepo: GitHubRepoSnapshot = {
@@ -2205,12 +2280,11 @@ async function fetchGitHubSourceInternal(
     const privateShowcaseCandidateNames = new Set<string>(
       dataMode === "private_enriched"
         ? scoredRepos
-            .filter(
-              (repo) => repo.visibility === "private" && !repo.archived,
-            )
+            .filter((repo) => repo.visibility === "private" && !repo.archived)
             .sort(
               (left, right) =>
-                scorePrivateShowcaseRepo(right) - scorePrivateShowcaseRepo(left),
+                scorePrivateShowcaseRepo(right) -
+                scorePrivateShowcaseRepo(left),
             )
             .slice(0, PRIVATE_SHOWCASE_LIMIT)
             .map((repo) => repo.name.toLowerCase())
@@ -2229,7 +2303,13 @@ async function fetchGitHubSourceInternal(
         : 0;
     const representativeRepoCandidates =
       dataMode === "private_enriched" && privateExposureMode === "include"
-        ? buildRecentShowcaseRepos(scoredRepos, privateExposureMode)
+        ? [
+            ...scoredRepos.filter((repo) => repo.visibility === "private"),
+            ...buildPublicShowcaseRepos(
+              scoredRepos.filter((repo) => repo.visibility === "public"),
+              pinnedRepos,
+            ),
+          ].slice(0, 5)
         : buildPublicShowcaseRepos(scoredRepos, pinnedRepos);
     const signalRepoCandidates = buildSignalRepoPool(
       scoredRepos,
@@ -2242,6 +2322,7 @@ async function fetchGitHubSourceInternal(
         .map((repo) => repo.name.toLowerCase()),
       ...signalRepoCandidates.map((repo) => repo.name.toLowerCase()),
       ...privateShowcaseCandidateNames,
+      ...privateRepoNames.map((name) => name.toLowerCase()),
     ]);
     const detailedRepos = await Promise.all(
       scoredRepos
@@ -2311,9 +2392,19 @@ async function fetchGitHubSourceInternal(
       (repo) => detailedRepoMap.get(repo.name.toLowerCase()) ?? repo,
     );
 
-    const lastActiveAt = repos[0]?.updatedAt ?? null;
-    const recentRepoCount = repos.filter((repo) => recencyScore(repo.updatedAt) >= 8).length;
-    const activityNote = formatActivityNote(locale, lastActiveAt, recentRepoCount);
+    const lastActiveAt =
+      repos
+        .map((repo) => repo.updatedAt)
+        .sort()
+        .at(-1) ?? null;
+    const recentRepoCount = repos.filter(
+      (repo) => recencyScore(repo.updatedAt) >= 8,
+    ).length;
+    const activityNote = formatActivityNote(
+      locale,
+      lastActiveAt,
+      recentRepoCount,
+    );
     const topLanguages = buildTopLanguages(scoredReposWithDetails);
     const stackSummary = summarizeRepoStack(scoredReposWithDetails);
     const authorizedPrivateInsights =
@@ -2357,11 +2448,11 @@ async function fetchGitHubSourceInternal(
         privateExposureMode,
         user.login,
         user.updated_at,
-        contributionSummary
-          ? `${contributionSummary.endedAt}:${contributionSummary.totalContributions}`
-          : "no-contributions",
+        "selected-repositories-only",
         lastActiveAt ?? "none",
-        representativeRepos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|"),
+        representativeRepos
+          .map((repo) => `${repo.name}:${repo.updatedAt}`)
+          .join("|"),
         signalRepos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|"),
       ].join("::"),
       dataMode,
@@ -2384,6 +2475,20 @@ async function fetchGitHubSourceInternal(
       await writeDevCachedSource(username, locale, finalizedSource);
     }
 
+    if (
+      dataMode === "private_enriched" &&
+      privateExposureMode === "aggregate"
+    ) {
+      const publicSource = projectPublicSource(finalizedSource, locale);
+      return {
+        ...publicSource,
+        cacheKey: `${publicSource.cacheKey}::private-summary`,
+        dataMode,
+        authorizedPrivateInsights: authorizedPrivateInsights
+          ? { ...authorizedPrivateInsights, privateShowcaseRepos: [] }
+          : null,
+      };
+    }
     return finalizedSource;
   } catch (error) {
     if (
@@ -2418,8 +2523,11 @@ export async function getGitHubSource(
     forceFresh?: boolean;
     locale?: Locale;
     privateExposureMode?: PrivateExposureMode;
+    privateRepoNames?: string[];
   },
 ) {
+  if (options?.privateRepoNames?.length && !options.authContext)
+    throw new DocumentConfigurationError();
   const locale = options?.locale ?? "ko";
   const privateExposureMode = options?.privateExposureMode ?? "aggregate";
   if (options?.authContext) {
@@ -2429,10 +2537,51 @@ export async function getGitHubSource(
       true,
       options.authContext,
       privateExposureMode,
+      options.privateRepoNames,
     );
   }
 
   return options?.forceFresh
     ? fetchGitHubSourceInternal(username, locale, true)
     : getCachedGitHubSource(username, locale);
+}
+
+/** Public-only source for benchmark eligibility and anonymous-mode narrative. */
+export function projectPublicSource(
+  source: GitHubSourceData,
+  locale: Locale,
+): GitHubSourceData {
+  const repos = source.repos.filter((repo) => repo.visibility === "public");
+  const lastActiveAt =
+    repos
+      .map((repo) => repo.updatedAt)
+      .sort()
+      .at(-1) ?? null;
+  const recentRepoCount = repos.filter(
+    (repo) => recencyScore(repo.updatedAt) >= 8,
+  ).length;
+  const result: GitHubSourceData = {
+    ...source,
+    cacheKey: `public::${source.account.username}::${repos.map((repo) => `${repo.name}:${repo.updatedAt}`).join("|")}`,
+    dataMode: "public",
+    privateExposureMode: "aggregate",
+    authorizedPrivateInsights: null,
+    activity: {
+      contributionSummary: null,
+      lastActiveAt,
+      recentRepoCount,
+      note: formatActivityNote(locale, lastActiveAt, recentRepoCount),
+    },
+    repos,
+    representativeRepos: buildPublicShowcaseRepos(repos, []),
+    signalRepos: buildSignalRepoPool(repos, [], "public"),
+    pinnedRepoNames: source.pinnedRepoNames.filter((name) =>
+      repos.some((repo) => repo.name === name),
+    ),
+    stackSummary: summarizeRepoStack(repos),
+    topLanguages: buildTopLanguages(repos),
+    evidenceSignals: [],
+  };
+  result.evidenceSignals = buildEvidenceSignals(locale, result);
+  return result;
 }

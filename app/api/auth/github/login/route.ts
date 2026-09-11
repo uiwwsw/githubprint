@@ -18,12 +18,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectTo, request.url));
   }
 
+  const access =
+    request.nextUrl.searchParams.get("access") === "private"
+      ? "private"
+      : "public";
   const state = createGitHubOAuthState();
-  const response = NextResponse.redirect(buildGitHubAuthorizeUrl(state));
+  const response = NextResponse.redirect(
+    buildGitHubAuthorizeUrl(state, access),
+  );
 
   response.cookies.set({
     name: GITHUB_STATE_COOKIE_NAME,
-    value: createGitHubAuthStateValue({ redirectTo, state }),
+    value: createGitHubAuthStateValue({ redirectTo, state, access }),
     httpOnly: true,
     maxAge: GITHUB_STATE_MAX_AGE_SECONDS,
     path: "/",
