@@ -13,11 +13,7 @@ export function DocumentShell({
       data-document
       className="document-page mx-auto bg-white p-6 sm:p-12"
     >
-      {accent ? (
-        <div className="document-meta mb-8" data-export-ignore>
-          {accent}
-        </div>
-      ) : null}
+      {accent ? <div className="document-meta mb-8">{accent}</div> : null}
       {children}
     </article>
   );

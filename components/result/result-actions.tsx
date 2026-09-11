@@ -10,7 +10,7 @@ import {
   buildResultDocumentTitle,
 } from "@/lib/result-document";
 import { snapshotDocument } from "@/lib/document-snapshot";
-import { readDocumentAvatar } from "@/lib/document-avatar";
+import { snapshotVisualDocument } from "@/lib/document-visual";
 import type { ResumeRepoVisibility } from "@/lib/resume";
 import type { Locale, PrivateExposureMode, TemplateId } from "@/lib/schemas";
 
@@ -164,10 +164,15 @@ export function ResultActions({
         if (!response.ok) throw new Error("Document asset is unavailable");
         return response;
       };
-      let avatarMissing = false;
-      const [fonts, avatar, license] = await Promise.all([
-        Promise.all(
-          (format === "word" ? ["Regular", "SemiBold"] : ["Regular"]).map(
+      const [{ snapshot, imageMissing }, license] = await Promise.all([
+        snapshotVisualDocument(root, controller.signal),
+        fetchAsset("/fonts/OFL.txt").then((response) => response.text()),
+      ]);
+      if (!mounted.current || controller.signal.aborted) return;
+      let blob: Blob;
+      if (format === "word") {
+        const fonts = await Promise.all(
+          ["Regular", "SemiBold"].map(
             async (weight) =>
               new Uint8Array(
                 await (
@@ -175,46 +180,36 @@ export function ResultActions({
                 ).arrayBuffer(),
               ),
           ),
-        ),
-        readDocumentAvatar(root, controller.signal).catch(() => {
-          avatarMissing = true;
-          return null;
-        }),
-        format === "html"
-          ? fetchAsset("/fonts/OFL.txt").then((response) => response.text())
-          : "",
-      ]);
-      if (!mounted.current || controller.signal.aborted) return;
-      let blob: Blob;
-      if (format === "word") {
+        );
+        const { snapshotDocumentLayout } = await import(
+          "@/lib/document-layout"
+        );
         const { buildDocumentDocx } = await import("@/lib/document-docx");
+        const layout = await snapshotDocumentLayout(
+          snapshot,
+          locale,
+          controller.signal,
+        );
         blob = await buildDocumentDocx(
-          blocks,
+          layout,
           locale,
           name,
           fonts[0],
           fonts[1],
-          avatar,
         );
       } else {
         const { buildDocumentHtml } = await import("@/lib/document-html");
         blob = new Blob(
           [
             buildDocumentHtml({
-              blocks,
+              snapshot,
               locale,
               title: buildResultDocumentTitle({
                 locale,
                 template,
                 username: downloadFileName?.username,
               }),
-              templateLabel: dict.templateMeta[template].label,
-              generatedAt: downloadFileName?.generatedAt,
-              font: fonts[0],
               fontLicense: license,
-              avatar,
-              notice:
-                publicShare?.kind === "example" ? copy.example : undefined,
             }),
           ],
           { type: "text/html;charset=utf-8" },
@@ -231,7 +226,7 @@ export function ResultActions({
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
       setStatus(
-        avatarMissing
+        imageMissing
           ? copy.exportedWithoutImage
           : format === "html"
             ? copy.htmlExported
@@ -339,17 +334,7 @@ export function ResultActions({
             </span>
           ) : null}
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:flex">
-          <Button
-            className="gap-2 rounded-lg"
-            disabled={!canDownload || !!busy}
-            onClick={handlePdf}
-            variant="secondary"
-            aria-busy={busy === "pdf"}
-          >
-            <span aria-hidden="true">↓</span>
-            {busy === "pdf" ? copy.pending : copy.pdf}
-          </Button>
+        <div className="flex gap-2">
           <Button
             className="gap-2 rounded-lg bg-[#176b50] hover:bg-[#10503b]"
             disabled={!canDownload || !!busy}

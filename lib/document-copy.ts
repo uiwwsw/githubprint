@@ -26,14 +26,15 @@ export const documentCopy = {
     html: "HTML로 저장",
     saveShare: "저장·공유",
     saveTitle: "어떻게 전달할까요?",
-    saveIntro: "내용은 그대로, 쓰임에 맞는 파일로 저장하세요.",
+    saveIntro: "현재 템플릿의 구성과 디자인을 유지해 저장하세요.",
     close: "닫기",
     pdfUse: "제출·전달",
     wordUse: "편집·협업",
     htmlUse: "브라우저로 읽기",
     pdfDescription: "페이지 구성을 유지해 지원서나 첨부 자료로 전달하세요.",
     wordDescription: "Word와 Google Docs에서 내용을 고치고 함께 다듬으세요.",
-    htmlDescription: "목차가 있는 웹 문서를 브라우저에서 열어 읽으세요.",
+    htmlDescription:
+      "현재 템플릿 그대로, 브라우저에서 열고 인쇄할 수 있습니다.",
     htmlHint:
       "글꼴·사진을 포함한 HTML 파일로 저장합니다. 인터넷 없이 열 수 있고, 모바일에 맞춰 읽기 좋게 표시됩니다. 공개 링크를 만들지는 않습니다.",
     htmlExported:
@@ -60,14 +61,14 @@ export const documentCopy = {
     wordHint:
       "Word는 편집 가능한 .docx 파일입니다. Google Docs에서도 파일을 열어 편집할 수 있습니다.",
     exportHint:
-      "현재 보이는 내용을 저장합니다. Word와 HTML은 각 형식에 맞게 재구성되어 PDF와 페이지 구성이 다를 수 있습니다.",
+      "HTML과 PDF는 같은 템플릿 스타일을 사용합니다. Word는 카드·표·서식을 편집 가능한 형태로 유지하며, 사용하는 문서 앱에 따라 줄바꿈과 페이지 수는 조금 달라질 수 있습니다.",
     exportError: "파일을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.",
     printError:
       "인쇄 준비에 실패했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.",
     exported: "Word 파일이 준비되었습니다.",
     exportedWithoutImage:
       "파일이 준비되었습니다. 프로필 이미지를 불러오지 못해 본문만 저장했습니다.",
-    layout: "PDF 간격",
+    layout: "인쇄 간격",
     comfortable: "여유롭게",
     compact: "촘촘하게",
     guide: "저장 안내",
@@ -103,14 +104,15 @@ export const documentCopy = {
     html: "Save HTML",
     saveShare: "Save & share",
     saveTitle: "How will you share it?",
-    saveIntro: "The same content, in the format that fits your next step.",
+    saveIntro:
+      "Save the current template’s structure and design in the format you need.",
     close: "Close",
     pdfUse: "Send & submit",
     wordUse: "Edit & collaborate",
     htmlUse: "Read in a browser",
     pdfDescription: "Keep the page layout for applications and attachments.",
     wordDescription: "Revise and collaborate in Word or Google Docs.",
-    htmlDescription: "Open a readable web document with a table of contents.",
+    htmlDescription: "Open and print the same template in a browser.",
     htmlHint:
       "Saves an HTML file with fonts and photos included. Read it offline or on a mobile screen. This does not create a public link.",
     htmlExported:
@@ -137,14 +139,14 @@ export const documentCopy = {
     wordHint:
       "Word exports are editable .docx files. You can also open and edit them in Google Docs.",
     exportHint:
-      "Exports use the content you see here. Word and HTML use layouts suited to their format, so pagination may differ from PDF.",
+      "HTML and PDF use the same template styles. Word preserves cards, tables, and formatting as editable content; line wrapping and page counts can vary by document app.",
     exportError: "We couldn't prepare the file. Please try again in a moment.",
     printError:
       "We couldn't prepare the print layout. Refresh the page and try again.",
     exported: "Your Word file is ready.",
     exportedWithoutImage:
       "Your file is ready. The profile image was unavailable, so the document contains text only.",
-    layout: "PDF spacing",
+    layout: "Print spacing",
     comfortable: "Comfortable",
     compact: "Compact",
     guide: "Export guide",

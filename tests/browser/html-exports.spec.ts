@@ -16,6 +16,7 @@ for (const locale of ["ko", "en"] as const) {
       await page.goto(
         `${locale === "en" ? "/en" : ""}/preview?template=${template}`,
       );
+      await page.evaluate(() => document.fonts.ready);
       const expected = await page.locator("[data-document]").evaluate((root) =>
         Array.from(root.querySelectorAll("h1,h2,h3,h4,h5,p,li,a,span"))
           .filter((el) => !el.closest("[data-export-ignore], .screen-only"))
@@ -63,10 +64,12 @@ for (const locale of ["ko", "en"] as const) {
         await reader.evaluate(() => document.fonts.ready);
         expect(
           await reader.evaluate(() =>
-            document.fonts.check("16px Document", "한글 résumé"),
+            document.fonts.check('16px "Pretendard Variable"', "한글 résumé"),
           ),
         ).toBe(true);
-        const text = plain(await reader.locator("article").innerText());
+        const text = plain(
+          (await reader.locator("[data-document]").textContent()) ?? "",
+        );
         for (const value of expected)
           expect(text, `Missing text: ${value}`).toContain(plain(value));
         expect(await reader.locator("h1").count()).toBe(1);
@@ -82,27 +85,106 @@ for (const locale of ["ko", "en"] as const) {
                   image.complete && image.naturalWidth > 0,
               ),
           ).toBe(true);
-        const lastSection = reader
-          .getByRole("navigation")
-          .getByRole("link")
-          .last();
-        await lastSection.click();
-        expect(new URL(reader.url()).hash).toMatch(/^#section-\d+$/);
-        await reader
-          .getByRole("link", {
-            name: locale === "ko" ? "문서 맨 위로" : "Back to top",
-          })
-          .click();
+        // The exported document preserves the template, including cards, spacing, and type.
+        const visual = async (target: typeof page) =>
+          target.locator("[data-document]").evaluate((root) => {
+            const origin = root.getBoundingClientRect();
+            return [root, ...root.querySelectorAll("*")]
+              .filter((el) => !el.closest(".screen-only,[data-export-ignore]"))
+              .map((el) => {
+                const r = el.getBoundingClientRect(),
+                  s = getComputedStyle(el);
+                return {
+                  tag: el.tagName,
+                  x: r.x - origin.x,
+                  y: r.y - origin.y,
+                  width: r.width,
+                  height: r.height,
+                  color: s.color,
+                  background: s.backgroundColor,
+                  font: s.fontFamily,
+                  fontSize: s.fontSize,
+                  fontWeight: s.fontWeight,
+                  radius: s.borderRadius,
+                  display: s.display,
+                };
+              });
+          });
+        const original = await visual(page),
+          exported = await visual(reader);
+        expect(exported.length).toBe(original.length);
+        for (let i = 0; i < original.length; i++) {
+          for (const key of [
+            "tag",
+            "color",
+            "background",
+            "font",
+            "fontSize",
+            "fontWeight",
+            "radius",
+            "display",
+          ] as const)
+            expect(exported[i][key], `${i} ${original[i].tag} ${key}`).toEqual(
+              original[i][key],
+            );
+          for (const key of ["x", "y", "width", "height"] as const)
+            expect(
+              Math.abs(exported[i][key] - original[i][key]),
+              `${i} ${original[i].tag} ${key}`,
+            ).toBeLessThanOrEqual(1);
+        }
+        // Measure both print trees at the A4 content width (210 mm minus 17 mm margins).
+        await page.setViewportSize({ width: 665, height: 1123 });
+        await reader.setViewportSize({ width: 665, height: 1123 });
+        await reader.emulateMedia({ media: "print" });
+        await page.emulateMedia({ media: "print" });
+        const printOriginal = await visual(page),
+          printExported = await visual(reader);
+        for (let i = 0; i < printOriginal.length; i++) {
+          for (const key of ["fontSize", "background"] as const)
+            expect(printExported[i][key], `print ${i} ${key}`).toEqual(
+              printOriginal[i][key],
+            );
+          for (const key of ["x", "y", "width", "height"] as const)
+            expect(
+              Math.abs(printExported[i][key] - printOriginal[i][key]),
+              `print ${i} ${key}`,
+            ).toBeLessThanOrEqual(1);
+        }
+        await page.emulateMedia({ media: "screen" });
+        await reader.emulateMedia({ media: "screen" });
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await reader.setViewportSize({ width: 1440, height: 1000 });
         await reader.screenshot({
           path: path.join(output, `${template}-${locale}-desktop.png`),
           fullPage: true,
         });
-        await reader.pdf({
+        await reader.emulateMedia({ media: null });
+        const pdf = await reader.pdf({
           path: path.join(output, `${template}-${locale}.pdf`),
           preferCSSPageSize: true,
           printBackground: true,
         });
+        const mediaBox =
+          /\/MediaBox\s*\[\s*0\s+0\s+([\d.]+)\s+([\d.]+)\s*\]/.exec(
+            pdf.toString("latin1"),
+          );
+        expect(
+          mediaBox,
+          "Standalone HTML must retain the template's A4 @page rule",
+        ).not.toBeNull();
+        expect(Number(mediaBox![1])).toBeCloseTo(595, 0);
+        expect(Number(mediaBox![2])).toBeCloseTo(842, 0);
         await reader.setViewportSize({ width: 360, height: 800 });
+        await page.setViewportSize({ width: 360, height: 800 });
+        const mobileOriginal = await visual(page),
+          mobileExported = await visual(reader);
+        for (let i = 0; i < mobileOriginal.length; i++)
+          for (const key of ["x", "y", "width", "height"] as const)
+            expect(
+              Math.abs(mobileExported[i][key] - mobileOriginal[i][key]),
+              `mobile ${i} ${key}`,
+            ).toBeLessThanOrEqual(1);
         expect(
           await reader.evaluate(
             () => document.documentElement.scrollWidth - innerWidth,
