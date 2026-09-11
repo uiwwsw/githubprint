@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SelfGenerator } from "@/components/home/self-generator";
+import type { DocumentOptions } from "@/lib/document-options";
 import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
 import { ResumeActivationPanel } from "@/components/resume/resume-activation-panel";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
@@ -9,11 +11,18 @@ import type { Locale } from "@/lib/schemas";
 type ResumeResultStateProps = {
   availability: Exclude<ResumeTemplateAvailability, { state: "ready" }>;
   locale: Locale;
+  recovery?: {
+    username: string;
+    canReadPrivate: boolean;
+    privateLoginHref: string;
+    initialOptions: DocumentOptions;
+  };
 };
 
 export function ResumeResultState({
   availability,
   locale,
+  recovery,
 }: ResumeResultStateProps) {
   const dict = getDictionary(locale);
   const copy = getResumeCopy(locale);
@@ -49,7 +58,18 @@ export function ResumeResultState({
           </p>
         </div>
 
-        <ResumeActivationPanel availability={availability} locale={locale} />
+        {recovery && availability.state === "locked_missing_repo" ? (
+          <div className="screen-only">
+            <SelfGenerator
+              {...recovery}
+              initialTemplate="resume"
+              resumeOnly
+              locale={locale}
+            />
+          </div>
+        ) : (
+          <ResumeActivationPanel availability={availability} locale={locale} />
+        )}
 
         <div className="screen-only flex gap-3">
           <Link

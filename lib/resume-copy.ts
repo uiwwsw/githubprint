@@ -88,7 +88,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       activationHint:
         "Resume 템플릿은 `resume` 레포와 루트의 `resume.yaml`이 있어야 활성화되며, 영어 버전은 `resume.en.yaml`으로 분리할 수 있습니다.",
       lockedInvalid: "규격 수정 필요",
-      lockedMissing: "resume 레포 필요",
+      lockedMissing: "원본 접근 확인",
       ready: "사용 가능",
     },
     panel: {
@@ -139,9 +139,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       invalidTitle: "Resume 템플릿을 아직 생성할 수 없습니다.",
       invalidMessage:
         "`resume` 레포는 있지만 `resume.yaml`, 필요한 경우 `resume.en.yaml`, 또는 참조 Markdown 규격을 먼저 맞춰야 합니다.",
-      missingTitle: "Resume 템플릿을 열기 전에 `resume` 레포가 필요합니다.",
+      missingTitle: "선택한 범위에서 이력서 원본을 찾지 못했습니다.",
       missingMessage:
-        "홈의 Resume 카드에서 요구 구조를 확인하고 레포를 만든 뒤 다시 시도해 주세요.",
+        "이미 resume 레포가 있다면 다시 만들 필요 없습니다. 비공개 레포는 아래에서 원본 접근을 허용하고, 필요한 경우 GitHub 권한을 연결한 뒤 다시 불러오세요. 레포가 없다면 준비 방법을 확인하세요.",
       warningTitle: "일부 항목은 건너뛰고 계속 생성했습니다.",
       warningMessage:
         "문서를 전체 차단하지 않고, 문제가 있는 필드나 참조만 제외했습니다. 아래 경고를 기준으로 `resume.yaml` 또는 `resume.en.yaml`을 정리하면 됩니다.",
@@ -188,7 +188,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       activationHint:
         "The Resume template activates when a `resume` repo and root-level `resume.yaml` are available, and English can be split into `resume.en.yaml`.",
       lockedInvalid: "Schema fix needed",
-      lockedMissing: "Needs resume repo",
+      lockedMissing: "Check source access",
       ready: "Ready",
     },
     panel: {
@@ -239,9 +239,9 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
       invalidTitle: "The Resume template is not ready yet.",
       invalidMessage:
         "The `resume` repo exists, but `resume.yaml`, `resume.en.yaml` when needed, or one of its Markdown references still needs to be fixed.",
-      missingTitle: "A `resume` repo is required before opening the Resume template.",
+      missingTitle: "No resume source was found within the selected access scope.",
       missingMessage:
-        "Use the Resume card on the home screen to review the required structure, then try again.",
+        "If you already have a resume repo, you do not need to recreate it. For a private repo, allow source access below, connect GitHub permissions if needed, and load it again. If you do not have a repo, open the setup guide.",
       warningTitle: "The resume was generated with partial skips.",
       warningMessage:
         "The document stayed available, but invalid fields or broken references were omitted. Use the warnings below to clean up `resume.yaml` or `resume.en.yaml`.",
