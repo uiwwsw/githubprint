@@ -4,34 +4,61 @@ const assert = require("node:assert/strict");
 test("missing resume offers inline recovery without opting into private access", () => {
   const React = require("react");
   const { renderToStaticMarkup } = require("react-dom/server");
-  const { AppRouterContext } = require("next/dist/shared/lib/app-router-context.shared-runtime");
-  const { ResumeResultState } = require("../components/result/resume-result-state.tsx");
+  const {
+    AppRouterContext,
+  } = require("next/dist/shared/lib/app-router-context.shared-runtime");
+  const {
+    ResumeResultState,
+  } = require("../components/result/resume-result-state.tsx");
   for (const locale of ["ko", "en"]) {
     for (const canReadPrivate of [false, true]) {
       for (const resumeSource of ["public", "authorized"]) {
-        const html = renderToStaticMarkup(React.createElement(
-          AppRouterContext.Provider, { value: { push() {} } },
-          React.createElement(ResumeResultState, {
-            availability: { state: "locked_missing_repo" },
-            locale,
-            recovery: {
-              username: "privacy-fixture",
-              canReadPrivate,
-              privateLoginHref: "/api/auth/github/login?access=private",
-              initialOptions: { ...defaultDocumentOptions("resume"), resumeSource },
-            },
-          }),
-        ));
-        assert.match(html, locale === "ko" ? /이력서 다시 불러오기/ : /Load resume again/);
-        assert.doesNotMatch(html, /aria-label="(?:문서 템플릿|Document template)"/);
-        const sourceInputs = html.match(/<input[^>]*name="resume-source"[^>]*>/g);
+        const html = renderToStaticMarkup(
+          React.createElement(
+            AppRouterContext.Provider,
+            { value: { push() {} } },
+            React.createElement(ResumeResultState, {
+              availability: { state: "locked_missing_repo" },
+              locale,
+              recovery: {
+                username: "privacy-fixture",
+                canReadPrivate,
+                loginHref: "/api/auth/github/login?access=public",
+                privateLoginHref: "/api/auth/github/login?access=private",
+                initialOptions: {
+                  ...defaultDocumentOptions("resume"),
+                  resumeSource,
+                },
+              },
+            }),
+          ),
+        );
+        assert.match(
+          html,
+          locale === "ko" ? /이력서 다시 불러오기/ : /Load resume again/,
+        );
+        assert.doesNotMatch(
+          html,
+          /aria-label="(?:문서 템플릿|Document template)"/,
+        );
+        const sourceInputs = html.match(
+          /<input[^>]*name="resume-source"[^>]*>/g,
+        );
         assert.equal(sourceInputs.length, 2);
-        assert.equal(sourceInputs[0].includes('checked=""'), resumeSource === "public");
-        assert.equal(sourceInputs[1].includes('checked=""'), resumeSource === "authorized");
-        assert.equal(html.includes('href="/api/auth/github/login?access=private"'),
-          resumeSource === "authorized");
-        assert.equal(/<button[^>]*disabled=""[^>]*>/.test(html),
-          resumeSource === "authorized" && !canReadPrivate);
+        assert.equal(
+          sourceInputs[0].includes('checked=""'),
+          resumeSource === "public",
+        );
+        assert.equal(
+          sourceInputs[1].includes('checked=""'),
+          resumeSource === "authorized",
+        );
+        assert.equal(
+          html.includes('href="/api/auth/github/login?access=private"'),
+          resumeSource === "authorized" && !canReadPrivate,
+        );
+        // Generation stays disabled until the selected source has been checked in the browser.
+        assert.equal(/<button[^>]*disabled=""[^>]*>/.test(html), true);
       }
     }
   }
@@ -88,7 +115,10 @@ const auth = {
   viewerUsername: fixture.username,
 };
 
-test.beforeEach(() => fixture.reset());
+test.beforeEach(() => {
+  fixture.reset();
+  globalThis.fetch = fixture.mockFetch;
+});
 
 test("ordinary OAuth login excludes private access; repo scope is an explicit upgrade", () => {
   assert.equal(
@@ -485,7 +515,177 @@ test("declining an optional OAuth upgrade preserves the existing session", async
   );
   assert.equal(
     response.headers.get("location"),
-    "http://localhost/en/#generator",
+    "http://localhost/en/?github_auth=cancelled#generator",
   );
   assert.ok(!response.cookies.get("githubprint-github-session"));
+});
+
+const { checkResumeReadiness } = require("../lib/resume-readiness.ts");
+test("resume readiness verifies only the selected source, without disclosing authored content or reading private links", async () => {
+  assert.equal(
+    (await checkResumeReadiness(session, "public", "ko")).state,
+    "missing_repo",
+  );
+  assert.ok(
+    !fixture.calls.some((call) =>
+      call.path.startsWith("/repos/privacy-fixture/resume"),
+    ),
+  );
+  fixture.reset();
+  const ready = await checkResumeReadiness(session, "authorized", "en");
+  assert.deepEqual(ready, { state: "ready", repoVisibility: "private" });
+  assert.doesNotMatch(JSON.stringify(ready), /SENTINEL|token|authored@example/);
+  assert.ok(
+    fixture.calls.every(
+      (call) =>
+        !call.path.includes("private-atlas") && call.path !== "/user/repos",
+    ),
+  );
+  fixture.reset();
+  assert.equal(
+    (
+      await checkResumeReadiness(
+        { ...session, scopes: ["read:user"] },
+        "authorized",
+        "ko",
+      )
+    ).state,
+    "permission",
+  );
+  assert.equal(fixture.calls.length, 0);
+});
+
+test("resume.yaml remains discoverable after the first 24 root entries", async () => {
+  globalThis.fetch = async (input, init) => {
+    if (new URL(input).pathname === "/repos/privacy-fixture/resume/contents")
+      return Response.json([
+        ...Array.from({ length: 30 }, (_, i) => ({
+          name: `file-${i}.md`,
+          type: "file",
+        })),
+        { name: "resume.yaml", type: "file" },
+      ]);
+    return fixture.mockFetch(input, init);
+  };
+  assert.equal(
+    (await checkResumeReadiness(session, "authorized", "ko")).state,
+    "ready",
+  );
+});
+
+for (const suffix of [
+  "contents",
+  "contents/resume.yaml",
+  "contents/content/summary.md",
+]) {
+  for (const [status, state] of [
+    [401, "authentication"],
+    [403, "permission"],
+    [429, "rate_limited"],
+    [503, "unavailable"],
+  ]) {
+    test(`resume ${suffix} HTTP ${status} is reported as ${state}, never a missing YAML file`, async () => {
+      globalThis.fetch = async (input, init) =>
+        new URL(input).pathname === `/repos/privacy-fixture/resume/${suffix}`
+          ? Response.json({ message: "unavailable" }, { status })
+          : fixture.mockFetch(input, init);
+      assert.equal(
+        (await checkResumeReadiness(session, "authorized", "ko")).state,
+        state,
+      );
+    });
+  }
+}
+
+test("readiness route requires the same origin and authenticated explicit source selection", async () => {
+  const nextHeaders = require("next/headers");
+  const { NextRequest } = require("next/server");
+  const route = require("../app/api/resume-readiness/route.ts");
+  const request = (origin, source = "authorized") =>
+    new NextRequest("http://localhost/api/resume-readiness", {
+      method: "POST",
+      headers: { origin, "Content-Type": "application/json" },
+      body: JSON.stringify({ source, locale: "ko" }),
+    });
+  nextHeaders.cookies = async () => ({ get: () => undefined });
+  assert.equal((await route.POST(request("http://localhost"))).status, 401);
+  nextHeaders.cookies = async () => ({
+    get: () => ({ value: createGitHubSessionValue(session) }),
+  });
+  assert.equal((await route.POST(request("https://other.test"))).status, 403);
+  assert.equal(
+    (await route.POST(request("http://localhost", "all"))).status,
+    400,
+  );
+  const result = await route.POST(request("http://localhost"));
+  assert.equal(result.headers.get("cache-control"), "private, no-store");
+  assert.equal((await result.json()).state, "ready");
+});
+
+test("OAuth uses token-verified scopes and reports a completed or incomplete permission upgrade", async () => {
+  const {
+    createGitHubAuthStateValue,
+    readGitHubAuthState,
+  } = require("../lib/auth.ts");
+  const { NextRequest } = require("next/server");
+  const callback = require("../app/api/auth/github/callback/route.ts");
+  const cookie = createGitHubAuthStateValue({
+    redirectTo: "/en/#generator",
+    state: "test-state",
+    access: "private",
+  });
+  for (const scopes of ["read:user,repo", "read:user"]) {
+    globalThis.fetch = async (input) =>
+      String(input).includes("access_token")
+        ? Response.json({ access_token: "synthetic-new-token", scope: "" })
+        : Response.json(
+            {
+              login: fixture.username,
+              name: "Fixture",
+              avatar_url: "",
+              html_url: "https://github.com/privacy-fixture",
+            },
+            { headers: { "x-oauth-scopes": scopes } },
+          );
+    const response = await callback.GET(
+      new NextRequest(
+        "http://localhost/api/auth/github/callback?code=code&state=test-state",
+        { headers: { cookie: `githubprint-github-oauth-state=${cookie}` } },
+      ),
+    );
+    assert.equal(
+      new URL(response.headers.get("location")).searchParams.get("github_auth"),
+      scopes.includes("repo") ? "connected" : "permission",
+    );
+    assert.ok(response.cookies.get("githubprint-github-session"));
+  }
+  globalThis.fetch = async () => {
+    throw new Error("unavailable");
+  };
+  const response = await callback.GET(
+    new NextRequest(
+      "http://localhost/api/auth/github/callback?code=code&state=test-state",
+      { headers: { cookie: `githubprint-github-oauth-state=${cookie}` } },
+    ),
+  );
+  assert.equal(
+    new URL(response.headers.get("location")).searchParams.get("github_auth"),
+    "failed",
+  );
+  assert.ok(!response.cookies.get("githubprint-github-session"));
+});
+
+test("a dropped Markdown request remains a network failure instead of invalid YAML", async () => {
+  globalThis.fetch = async (input, init) => {
+    if (
+      new URL(input).pathname ===
+      "/repos/privacy-fixture/resume/contents/content/summary.md"
+    )
+      throw new TypeError("fetch failed");
+    return fixture.mockFetch(input, init);
+  };
+  assert.equal(
+    (await checkResumeReadiness(session, "authorized", "ko")).state,
+    "unavailable",
+  );
 });

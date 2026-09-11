@@ -9,10 +9,7 @@ import {
   readGitHubAuthState,
   sanitizeRedirectPath,
 } from "@/lib/auth";
-
-function buildRedirectUrl(request: NextRequest, redirectTo?: string | null) {
-  return new URL(sanitizeRedirectPath(redirectTo), request.url);
-}
+import { hasPrivateRepoPermission } from "@/lib/document-options";
 
 export async function GET(request: NextRequest) {
   const error = request.nextUrl.searchParams.get("error");
@@ -21,9 +18,14 @@ export async function GET(request: NextRequest) {
   const savedState = readGitHubAuthState(
     request.cookies.get(GITHUB_STATE_COOKIE_NAME)?.value,
   );
-  const redirectUrl = buildRedirectUrl(request, savedState?.redirectTo);
-
-  if (!hasGitHubOAuthConfig() || error || !code || !state || !savedState) {
+  const redirectUrl = new URL(
+    sanitizeRedirectPath(savedState?.redirectTo),
+    request.url,
+  );
+  function redirect(
+    outcome: "connected" | "cancelled" | "failed" | "expired" | "permission",
+  ) {
+    redirectUrl.searchParams.set("github_auth", outcome);
     const response = NextResponse.redirect(redirectUrl);
     response.cookies.set({
       name: GITHUB_STATE_COOKIE_NAME,
@@ -33,22 +35,19 @@ export async function GET(request: NextRequest) {
     });
     return response;
   }
-
-  if (savedState.state !== state) {
-    const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set({
-      name: GITHUB_STATE_COOKIE_NAME,
-      value: "",
-      maxAge: 0,
-      path: "/",
-    });
-    return response;
-  }
-
+  if (!hasGitHubOAuthConfig()) return redirect("failed");
+  if (error)
+    return redirect(error === "access_denied" ? "cancelled" : "failed");
+  if (!code || !state || !savedState || savedState.state !== state)
+    return redirect("expired");
   try {
     const session = await exchangeGitHubCodeForSession(code);
-    const response = NextResponse.redirect(redirectUrl);
-
+    const response = redirect(
+      savedState.access === "private" &&
+        !hasPrivateRepoPermission(session.scopes)
+        ? "permission"
+        : "connected",
+    );
     response.cookies.set({
       name: GITHUB_SESSION_COOKIE_NAME,
       value: createGitHubSessionValue(session),
@@ -58,23 +57,9 @@ export async function GET(request: NextRequest) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
     });
-    response.cookies.set({
-      name: GITHUB_STATE_COOKIE_NAME,
-      value: "",
-      maxAge: 0,
-      path: "/",
-    });
-
     return response;
   } catch {
-    const response = NextResponse.redirect(redirectUrl);
-    response.cookies.set({
-      name: GITHUB_STATE_COOKIE_NAME,
-      value: "",
-      maxAge: 0,
-      path: "/",
-    });
-
-    return response;
+    // Keep the previous session on failure, and explain why the upgrade did not complete.
+    return redirect("failed");
   }
 }

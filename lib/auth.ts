@@ -257,7 +257,7 @@ export async function exchangeGitHubCodeForSession(code: string) {
 
   const viewer = (await viewerResponse.json()) as GitHubViewerResponse;
   const scopeHeader =
-    tokenJson.scope ?? viewerResponse.headers.get("x-oauth-scopes") ?? "";
+    viewerResponse.headers.get("x-oauth-scopes") ?? tokenJson.scope ?? "";
   const scopes = scopeHeader
     .split(/[,\s]+/)
     .map((item) => item.trim())
