@@ -162,6 +162,10 @@ export async function ShowcasePageContent({
               locale={locale}
               mode="fallback"
               backHref={homePath}
+              publicShare={{
+                path: `${locale === "en" ? "/en" : ""}/showcase`,
+                kind: "public",
+              }}
               downloadFileName={{
                 generatedAt: resume.source.updatedAt ?? showcase.createdAt,
                 template: "resume",

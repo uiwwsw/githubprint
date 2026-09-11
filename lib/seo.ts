@@ -181,6 +181,7 @@ export function buildHomeStructuredData(locale: Locale) {
           "GitHub를 이력서와 개발자 소개 문서로 변환",
           "공유 가능한 개발자 포트폴리오 PDF 생성",
           "네 가지 템플릿의 편집 가능한 Word 문서 생성",
+          "목차와 글꼴을 포함한 오프라인 HTML 문서 저장",
           "resume 저장소에 직접 작성한 경력으로 이력서 구성",
           "한국어와 영어 결과 문서 지원",
         ]
@@ -188,6 +189,7 @@ export function buildHomeStructuredData(locale: Locale) {
           "Turn GitHub into a developer resume and profile document",
           "Generate shareable developer portfolio PDFs",
           "Export editable Word documents from all four templates",
+          "Save offline HTML documents with a table of contents and embedded fonts",
           "Build a resume from authored content in a GitHub resume repository",
           "Support Korean and English output",
         ];

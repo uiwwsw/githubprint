@@ -82,6 +82,10 @@ export default async function PreviewPage({
             locale={locale}
             mode="fallback"
             backHref={`${prefix}/`}
+            publicShare={{
+              path: `${prefix}/preview?template=${template}`,
+              kind: "example",
+            }}
             downloadFileName={{
               generatedAt: SAMPLE_DATE,
               template,

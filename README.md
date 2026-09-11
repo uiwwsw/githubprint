@@ -1,7 +1,7 @@
 <div align="center">
   <h1>GitHubPrint</h1>
-  <p><strong>Turn GitHub into a shareable, PDF-ready developer document.</strong></p>
-  <p>공개 GitHub 또는 로그인한 본인 GitHub를 공유 가능한 PDF형 개발자 문서로 정리합니다.</p>
+  <p><strong>Turn GitHub into a considered document — PDF, Word, or HTML.</strong></p>
+  <p>GitHub 기록을 목적에 맞는 개발자 문서로 정리하고 PDF, Word, HTML로 전달합니다.</p>
   <p>
     <a href="https://githubprint.vercel.app">Live</a>
     ·
@@ -32,7 +32,7 @@
 GitHubPrint turns GitHub evidence into a readable developer document for sharing with recruiters, collaborators, or clients.
 
 - Input: GitHub profile URL, repository URL, or username
-- Output: a print-ready web document optimized for A4 and browser PDF export
+- Output: A4 PDF for delivery, editable Word for revision, and offline HTML for reading
 - Templates: `brief`, `profile`, `insight`, `resume`
 - Analysis: OpenAI when available, schema-validated fallback otherwise
 - Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
@@ -70,6 +70,8 @@ Current product limits:
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
 - Editable Word / Google Docs-compatible `.docx` exports for all four templates, with embedded Korean fonts
+- Responsive, offline HTML files with an embedded font, photos, table of contents, and A4 print styles
+- A purpose-based save dialog, document navigation, and link copying for explicitly public examples/showcases
 - Public example previews at `/preview` and `/en/preview` without sign-in
 - A starter `resume` repository guide with photo support in [`docs/resume-template.md`](./docs/resume-template.md)
 - Fixture mode for UI work without external API calls
@@ -81,7 +83,7 @@ Current product limits:
 GitHubPrint는 공개 GitHub 정보, 또는 로그인한 본인 계정의 승인된 GitHub 데이터를 바탕으로 채용 담당자, 협업자, 클라이언트에게 전달할 수 있는 개발자 문서를 만듭니다.
 
 - 입력: GitHub 프로필 URL, 저장소 URL, 또는 사용자 이름(username)
-- 출력: A4 인쇄와 브라우저 PDF 저장에 맞춘 문서형 결과
+- 출력: 제출용 A4 PDF, 편집용 Word, 오프라인 읽기용 HTML
 - 템플릿: `brief`, `profile`, `insight`, `resume`
 - 분석: OpenAI 사용 가능 시 AI 분석, 불가 시 규칙 기반 대체 분석
 - 언어 경로: `/`, `/result`, `/en`, `/en/result`
@@ -119,6 +121,8 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 - AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
 - 모든 템플릿의 편집 가능한 Word / Google Docs 호환 `.docx` 내보내기와 한글 글꼴 포함
+- 글꼴·사진·목차·모바일 레이아웃을 포함한 오프라인 HTML 내보내기
+- 용도별 저장 메뉴, 문서 목차 탐색, 공개 사례와 예시 문서의 링크 복사
 - 로그인 없이 사용하는 `/preview`, `/en/preview` 예시 문서
 - 사진 필드까지 포함한 `resume` starter 가이드를 [`docs/resume-template.md`](./docs/resume-template.md)로 제공
 - 외부 API 없이 UI 작업이 가능한 fixture mode
@@ -255,7 +259,7 @@ npx playwright install chromium
 npm run test:documents
 ```
 
-The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `localhost` when binding a development server; binding explicitly to `127.0.0.1` can produce locale rewrite loops in Next.js. Browser checks generate `.docx`, A4 PDF, and screen captures under `.cache/document-qa/`. They validate both locales and all four templates, including long documents, links, fonts, mobile overflow, print cancellation, and download errors. Render generated DOCX files in a Word-compatible viewer for visual QA. Some headless LibreOffice distributions ignore embedded fonts; point Fontconfig at `public/fonts` when using those renderers.
+The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `localhost` when binding a development server; binding explicitly to `127.0.0.1` can produce locale rewrite loops in Next.js. Browser checks generate `.docx`, A4 PDF, and screen captures under `.cache/document-qa/`, plus standalone HTML and offline render captures under `.cache/html-qa/`. They validate both locales and all four templates, including long documents, links, fonts, mobile overflow, print cancellation, and download errors. Render generated DOCX files in a Word-compatible viewer for visual QA. Some headless LibreOffice distributions ignore embedded fonts; point Fontconfig at `public/fonts` when using those renderers.
 
 ## Additional Docs
 

@@ -225,7 +225,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     metadata: {
       homeTitle: "GitHub 이력서·개발자 포트폴리오 PDF·Word 만들기 | GitHubPrint",
       homeDescription:
-        "GitHub 프로젝트와 개발 기록을 소개서, 포트폴리오, 리포트, 이력서로 정리하세요. 한국어·영어 템플릿을 미리 보고 A4 PDF와 편집 가능한 Word 문서로 저장할 수 있습니다.",
+        "GitHub 프로젝트와 개발 기록을 소개서, 포트폴리오, 리포트, 이력서로 정리하세요. 한국어·영어 템플릿을 미리 보고 제출용 PDF, 편집용 Word, 브라우저에서 읽는 HTML 파일로 저장하세요.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub 이력서",
@@ -270,7 +270,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateToggleHint:
         "끄면 비공개 저장소는 집계형 신호로만 반영되고, 이름과 링크는 결과에 노출되지 않습니다.",
       privateToggleWarning:
-        "켜면 비공개 저장소 이름, 설명, 링크가 문서와 PDF에 직접 포함될 수 있습니다.",
+        "켜면 비공개 저장소 이름, 설명, 링크가 문서와 저장 파일에 직접 포함될 수 있습니다.",
       templateHeading: "문서 템플릿 선택",
       templateHint: "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
       resumeTemplateBadge: "레포 기반",
@@ -401,7 +401,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       resume: {
         label: "Resume",
         shortLabel: "이력서",
-        description: "resume 레포를 기반으로 Word 이력서를 만드는 자기서술형 문서",
+        description: "직접 작성한 resume 저장소의 경력과 프로젝트를 담은 이력서",
         emphasis: "활성화되면 전체 경력, 프로젝트, 링크를 ATS 친화 문서로 정리합니다.",
       },
     },
@@ -481,7 +481,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     metadata: {
       homeTitle: "GitHub Resume & Portfolio Builder — PDF & Word | GitHubPrint",
       homeDescription:
-        "Turn GitHub projects into a developer portfolio, brief, report, or resume. Explore Korean and English templates, then export an A4 PDF or editable Word document.",
+        "Turn GitHub projects into a developer portfolio, brief, report, or resume. Explore Korean and English templates, then save a PDF to send, Word to edit, or an offline HTML file to read.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub resume",
@@ -525,7 +525,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateToggleHint:
         "When off, private repositories contribute only through aggregated signals and their names or links stay hidden in the result.",
       privateToggleWarning:
-        "When on, private repository names, descriptions, and links may appear directly in the document and exported PDF.",
+        "When on, private repository names, descriptions, and links may appear directly in the document and exported files.",
       templateHeading: "Choose a document template",
       templateHint: "Templates use the same evidence, but differ in emphasis and reading style.",
       resumeTemplateBadge: "Repo-driven",

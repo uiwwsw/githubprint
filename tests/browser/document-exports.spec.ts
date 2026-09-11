@@ -35,6 +35,11 @@ for (const locale of ["ko", "en"] as const) {
             .map((el) => el.textContent?.trim() ?? "")
             .filter(Boolean);
         });
+      await page
+        .getByRole("button", {
+          name: locale === "ko" ? "저장·공유" : "Save & share",
+        })
+        .click();
       const [download] = await Promise.all([
         page.waitForEvent("download"),
         page
@@ -89,6 +94,12 @@ for (const locale of ["ko", "en"] as const) {
       const footer = await zip.file("word/footer1.xml")!.async("string");
       expect(footer).toContain("PAGE");
       expect(footer).toContain("NUMPAGES");
+      await page
+        .getByRole("button", {
+          name: locale === "ko" ? "닫기" : "Close",
+          exact: true,
+        })
+        .click();
       await page.pdf({
         path: path.join(output, `${filename}.pdf`),
         preferCSSPageSize: true,
@@ -171,6 +182,7 @@ test("download failure is actionable and the button can be retried", async ({
   await page.route("**/fonts/Pretendard-Regular.ttf", (route) =>
     route.fulfill({ status: 503, body: "Unavailable" }),
   );
+  await page.getByRole("button", { name: "저장·공유" }).click();
   await page.getByRole("button", { name: "Word로 저장" }).click();
   await expect(page.locator(".screen-toolbar [role=alert]")).toContainText(
     "다시 시도",
@@ -198,6 +210,7 @@ test("long entries keep every paragraph and only safe hyperlink targets", async 
     article.append(link);
     root.append(article);
   });
+  await page.getByRole("button", { name: "저장·공유" }).click();
   const [download] = await Promise.all([
     page.waitForEvent("download"),
     page.getByRole("button", { name: "Word로 저장" }).click(),
@@ -212,6 +225,7 @@ test("long entries keep every paragraph and only safe hyperlink targets", async 
   expect(
     await zip.file("word/_rels/document.xml.rels")!.async("string"),
   ).not.toContain("javascript:");
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
   await page.pdf({
     path: path.join(output, "stress-ko.pdf"),
     preferCSSPageSize: true,
