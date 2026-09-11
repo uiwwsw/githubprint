@@ -22,6 +22,8 @@ import {
 } from "@/lib/self-generator-preferences";
 import type { Locale, TemplateId } from "@/lib/schemas";
 import { cookies } from "next/headers";
+import { StructuredData } from "@/components/seo/structured-data";
+import { getTemplateGuidePath, guideCopy } from "@/lib/template-guides";
 
 export async function HomePageContent({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
@@ -56,13 +58,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
   return (
     <main className="studio-home min-h-screen">
       <PageEnterScrollTop />
-      {structuredData.map((entry) => (
-        <script
-          key={`${entry["@type"]}-${locale}`}
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
-          type="application/ld+json"
-        />
-      ))}
+      <StructuredData data={structuredData} />
       <div className="studio-container">
         <nav className="studio-nav">
           <Link href={`${prefix}/`} className="brand-wordmark">
@@ -167,8 +163,8 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
                 <Link
                   className="template-gallery-card"
                   key={id}
-                  href={`${prefix}/preview?template=${id}`}
-                  aria-label={`${dict.templateMeta[id].label} — ${copy.openExample}`}
+                  href={getTemplateGuidePath(id, locale)}
+                  aria-label={`${dict.templateMeta[id].label} — ${guideCopy[locale].overview}`}
                 >
                   <div
                     className={`template-thumbnail template-thumbnail-${id}`}
@@ -189,10 +185,26 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
             )}
           </div>
         </section>
+        <section className="studio-faq" aria-labelledby="faq-title">
+          <p className="studio-eyebrow">BEFORE YOU START</p>
+          <h2 id="faq-title">{guideCopy[locale].faqTitle}</h2>
+          <div className="faq-list">
+            {guideCopy[locale].faq.map(({ q, a }) => (
+              <details key={q}>
+                <summary>{q}</summary>
+                <p>{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
         <footer className="studio-footer">
           <span className="font-semibold text-neutral-700">GitHubPrint</span>
           <p>{copy.footer}</p>
-          <span>PDF & DOCX</span>
+          <Link href={`${prefix}/showcase`}>
+            {locale === "ko"
+              ? "공개 이력서 사례 ↗"
+              : "Public resume showcase ↗"}
+          </Link>
         </footer>
       </div>
     </main>

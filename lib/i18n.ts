@@ -223,9 +223,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHubPrint | GitHub를 이력서와 개발자 포트폴리오 PDF로 변환",
+      homeTitle: "GitHub 이력서·개발자 포트폴리오 PDF·Word 만들기 | GitHubPrint",
       homeDescription:
-        "GitHubPrint는 로그인한 내 GitHub를 이력서, 개발자 포트폴리오, PDF 문서로 정리합니다. resume 저장소가 있으면 ATS 친화 Word 이력서도 생성합니다.",
+        "GitHub 프로젝트와 개발 기록을 소개서, 포트폴리오, 리포트, 이력서로 정리하세요. 한국어·영어 템플릿을 미리 보고 A4 PDF와 편집 가능한 Word 문서로 저장할 수 있습니다.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub 이력서",
@@ -479,9 +479,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHubPrint | Turn GitHub into a resume, portfolio, and developer PDF",
+      homeTitle: "GitHub Resume & Portfolio Builder — PDF & Word | GitHubPrint",
       homeDescription:
-        "GitHubPrint turns your signed-in GitHub into a resume, developer portfolio, PDF, and ATS-friendly Word resume when a GitHub resume repository is available.",
+        "Turn GitHub projects into a developer portfolio, brief, report, or resume. Explore Korean and English templates, then export an A4 PDF or editable Word document.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub resume",

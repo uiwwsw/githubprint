@@ -262,3 +262,9 @@ The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `l
 - [Contributing](./CONTRIBUTING.md)
 - [Learning Loop](./docs/learning-loop.md)
 - [Document Exports](./docs/document-exports.md)
+
+### SEO and social previews
+
+The homepages link to indexable Korean and English guides for all four templates under `/templates/{brief,profile,insight,resume}` and `/en/templates/...`. Canonical URLs, reciprocal language alternatives, stable sitemap dates, structured data, and ten generated social preview images are maintained together. Private results and fictional previews remain excluded from indexing.
+
+Run `npm run test:seo:browser` for crawler and social-image checks. See [SEO configuration and verification](docs/seo.md) for canonical-domain settings, search ownership verification variables, sitemap submission, and the route indexing policy.

@@ -12,6 +12,7 @@ import {
 } from "@/lib/showcase";
 import { getPublicShowcaseResumeDocument } from "@/lib/showcase-resume";
 import type { Locale } from "@/lib/schemas";
+import { StructuredData } from "@/components/seo/structured-data";
 
 function ExternalLink({
   children,
@@ -97,13 +98,7 @@ export async function ShowcasePageContent({
 
   return (
     <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
-      {structuredData.map((entry, index) => (
-        <script
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(entry) }}
-          key={`${slug}-${locale}-${index}`}
-          type="application/ld+json"
-        />
-      ))}
+      <StructuredData data={structuredData} />
 
       <div className="mx-auto max-w-[1200px] space-y-5">
         <div className="screen-only flex flex-col gap-4 rounded-[1.4rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-5">
@@ -112,9 +107,9 @@ export async function ShowcasePageContent({
               <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
                 {copy.publicSample}
               </p>
-              <h1 className="break-words font-serif text-3xl text-neutral-950">
+              <p className="break-words font-serif text-3xl text-neutral-950">
                 {displayName}
-              </h1>
+              </p>
             </div>
             <div className="inline-flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 p-1 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)]">
               <Link
@@ -185,9 +180,9 @@ export async function ShowcasePageContent({
             <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
               {copy.publicSample}
             </p>
-            <h2 className="mt-3 break-words font-serif text-3xl text-neutral-950">
+            <h1 className="mt-3 break-words font-serif text-3xl text-neutral-950">
               {copy.fallbackTitle}
-            </h2>
+            </h1>
             <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-600">
               {copy.fallbackBody}
             </p>
