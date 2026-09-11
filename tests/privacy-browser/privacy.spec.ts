@@ -208,8 +208,10 @@ for (const locale of ["ko", "en"] as const) {
         .click();
       if (resume) {
         await generator.locator('input[name="resume-source"]').nth(1).check();
-        if (variant === "resume-enriched")
+        if (variant === "resume-enriched") {
+          await generator.locator(".generator-extra summary").click();
           await generator.getByRole("checkbox").check();
+        }
       } else {
         await generator
           .locator('input[name="analysis-scope"]')
@@ -278,8 +280,8 @@ for (const locale of ["ko", "en"] as const) {
     await expect(
       generator.getByText(
         locale === "ko"
-          ? "공개 resume 저장소를 찾지 못했습니다."
-          : "No public resume repository was found.",
+          ? "공개 이력서를 찾지 못했습니다."
+          : "No public resume was found.",
         { exact: false },
       ),
     ).toBeVisible();
@@ -486,5 +488,50 @@ for (const locale of ["ko", "en"] as const) {
     await expect(page.locator("[data-document]")).toContainText(
       "AUTHORED_SENTINEL",
     );
+  });
+}
+
+for (const locale of ["ko", "en"] as const) {
+  test(`${locale}: Resume keeps project enrichment optional and the main action close to the source`, async ({
+    page,
+    context,
+  }) => {
+    await signIn(context);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(locale === "ko" ? "/" : "/en");
+    const generator = page.locator("#generator");
+    await generator.getByRole("button", { name: /^Resume/ }).click();
+    const extra = generator.locator(".generator-extra");
+    await expect(extra).not.toHaveAttribute("open");
+    await generator.locator('input[name="resume-source"]').nth(1).check();
+    await expect(
+      generator.getByRole("button", {
+        name: getDictionary(locale).home.submit,
+      }),
+    ).toBeEnabled();
+    await expect(
+      extra.getByRole("checkbox", { includeHidden: true }),
+    ).not.toBeChecked();
+    const source = await generator
+      .locator(".resume-source-picker")
+      .boundingBox();
+    const action = await generator
+      .getByRole("button", { name: getDictionary(locale).home.submit })
+      .boundingBox();
+    expect(action!.y - source!.y).toBeLessThan(500);
+    await extra.locator("summary").click();
+    await expect(extra.getByRole("checkbox")).toBeVisible();
+    await extra.getByRole("checkbox").check();
+    await expect(extra.locator("summary")).toContainText(
+      locale === "ko" ? "사용 중" : "On",
+    );
+    await extra.locator("summary").click();
+    await expect(extra).not.toHaveAttribute("open");
+    await expect(
+      extra.getByRole("checkbox", { includeHidden: true }),
+    ).toBeChecked();
+    await generator.screenshot({
+      path: path.join(output, `resume-simple-${locale}.png`),
+    });
   });
 }

@@ -72,13 +72,23 @@ for (const locale of ["ko", "en"] as const) {
       expect(xml).toContain('w:w="11906"');
       expect(xml).toContain('w:h="16838"');
       expect(xml).toContain('w:pStyle w:val="Title"');
+      const titleParagraph = [...xml.matchAll(/<w:p[ >][\s\S]*?<\/w:p>/g)]
+        .map((match) => match[0])
+        .find((paragraph) => paragraph.includes('w:pStyle w:val="Title"'));
+      expect(titleParagraph).not.toContain("w:pBdr");
       expect(xml).toContain('w:pStyle w:val="Heading1"');
       expect(xml).toContain("w:keepNext");
       expect(xml).toContain("w:widowControl");
       // A text-only rebuild would pass content checks but lose the template.
       expect((xml.match(/<w:tbl>/g) ?? []).length).toBeGreaterThan(2);
       expect(xml).toContain("w:shd");
-      expect(xml).toContain('w:color="27674C"');
+      const accent =
+        template === "profile"
+          ? "365C82"
+          : template === "insight"
+            ? "866B39"
+            : "27674C";
+      expect(xml).toContain(`w:color="${accent}"`);
       const fonts = await zip.file("word/fontTable.xml")!.async("string");
       expect(fonts).toContain("w:embedRegular");
       expect(
@@ -104,12 +114,17 @@ for (const locale of ["ko", "en"] as const) {
           exact: true,
         })
         .click();
-      await page.pdf({
+      const pdf = await page.pdf({
         path: path.join(output, `${filename}.pdf`),
         preferCSSPageSize: true,
         printBackground: true,
         tagged: true,
       });
+      if (template === "brief") {
+        // The fixed example is a concise introduction; its notes must not spill onto page two.
+        expect(await page.locator(".document-project").count()).toBe(2);
+        expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+      }
       await page.screenshot({
         path: path.join(output, `${filename}-screen.png`),
         fullPage: true,

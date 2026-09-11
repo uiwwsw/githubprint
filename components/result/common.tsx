@@ -59,12 +59,7 @@ export function SectionBlock({
     Boolean(normalizedEyebrow) && normalizedEyebrow !== normalizedTitle;
 
   return (
-    <section
-      className={cn(
-        "document-section rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6",
-        className,
-      )}
-    >
+    <section className={cn("document-section", className)}>
       {showEyebrow ? (
         <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
           {eyebrow}
@@ -87,7 +82,7 @@ export function SectionBlock({
 
 export function ChipList({ items }: { items: string[] }) {
   return (
-    <div className="flex flex-wrap gap-2" data-document-group>
+    <div className="document-chips flex flex-wrap gap-2" data-document-group>
       {items.map((item) => (
         <span
           className="rounded-full border border-black/[0.08] bg-black/[0.03] px-3 py-1.5 text-xs font-medium text-neutral-700"
@@ -127,7 +122,7 @@ export function FactGrid({
         };
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="document-facts grid gap-3 sm:grid-cols-3">
       <FactCard
         label={dict.common.factTech}
         value={analysis.facts.coreStack.slice(0, 3).join(", ")}
@@ -217,7 +212,7 @@ export function BenchmarkSnapshotBlock({
             </p>
             {metric.evidence.length > 0 ? (
               <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-500">
-                {metric.evidence.map((item) => (
+                {metric.evidence.slice(0, 2).map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
@@ -235,7 +230,9 @@ export function PublicDataScope({
   locale,
   dataMode = "public",
   privateExposureMode = "aggregate",
+  compact = false,
 }: {
+  compact?: boolean;
   authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
   contributionSummary?: ContributionSummary | null;
   locale: Locale;
@@ -247,6 +244,44 @@ export function PublicDataScope({
     dataMode === "private_enriched"
       ? dict.home.signedInDataScopeItems
       : dict.home.dataScopeItems;
+
+  if (compact)
+    return (
+      <div className="document-source-note">
+        <p>
+          {dataMode === "private_enriched"
+            ? locale === "ko"
+              ? "공개 자료와 선택한 비공개 작업을 반영했습니다. 비교 지표는 공개 자료 기준입니다."
+              : "Includes public sources and selected private work. Comparisons use public sources."
+            : locale === "ko"
+              ? "공개 프로필과 저장소의 설명·기술·활동을 바탕으로 작성했습니다."
+              : "Based on the public profile and repository descriptions, technologies, and activity."}
+        </p>
+        {dataMode === "private_enriched" && authorizedPrivateInsights ? (
+          <div className="mt-3" data-document-group>
+            <p>
+              {locale === "ko"
+                ? `선택한 비공개 저장소 ${authorizedPrivateInsights.privateRepoCount}개 · 문서 ${authorizedPrivateInsights.documentedPrivateRepoCount}개 · 검증 ${authorizedPrivateInsights.verifiedPrivateRepoCount}개 · 자동화 ${authorizedPrivateInsights.automatedPrivateRepoCount}개`
+                : `${authorizedPrivateInsights.privateRepoCount} selected private repositories · ${authorizedPrivateInsights.documentedPrivateRepoCount} documented · ${authorizedPrivateInsights.verifiedPrivateRepoCount} with verification · ${authorizedPrivateInsights.automatedPrivateRepoCount} with automation`}
+            </p>
+            {authorizedPrivateInsights.topPrivateStack.length ? (
+              <p className="mt-2">
+                {authorizedPrivateInsights.topPrivateStack.join(" · ")}
+              </p>
+            ) : null}
+            <p className="mt-2">
+              {privateExposureMode === "include"
+                ? locale === "ko"
+                  ? "선택한 비공개 프로젝트의 이름·설명·링크가 포함됩니다. 링크를 열려면 해당 저장소의 접근 권한이 필요합니다."
+                  : "Includes names, descriptions, and links for selected private projects. Repository access is required to open their links."
+                : locale === "ko"
+                  ? "비공개 작업은 익명 집계로 표시합니다. 프로젝트 이름·설명·링크는 포함하지 않습니다."
+                  : "Private work is summarized anonymously, without project names, descriptions, or links."}
+            </p>
+          </div>
+        ) : null}
+      </div>
+    );
 
   return (
     <div
@@ -474,18 +509,14 @@ export function ProjectList({
   analysis,
   locale,
   variant = "default",
+  limit,
 }: {
+  limit?: number;
   analysis: GitHubPrintAnalysis;
   locale: Locale;
   variant?: "default" | "compact" | "narrative";
 }) {
   const dict = getDictionary(locale);
-  const cardClass =
-    variant === "compact"
-      ? "gap-4 rounded-[1.25rem] border border-black/[0.08] bg-black/[0.025] p-4"
-      : variant === "narrative"
-        ? "gap-5 rounded-[1.6rem] border border-black/[0.08] bg-white p-5 shadow-[0_16px_38px_-32px_rgba(0,0,0,0.4)]"
-        : "gap-5 rounded-[1.35rem] border border-black/[0.08] bg-black/[0.02] p-5";
 
   return (
     <div className="space-y-4">
@@ -494,20 +525,30 @@ export function ProjectList({
           {dict.common.noProjects}
         </div>
       ) : null}
-      {analysis.projects.map((project) => (
+      {analysis.projects.slice(0, limit).map((project, index) => (
         <article
-          className={cn("print-break-inside-avoid", cardClass)}
+          className={cn(
+            "document-project print-break-inside-avoid",
+            variant === "compact" && "document-project-compact",
+          )}
           key={project.repoUrl}
         >
+          {variant !== "compact" ? (
+            <p className="project-index">
+              {String(index + 1).padStart(2, "0")}
+            </p>
+          ) : null}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
                   {project.name}
                 </h3>
-                <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] tracking-[0.18em] text-neutral-500 uppercase">
-                  {project.stars} {dict.common.starsLabel}
-                </span>
+                {project.stars > 0 && variant !== "compact" ? (
+                  <span className="project-stars">
+                    {project.stars} {dict.common.starsLabel}
+                  </span>
+                ) : null}
               </div>
               <p className="mt-3 break-words text-sm leading-6 text-neutral-600">
                 {project.description}
@@ -518,14 +559,13 @@ export function ProjectList({
             </div>
           </div>
           <div className="mt-4">
-            <ChipList items={project.tech} />
+            <ChipList items={project.tech.slice(0, 4)} />
           </div>
-          <p className="mt-4 text-sm leading-7 text-neutral-700">
-            {project.whyItMatters}
-          </p>
-          <p className="mt-3 text-sm leading-7 text-neutral-500">
-            {project.evidence}
-          </p>
+          {variant !== "compact" ? (
+            <p className="project-evidence mt-3 text-sm leading-7 text-neutral-500">
+              {project.evidence}
+            </p>
+          ) : null}
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-neutral-500">
             <a
               className="break-all underline decoration-black/20 underline-offset-4"
@@ -576,5 +616,48 @@ export function DocumentFooter({ disclaimer }: { disclaimer: string }) {
     <footer className="mt-8 border-t border-black/[0.08] pt-5 text-sm leading-6 text-neutral-500">
       <p>{disclaimer}</p>
     </footer>
+  );
+}
+
+export function DocumentIdentity({
+  analysis,
+  profileUrl,
+  summary,
+}: {
+  analysis: GitHubPrintAnalysis;
+  profileUrl: string;
+  summary?: string;
+}) {
+  return (
+    <header className="document-identity">
+      <div className="document-identity-top">
+        <img
+          className="document-avatar float-right"
+          alt={analysis.profile.name}
+          src={analysis.profile.avatarUrl}
+        />
+        <h1>{analysis.profile.name}</h1>
+        <p className="identity-headline">{analysis.profile.headline}</p>
+        <a
+          className="identity-link"
+          href={profileUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          github.com/{analysis.profile.username}
+        </a>
+      </div>
+      {summary ? <p className="identity-summary">{summary}</p> : null}
+    </header>
+  );
+}
+
+export function EditorialList({ items }: { items: string[] }) {
+  return (
+    <ul className="editorial-list">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
   );
 }

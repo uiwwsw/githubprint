@@ -279,7 +279,8 @@ export async function buildDocumentDocx(
                   right: twips(style.padding[1]),
                 }
               : undefined,
-          border: boxed ? noBorders : borders(style),
+          border:
+            node.heading === 1 ? undefined : boxed ? noBorders : borders(style),
           shading:
             style.background && !boxed
               ? {

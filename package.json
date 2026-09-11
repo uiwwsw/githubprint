@@ -24,7 +24,7 @@
     "test:resume": "node --import tsx --test tests/resume.test.ts",
     "test:showcase": "node --import tsx --test tests/showcase-resume.test.ts",
     "test:proxy": "node --import tsx --test tests/proxy.test.ts",
-    "check": "npm run build && npm run typecheck && npm run test:resume && npm run test:showcase && npm run test:proxy && npm run test:seo && npm run test:html && npm run test:privacy && npm run quality:regress",
+    "check": "npm run build && npm run typecheck && npm run test:resume && npm run test:showcase && npm run test:proxy && npm run test:seo && npm run test:html && npm run test:copy && npm run test:privacy && npm run quality:regress",
     "insights:aggregate": "node scripts/aggregate-insights.mjs",
     "quality:regress": "node scripts/run-quality-regressions.cjs",
     "test:documents": "playwright test",
@@ -32,7 +32,8 @@
     "test:seo:browser": "playwright test tests/browser/seo.spec.ts",
     "test:html": "node --import tsx --test tests/document-html.test.ts",
     "test:privacy": "node --require ./tests/helpers/register-runtime.cjs --test tests/private-data.test.cjs",
-    "test:privacy:browser": "playwright test --config playwright.privacy.config.ts"
+    "test:privacy:browser": "playwright test --config playwright.privacy.config.ts",
+    "test:copy": "node --import tsx --test tests/template-composers.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/noto-serif-kr": "^5.2.10",

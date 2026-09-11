@@ -37,6 +37,8 @@ GitHubPrint turns GitHub evidence into a readable developer document for sharing
 - Analysis: OpenAI when available, schema-validated fallback otherwise
 - Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
 
+Each template serves a different reading task: Brief introduces two selected projects, Profile puts project case studies first, Insight separates observed patterns from comparison metrics, and Resume preserves authored experience and section order. PDF, offline HTML, and editable Word capture the selected template's layout, typography, and colors. Word pagination can vary with the editor's font metrics.
+
 ### Scope
 
 GitHubPrint defaults to public GitHub information:

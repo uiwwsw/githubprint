@@ -15,7 +15,11 @@ const makeHtml = (children: DocumentElement[], extra = {}) => {
   const snapshot: DocumentVisualSnapshot = {
     root: {
       tag: "article",
-      attrs: { "data-document": "", class: "document-page" },
+      attrs: {
+        "data-document": "",
+        "data-template": "profile",
+        class: "document-page",
+      },
       children,
     },
     css: ".document-page{color:#176b50}@font-face{font-family:Example;src:url(data:font/woff2;base64,AQID)}",
@@ -98,6 +102,7 @@ test("HTML retains template hierarchy, classes, metadata, lists and inline empha
   assert.ok(html.includes('class="rounded-xl bg-emerald-50"'));
   assert.ok(html.includes('<ol start="3"><li>셋째</li><li>넷째</li></ol>'));
   assert.ok(html.includes("document-meta"));
+  assert.ok(html.includes('data-template="profile"'));
   assert.ok(html.includes('href="mailto:me@example.com"'));
   assert.ok(html.includes("data:font/woff2;base64,AQID"));
   assert.ok(html.includes("data:image/png;base64,BAUG"));

@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
-import { DocumentShell, MetaRibbon } from "@/components/result/document-shell";
+import {
+  DocumentShell,
+  DocumentMasthead,
+} from "@/components/result/document-shell";
 import { getResumeCopy } from "@/lib/resume-copy";
 import {
   buildResumeProjectEvidenceSummary,
@@ -12,10 +15,9 @@ import {
   type ResumeEntry,
   type ResumeMarkdownBlock,
   type ResumeProject,
-  type ResumeRepoVisibility,
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type MarkdownSection = {
   blocks: ResumeMarkdownBlock[];
@@ -138,7 +140,7 @@ function MarkdownContent({ markdown }: { markdown: string }) {
       {introSection ? <MarkdownBlocks blocks={introSection.blocks} /> : null}
       {groupedSections.map((section, index) => (
         <section
-          className="print-break-inside-avoid rounded-[1rem] border border-black/[0.06] bg-black/[0.025] px-4 py-4"
+          className="resume-markdown-section print-break-inside-avoid"
           key={`${section.heading ?? "group"}-${index}`}
         >
           {section.heading ? (
@@ -165,7 +167,7 @@ function MarkdownContent({ markdown }: { markdown: string }) {
             >
               {section.subgroups.map((subgroup, subgroupIndex) => (
                 <section
-                  className="rounded-[0.9rem] border border-black/[0.06] bg-white/70 px-4 py-3"
+                  className="resume-markdown-subsection"
                   key={`${section.heading ?? "group"}-${index}-subgroup-${subgroupIndex}`}
                 >
                   <h5 className="break-words text-[0.95rem] font-semibold leading-6 tracking-[-0.01em] text-neutral-900">
@@ -226,7 +228,7 @@ function HighlightSectionContent({
       {section.items.map((entry) => {
         return (
           <article
-            className="print-break-inside-avoid rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
+            className="resume-highlight print-break-inside-avoid"
             key={`${section.id}-${entry.title}`}
           >
             {entry.subtitle ? (
@@ -573,11 +575,6 @@ function CustomSectionContent({
   );
 }
 
-function getVisibilityLabel(locale: Locale, visibility: ResumeRepoVisibility) {
-  const copy = getResumeCopy(locale);
-  return visibility === "private" ? copy.shared.private : copy.shared.public;
-}
-
 export function ResumeTemplate({
   avatarUrl,
   generatedAt,
@@ -598,7 +595,6 @@ export function ResumeTemplate({
   const topLinks = resume.basics.links.filter(
     (link) => link.kind !== "contact",
   );
-  const visibilityLabel = getVisibilityLabel(locale, resume.source.visibility);
   const projectsByExperience = new Map<string, ResumeProject[]>();
   const highlightSection = resume.customSections.find((section) =>
     isResumeHighlightSectionId(section.id),
@@ -636,18 +632,13 @@ export function ResumeTemplate({
 
   return (
     <DocumentShell
+      template="resume"
       accent={
-        <div className="flex flex-wrap gap-2">
-          <MetaRibbon label={copy.template.ribbonTemplate} value="Resume" />
-          <MetaRibbon
-            label={copy.template.ribbonGenerated}
-            value={formatDate(generatedAt, locale)}
-          />
-          <MetaRibbon
-            label={copy.actions.repoVisibilityLabel}
-            value={visibilityLabel}
-          />
-        </div>
+        <DocumentMasthead
+          template="Resume / Curriculum vitae"
+          generatedAt={generatedAt}
+          locale={locale}
+        />
       }
     >
       <header className="resume-header print-break-inside-avoid border-b border-black/[0.08] pb-8">
@@ -660,9 +651,7 @@ export function ResumeTemplate({
                 src={resolvedAvatarUrl}
               />
             ) : null}
-            <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-              Resume
-            </p>
+
             <h1 className="mt-3 break-words font-serif text-[clamp(2.25rem,8vw,4.4rem)] leading-[1.02] text-neutral-950">
               {resume.basics.name}
             </h1>

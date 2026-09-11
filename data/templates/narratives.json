@@ -1,40 +1,40 @@
 {
   "generalist": {
     "headline": {
-      "ko": "여러 영역에서 결과물을 꾸준히 쌓아 온 제품 개발자",
-      "en": "A generalist product builder with steady implementation output"
+      "ko": "프로젝트로 소개하는 개발 기록",
+      "en": "Development through projects"
     },
     "developerType": {
-      "ko": "한 가지 좁은 전문 분야보다 여러 구현 경험이 함께 드러나는 편입니다.",
-      "en": "The profile reads more like a generalist builder with multiple implementation signals than a narrowly specialized one."
+      "ko": "여러 분야의 구현이 함께 나타납니다. 특정 분야보다 개별 프로젝트를 중심으로 살펴볼 수 있습니다.",
+      "en": "The available work spans several areas. Individual projects provide a clearer picture than a single specialty."
     }
   },
   "summary": {
     "high": {
-      "ko": "{name}의 GitHub에서는 {languages} 축이 반복되고, {projects} 같은 저장소가 어떤 문제를 어떻게 구현하는 개발자인지 빠르게 보여줍니다. 공개 근거 기준으로는 {primaryOrientation} 성향이 가장 뚜렷하며, 전반적으로는 {primaryStyle} 쪽에 무게가 실립니다.",
-      "en": "Across GitHub, {name} shows a repeated throughline around {languages}, and repositories such as {projects} make it easier to read what kinds of problems this developer tends to implement. Based on visible evidence, the clearest tilt is {primaryOrientation}, with an overall lean toward {primaryStyle}."
+      "ko": "주요 프로젝트는 {projects}입니다. {languages}를 사용한 {primaryOrientation} 구현이 중심입니다.",
+      "en": "Selected work includes {projects}, with a focus on {primaryOrientation} implementation using {languages}."
     },
     "medium": {
-      "ko": "{name}의 저장소를 보면 {languages} 중심의 구현 경험이 반복되고, {projects} 같은 저장소에서 {primaryOrientation} 경향을 읽을 수 있습니다. 확인 가능한 GitHub 범위 안에서는 {primaryStyle} 성향도 함께 드러납니다.",
-      "en": "Across repositories, {name} shows recurring implementation work around {languages}, and repositories such as {projects} make a {primaryOrientation} tilt reasonably legible. Within the limits of visible GitHub evidence, there are also signs of {primaryStyle}."
+      "ko": "{projects}에서 {languages}를 사용한 구현을 확인할 수 있습니다. {primaryOrientation} 관련 작업이 비교적 많이 나타납니다.",
+      "en": "{projects} show implementation work with {languages}. The available projects lean toward {primaryOrientation}."
     },
     "low": {
-      "ko": "{name}의 GitHub에서는 {languages} 중심의 프로젝트가 일부 보이지만, 한 방향으로 단정하기보다는 {primaryOrientation} 경향이 상대적으로 더 강하다고 보는 편이 안전합니다. 작업 방식은 {primaryStyle} 쪽이 제한적으로 드러납니다.",
-      "en": "GitHub signals show some project work around {languages}, but the safer reading is that {primaryOrientation} is only relatively more visible than the rest. Working-style signals currently read as somewhat {primaryStyle}."
+      "ko": "확인된 프로젝트는 {projects}이며, 사용 기술은 {languages}입니다. 주력 분야를 판단할 자료는 아직 적습니다.",
+      "en": "The available projects include {projects}, using {languages}. There is not yet enough evidence to identify a main specialty."
     }
   },
   "caution": {
     "high": {
-      "ko": "저장소, 문서, 최근 활동 덕분에 읽을 수 있는 정보는 비교적 충분하지만, 실제 협업 방식이나 업무 범위 전체까지 검증되는 것은 아닙니다.",
-      "en": "Repositories, documentation, and recency provide a relatively solid reading surface, but they still do not verify collaboration style or the full scope of day-to-day work."
+      "ko": "프로젝트의 기술과 구성에 관한 분석입니다. 실제 담당 범위와 성과는 작성자에게 확인해 주세요.",
+      "en": "This analysis describes project technology and structure. Confirm responsibilities and outcomes with the author."
     },
     "medium": {
-      "ko": "판단은 저장소와 README, 최근 활동을 바탕으로 한 해석이며, 실제 업무 맥락은 더 조심스럽게 보는 편이 맞습니다.",
-      "en": "These conclusions are interpretive and based on repositories, READMEs, and recency signals. Actual working context should still be read conservatively."
+      "ko": "저장소에서 확인한 내용에 한정한 해석입니다. 업무 범위와 성과를 의미하지는 않습니다.",
+      "en": "These interpretations describe the available repositories, not verified responsibilities or outcomes."
     },
     "low": {
-      "ko": "확인 가능한 정보가 제한적이어서 개발자 유형과 작업 방식은 추정 수준으로 보는 편이 맞습니다.",
-      "en": "Visible GitHub signals are limited, so developer type and working style should be treated as tentative rather than definitive."
+      "ko": "자료가 적어 분야와 작업 패턴은 잠정적인 해석입니다.",
+      "en": "The limited evidence makes these observations tentative."
     }
   },
   "evidenceLabels": {
@@ -56,7 +56,7 @@
     }
   },
   "disclaimer": {
-    "ko": "이 문서는 공개 GitHub 기준에서 관찰되는 정보만 바탕으로 작성된 해석 문서입니다. 경력 연차, 협업 방식, 조직 내 역할 범위, 비즈니스 임팩트 등은 공개 근거가 확인될 때만 제한적으로 다룹니다.",
-    "en": "This document is an interpretive reading based only on information observable from public GitHub data. Career tenure, collaboration style, role scope inside a team, and business impact are discussed only when visible evidence clearly supports them."
+    "ko": "공개 GitHub 자료로 정리한 문서입니다. 기술·프로젝트 정보와 관찰에 따른 해석을 포함하며, 경력이나 업무 성과를 증명하지 않습니다.",
+    "en": "Prepared from public GitHub sources. Project facts are accompanied by interpretations; this document does not verify employment history or business outcomes."
   }
 }

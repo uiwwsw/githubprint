@@ -10,34 +10,34 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "프론트엔드와 UI 구현 경험이 가장 두드러집니다.",
-          "en": "Frontend and UI implementation signals are the clearest part of the profile."
+          "ko": "웹 화면과 UI를 구현한 프로젝트가 중심입니다.",
+          "en": "Web interfaces and UI implementation are central to the available projects."
         },
         "headline": {
-          "ko": "사용자 경험과 제품 구현에 무게가 실린 프론트엔드 성향의 개발자",
-          "en": "A frontend-leaning developer with clear emphasis on user experience and product implementation"
+          "ko": "인터페이스와 웹 제품",
+          "en": "Interfaces and web products"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "UI 구현과 사용자 화면 작업 경험이 비교적 또렷합니다.",
-          "en": "UI implementation and product-surface work are relatively visible."
+          "ko": "웹 화면과 UI를 구현한 프로젝트가 있습니다.",
+          "en": "The available work includes web interfaces and UI implementation."
         },
         "headline": {
-          "ko": "UI 구현 경험이 비교적 또렷한 개발자",
-          "en": "A product-oriented developer with visible UI implementation signals"
+          "ko": "화면 구성과 프론트엔드 구현",
+          "en": "Interface and frontend implementation"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "프론트엔드 관련 경험이 일부 확인됩니다.",
-          "en": "Some frontend-related signals are visible."
+          "ko": "일부 프로젝트에서 프론트엔드 기술을 사용합니다.",
+          "en": "Some projects use frontend technologies."
         },
         "headline": {
-          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
-          "en": "A hands-on builder with visible implementation output"
+          "ko": "프로젝트로 소개하는 개발 기록",
+          "en": "Development through projects"
         }
       }
     ]
@@ -53,34 +53,34 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "서비스 구조와 데이터 흐름을 다룬 경험이 두드러집니다.",
-          "en": "Service structure and data-flow signals are strongly backend-oriented."
+          "ko": "API와 데이터 처리를 다루는 서버 프로젝트가 중심입니다.",
+          "en": "Server projects involving APIs and data processing are central to the available work."
         },
         "headline": {
-          "ko": "서비스 구조와 데이터 흐름을 정리하는 백엔드 성향의 개발자",
-          "en": "A backend-leaning developer focused on structuring services and data flows"
+          "ko": "API와 서비스 구현",
+          "en": "APIs and services"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "API와 서버 구현 경험이 비교적 뚜렷합니다.",
-          "en": "API and server-side implementation signals are relatively clear."
+          "ko": "API와 서버 기능을 구현한 프로젝트가 있습니다.",
+          "en": "The available work includes API and server implementation."
         },
         "headline": {
-          "ko": "서버 구현과 데이터 흐름 설계 경험이 드러나는 개발자",
-          "en": "A developer with visible server-side implementation and data-flow design signals"
+          "ko": "서버와 데이터 처리",
+          "en": "Server and data implementation"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "백엔드 관련 경험이 일부 확인됩니다.",
-          "en": "Some backend-related signals are visible."
+          "ko": "일부 프로젝트에서 백엔드 기술을 사용합니다.",
+          "en": "Some projects use backend technologies."
         },
         "headline": {
-          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
-          "en": "A hands-on builder with visible implementation output"
+          "ko": "프로젝트로 소개하는 개발 기록",
+          "en": "Development through projects"
         }
       }
     ]
@@ -96,34 +96,34 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "앱 형태의 결과물을 만든 경험이 두드러집니다.",
-          "en": "App-shaped implementation signals point strongly toward mobile work."
+          "ko": "모바일 앱을 구현한 프로젝트가 중심입니다.",
+          "en": "Mobile app implementation is central to the available projects."
         },
         "headline": {
-          "ko": "아이디어를 앱으로 빠르게 옮기는 모바일 개발자",
-          "en": "A product-minded mobile developer who quickly turns ideas into app experiences"
+          "ko": "모바일 앱과 사용자 흐름",
+          "en": "Mobile apps and user flows"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "모바일 앱 구현 경험이 비교적 뚜렷합니다.",
-          "en": "Mobile app implementation experience is relatively visible."
+          "ko": "모바일 앱을 구현한 프로젝트가 있습니다.",
+          "en": "The available work includes mobile app implementation."
         },
         "headline": {
-          "ko": "앱 중심 프로젝트 경험이 보이는 모바일 개발자",
-          "en": "A mobile-leaning developer with visible app-focused output"
+          "ko": "앱 중심 프로젝트",
+          "en": "App-focused projects"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "모바일 관련 경험이 일부 확인됩니다.",
-          "en": "Some mobile-related signals are visible."
+          "ko": "일부 프로젝트에서 모바일 기술을 사용합니다.",
+          "en": "Some projects use mobile technologies."
         },
         "headline": {
-          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
-          "en": "A hands-on builder with visible implementation output"
+          "ko": "프로젝트로 소개하는 개발 기록",
+          "en": "Development through projects"
         }
       }
     ]
@@ -139,34 +139,34 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "AI 기능을 실제 제품 실험으로 이어가는 경험이 두드러집니다.",
-          "en": "The profile strongly points to applied work that turns AI capability into product experiments."
+          "ko": "AI 기능을 적용한 제품과 도구가 중심입니다.",
+          "en": "Products and tools using AI are central to the available work."
         },
         "headline": {
-          "ko": "AI 기능을 제품 실험으로 이어가는 개발자",
-          "en": "An applied developer trying to turn AI capabilities into real product experiments"
+          "ko": "AI를 활용한 제품과 도구",
+          "en": "Products and tools with AI"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "LLM/AI 기능을 다루는 프로젝트가 비교적 뚜렷합니다.",
-          "en": "Projects involving LLM/AI capabilities are relatively visible."
+          "ko": "AI 기능을 적용한 프로젝트가 있습니다.",
+          "en": "The available work includes projects using AI features."
         },
         "headline": {
-          "ko": "AI 기능 실험 경험이 반복적으로 보이는 개발자",
-          "en": "An applied developer with recurring AI feature experiments"
+          "ko": "AI 기능을 적용한 프로젝트",
+          "en": "Projects using AI features"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "AI 관련 경험이 일부 확인됩니다.",
-          "en": "Some AI-related signals are visible."
+          "ko": "일부 프로젝트에서 AI 관련 기술을 사용합니다.",
+          "en": "Some projects use AI-related technologies."
         },
         "headline": {
-          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
-          "en": "A hands-on builder with visible implementation output"
+          "ko": "프로젝트로 소개하는 개발 기록",
+          "en": "Development through projects"
         }
       }
     ]
@@ -182,34 +182,34 @@
       {
         "min": 70,
         "developerType": {
-          "ko": "툴링과 개발 워크플로우를 개선한 경험이 두드러집니다.",
-          "en": "Tooling and developer workflow improvement signals are strongly visible."
+          "ko": "개발 도구와 자동화 프로젝트가 중심입니다.",
+          "en": "Developer tools and automation are central to the available projects."
         },
         "headline": {
-          "ko": "개발 도구와 워크플로우 개선에 관심이 큰 개발자",
-          "en": "A tooling-leaning developer focused on improving developer workflows"
+          "ko": "개발 도구와 자동화",
+          "en": "Developer tools and automation"
         }
       },
       {
         "min": 45,
         "developerType": {
-          "ko": "CLI, 자동화, 워크플로우 관련 경험이 비교적 뚜렷합니다.",
-          "en": "CLI, automation, and workflow signals are relatively clear."
+          "ko": "CLI와 개발 자동화를 다루는 프로젝트가 있습니다.",
+          "en": "The available work includes command-line tools and development automation."
         },
         "headline": {
-          "ko": "자동화와 개발 편의성 개선 경험이 보이는 개발자",
-          "en": "A developer with visible signals around automation and developer ergonomics"
+          "ko": "개발 과정을 돕는 도구",
+          "en": "Tools for development"
         }
       },
       {
         "min": 0,
         "developerType": {
-          "ko": "툴링 관련 경험이 일부 확인됩니다.",
-          "en": "Some tooling-related signals are visible."
+          "ko": "일부 프로젝트에서 개발 도구를 다룹니다.",
+          "en": "Some projects involve developer tools."
         },
         "headline": {
-          "ko": "구현 경험을 꾸준히 쌓아 온 개발자",
-          "en": "A hands-on builder with visible implementation output"
+          "ko": "프로젝트로 소개하는 개발 기록",
+          "en": "Development through projects"
         }
       }
     ]

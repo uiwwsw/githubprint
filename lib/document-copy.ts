@@ -2,10 +2,10 @@ export const documentCopy = {
   ko: {
     brandNote: "개발자의 작업을, 한 장의 가능성으로.",
     eyebrow: "YOUR WORK, WELL DOCUMENTED",
-    titleTop: "코드로 쌓은 경험,",
-    titleBottom: "문서로 완성하세요.",
+    titleTop: "만든 것을,",
+    titleBottom: "나를 설명하는 문서로.",
     description:
-      "GitHub에 흩어진 프로젝트와 개발 기록을 읽기 좋은 포트폴리오로. 목적에 맞는 템플릿을 고르고, PDF, Word, HTML로 알맞게 전달하세요.",
+      "GitHub를 연결하고 템플릿을 고르세요. 프로젝트 소개부터 직접 쓴 이력서까지, 읽기 좋은 문서로 정리해 드립니다.",
     preview: "예시 문서 살펴보기",
     templates: "문서 템플릿",
     templateHint: "전달하려는 이야기에 맞는 구성을 선택하세요.",
@@ -80,10 +80,10 @@ export const documentCopy = {
   en: {
     brandNote: "A considered document for the work you do.",
     eyebrow: "YOUR WORK, WELL DOCUMENTED",
-    titleTop: "Built in code.",
-    titleBottom: "Ready to share.",
+    titleTop: "Show your work.",
+    titleBottom: "Tell your story.",
     description:
-      "Bring your GitHub projects and development history into a considered portfolio. Choose a format for your story, then share it as a PDF, editable Word document, or portable HTML file.",
+      "Connect GitHub and choose a template. Turn your projects or authored resume into a document you can review, edit, and share.",
     preview: "Explore example documents",
     templates: "Document templates",
     templateHint: "Choose the structure that tells your story best.",
