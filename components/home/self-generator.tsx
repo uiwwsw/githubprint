@@ -21,12 +21,16 @@ type RepoChoice = { name: string; archived: boolean };
 export function SelfGenerator({
   canReadPrivate,
   initialTemplate,
+  initialOptions,
+  resumeOnly = false,
   locale,
   privateLoginHref,
   username,
 }: {
   canReadPrivate: boolean;
   initialTemplate: TemplateId;
+  initialOptions?: DocumentOptions;
+  resumeOnly?: boolean;
   locale: Locale;
   privateLoginHref: string;
   username: string;
@@ -36,7 +40,8 @@ export function SelfGenerator({
   const ko = locale === "ko";
   const t = (kr: string, en: string) => (ko ? kr : en);
   const [options, setOptions] = useState<DocumentOptions>(
-    defaultDocumentOptions(initialTemplate),
+    initialOptions ??
+      defaultDocumentOptions(resumeOnly ? "resume" : initialTemplate),
   );
   const [repositories, setRepositories] = useState<RepoChoice[] | null>(null);
   const [repoError, setRepoError] = useState(false);
@@ -59,6 +64,7 @@ export function SelfGenerator({
         const value = JSON.parse(saved);
         if (
           Date.now() - value.savedAt < 600_000 &&
+          (!resumeOnly || value.options?.template === "resume") &&
           ["brief", "profile", "insight", "resume"].includes(
             value.options?.template,
           )
@@ -72,7 +78,7 @@ export function SelfGenerator({
     } catch {
       /* An unavailable draft leaves the public default in place. */
     }
-  }, [storageKey]);
+  }, [storageKey, resumeOnly]);
 
   useEffect(() => {
     if (!privateAnalysis || !canReadPrivate) return;
@@ -191,12 +197,14 @@ export function SelfGenerator({
     >
       <p className="studio-eyebrow">YOUR DOCUMENT / @{username}</p>
       <h2 className="mt-3 text-2xl font-semibold tracking-tight">
-        {t(
-          "목적에 맞는 문서와 자료 선택",
-          "Choose your document and its sources",
-        )}
+        {resumeOnly
+          ? t("기존 이력서 연결", "Connect your existing resume")
+          : t(
+              "목적에 맞는 문서와 자료 선택",
+              "Choose your document and its sources",
+            )}
       </h2>
-      <div
+      {!resumeOnly && <div
         className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4"
         aria-label={t("문서 템플릿", "Document template")}
       >
@@ -230,7 +238,7 @@ export function SelfGenerator({
             </button>
           ),
         )}
-      </div>
+      </div>}
       <p className="my-6 text-sm leading-7 text-neutral-600">
         {purpose[options.template]}
       </p>
@@ -578,7 +586,11 @@ export function SelfGenerator({
             onClick={generate}
             type="button"
           >
-            {pending ? dict.home.submitting : dict.home.submit}
+            {pending
+              ? dict.home.submitting
+              : resumeOnly
+                ? t("이력서 다시 불러오기", "Load resume again")
+                : dict.home.submit}
           </Button>
           {error ? (
             <p role="alert" className="mt-3 text-sm leading-6 text-amber-200">

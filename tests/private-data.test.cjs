@@ -1,5 +1,41 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+
+test("missing resume offers inline recovery without opting into private access", () => {
+  const React = require("react");
+  const { renderToStaticMarkup } = require("react-dom/server");
+  const { AppRouterContext } = require("next/dist/shared/lib/app-router-context.shared-runtime");
+  const { ResumeResultState } = require("../components/result/resume-result-state.tsx");
+  for (const locale of ["ko", "en"]) {
+    for (const canReadPrivate of [false, true]) {
+      for (const resumeSource of ["public", "authorized"]) {
+        const html = renderToStaticMarkup(React.createElement(
+          AppRouterContext.Provider, { value: { push() {} } },
+          React.createElement(ResumeResultState, {
+            availability: { state: "locked_missing_repo" },
+            locale,
+            recovery: {
+              username: "privacy-fixture",
+              canReadPrivate,
+              privateLoginHref: "/api/auth/github/login?access=private",
+              initialOptions: { ...defaultDocumentOptions("resume"), resumeSource },
+            },
+          }),
+        ));
+        assert.match(html, locale === "ko" ? /이력서 다시 불러오기/ : /Load resume again/);
+        assert.doesNotMatch(html, /aria-label="(?:문서 템플릿|Document template)"/);
+        const sourceInputs = html.match(/<input[^>]*name="resume-source"[^>]*>/g);
+        assert.equal(sourceInputs.length, 2);
+        assert.equal(sourceInputs[0].includes('checked=""'), resumeSource === "public");
+        assert.equal(sourceInputs[1].includes('checked=""'), resumeSource === "authorized");
+        assert.equal(html.includes('href="/api/auth/github/login?access=private"'),
+          resumeSource === "authorized");
+        assert.equal(/<button[^>]*disabled=""[^>]*>/.test(html),
+          resumeSource === "authorized" && !canReadPrivate);
+      }
+    }
+  }
+});
 process.env.NODE_ENV = "production";
 process.env.GITHUB_CLIENT_ID = "synthetic-test-client";
 process.env.GITHUB_CLIENT_SECRET = "synthetic-test-secret";

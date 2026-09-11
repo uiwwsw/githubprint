@@ -1,8 +1,15 @@
 import { resolveDocumentConfiguration } from "@/lib/document-configuration";
-import { DocumentConfigurationError } from "@/lib/document-options";
+import {
+  DocumentConfigurationError,
+  hasPrivateRepoPermission,
+} from "@/lib/document-options";
 import { DataUseReceipt } from "@/components/result/data-use-receipt";
 import type { Metadata } from "next";
-import { buildGitHubLogoutPath, getGitHubSession } from "@/lib/auth";
+import {
+  buildGitHubLoginPath,
+  buildGitHubLogoutPath,
+  getGitHubSession,
+} from "@/lib/auth";
 import { analyzeGitHubSource } from "@/lib/analyze";
 import { GitHubFetchError, getGitHubSource } from "@/lib/github";
 import { readEnv } from "@/lib/env";
@@ -258,7 +265,19 @@ export async function ResultPageContent({
                 />
               </>
             ) : (
-              <ResumeResultState availability={availability} locale={locale} />
+              <ResumeResultState
+                availability={availability}
+                locale={locale}
+                recovery={{
+                  username: session.user.login,
+                  canReadPrivate: hasPrivateRepoPermission(session.scopes),
+                  privateLoginHref: buildGitHubLoginPath(
+                    `${homeHref}#generator`,
+                    "private",
+                  ),
+                  initialOptions: configuration,
+                }}
+              />
             )}
           </div>
         </main>
