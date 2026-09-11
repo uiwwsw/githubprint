@@ -183,7 +183,6 @@ export async function ResultPageContent({
               locale={locale}
               logoutHref={logoutHref}
               mode="fallback"
-              resumeDownloadUrl={`/api/resume-docx?lang=${locale}`}
               resumeRepoVisibility={
                 "repoVisibility" in availability
                   ? availability.repoVisibility

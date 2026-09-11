@@ -358,3 +358,7 @@ export function buildShowcaseMetadata(
     },
   };
 }
+
+export function buildPreviewMetadata(locale: Locale): Metadata {
+  return { title: `${getDictionary(locale).studio.sampleTitle} | GitHubPrint`, robots: { index: false, follow: false } };
+}

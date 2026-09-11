@@ -55,7 +55,7 @@ export function SectionBlock({
   const showEyebrow = Boolean(normalizedEyebrow) && normalizedEyebrow !== normalizedTitle;
 
   return (
-    <section className={cn("print-break-inside-avoid rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6", className)}>
+    <section className={cn("document-section rounded-[1.4rem] border border-black/[0.08] bg-white/70 p-6", className)}>
       {showEyebrow ? (
         <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">{eyebrow}</p>
       ) : null}
@@ -67,7 +67,7 @@ export function SectionBlock({
 
 export function ChipList({ items }: { items: string[] }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2" data-document-group>
       {items.map((item) => (
         <span
           className="rounded-full border border-black/[0.08] bg-black/[0.03] px-3 py-1.5 text-xs font-medium text-neutral-700"
@@ -160,10 +160,11 @@ export function BenchmarkSnapshotBlock({
       {interpretationNote ? (
         <p className="text-sm leading-6 text-neutral-500">{interpretationNote}</p>
       ) : null}
-      <div className="space-y-3">
+      <div className="benchmark-metrics space-y-3">
         {benchmark.metrics.map((metric) => (
           <div
             className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+            data-document-group
             key={metric.id}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -212,10 +213,11 @@ export function PublicDataScope({
       : dict.home.dataScopeItems;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-document-group={dataMode === "public" || undefined}>
       {[items.profile, items.repositories, items.limits].map((item) => (
         <div
           className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
+          data-document-group
           key={item}
         >
           <p className="text-sm leading-6 text-neutral-600">{item}</p>
@@ -462,7 +464,7 @@ function AuthorizedPrivateInsightsCard({
 
 function FactCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[1.1rem] border border-black/[0.07] bg-black/[0.025] p-4">
+    <div data-document-fact className="rounded-[1.1rem] border border-black/[0.07] bg-black/[0.025] p-4">
       <p className="text-xs uppercase tracking-[0.22em] text-neutral-400">{label}</p>
       <p className="mt-3 break-words text-sm font-medium text-neutral-900">{value}</p>
     </div>
@@ -534,7 +536,7 @@ export function EvidenceList({ analysis }: { analysis: GitHubPrintAnalysis }) {
   return (
     <div className="space-y-3">
       {analysis.evidence.map((item) => (
-        <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" key={`${item.label}-${item.detail}`}>
+        <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" data-document-group key={`${item.label}-${item.detail}`}>
           <p className="text-sm font-medium text-neutral-900">{item.label}</p>
           <p className="mt-2 text-sm leading-6 text-neutral-600">{item.detail}</p>
         </div>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { ResultActions } from "@/components/result/result-actions";
 import { ResumeTemplate } from "@/components/templates/resume";
 import { getRepoEntryFromUrl } from "@/lib/github";
 import { buildShowcaseStructuredData } from "@/lib/seo";
@@ -51,7 +52,9 @@ export async function ShowcasePageContent({
   const canOpenSourceRepo = sourceRepo?.visibility === "public";
   const isRepoReadable = Boolean(sourceRepo);
   const hasReadableManifest = Boolean(
-    sourceRepo?.rootFiles.some((file) => file === "resume.yaml" || file === "resume.en.yaml"),
+    sourceRepo?.rootFiles.some(
+      (file) => file === "resume.yaml" || file === "resume.en.yaml",
+    ),
   );
   const copy =
     locale === "ko"
@@ -158,7 +161,18 @@ export async function ShowcasePageContent({
         </div>
 
         {resume ? (
-          <div>
+          <div className="space-y-6">
+            <ResultActions
+              template="resume"
+              locale={locale}
+              mode="fallback"
+              backHref={homePath}
+              downloadFileName={{
+                generatedAt: resume.source.updatedAt ?? showcase.createdAt,
+                template: "resume",
+                username: showcase.username,
+              }}
+            />
             <ResumeTemplate
               generatedAt={resume.source.updatedAt ?? showcase.createdAt}
               locale={locale}

@@ -76,6 +76,8 @@ export async function GET(request: NextRequest) {
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
       "Content-Disposition": `attachment; filename="${fileName}"`,
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

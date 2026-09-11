@@ -65,7 +65,10 @@ function groupMarkdownBlocks(blocks: ResumeMarkdownBlock[]) {
   });
 
   return sections.filter(
-    (section) => section.heading || section.blocks.length > 0 || section.subgroups.length > 0,
+    (section) =>
+      section.heading ||
+      section.blocks.length > 0 ||
+      section.subgroups.length > 0,
   );
 }
 
@@ -80,7 +83,10 @@ function MarkdownBlocks({ blocks }: { blocks: ResumeMarkdownBlock[] }) {
               className="list-disc space-y-2 pl-5 text-sm leading-7 text-neutral-700"
             >
               {block.items.map((item, itemIndex) => (
-                <li className="print-copy-flow" key={`${index}-${itemIndex}-${item}`}>
+                <li
+                  className="print-copy-flow"
+                  key={`${index}-${itemIndex}-${item}`}
+                >
                   {item}
                 </li>
               ))}
@@ -88,6 +94,16 @@ function MarkdownBlocks({ blocks }: { blocks: ResumeMarkdownBlock[] }) {
           );
         }
 
+        if (block.type === "heading") {
+          return (
+            <h4
+              className="print-break-after-avoid font-semibold"
+              key={`${block.type}-${index}`}
+            >
+              {block.text}
+            </h4>
+          );
+        }
         return (
           <p
             key={`${block.type}-${index}`}
@@ -131,12 +147,22 @@ function MarkdownContent({ markdown }: { markdown: string }) {
             </h4>
           ) : null}
           {section.blocks.length > 0 ? (
-            <div className={cn("space-y-3", section.heading && "mt-3 border-t border-black/[0.06] pt-3")}>
+            <div
+              className={cn(
+                "space-y-3",
+                section.heading && "mt-3 border-t border-black/[0.06] pt-3",
+              )}
+            >
               <MarkdownBlocks blocks={section.blocks} />
             </div>
           ) : null}
           {section.subgroups.length > 0 ? (
-            <div className={cn("space-y-3", (section.heading || section.blocks.length > 0) && "mt-3")}>
+            <div
+              className={cn(
+                "space-y-3",
+                (section.heading || section.blocks.length > 0) && "mt-3",
+              )}
+            >
               {section.subgroups.map((subgroup, subgroupIndex) => (
                 <section
                   className="rounded-[0.9rem] border border-black/[0.06] bg-white/70 px-4 py-3"
@@ -170,10 +196,17 @@ function ResumeSection({
   title: string;
 }) {
   return (
-    <section className={cn(bordered && "border-t border-black/[0.08] pt-6")}>
+    <section
+      className={cn(
+        "resume-section",
+        bordered && "border-t border-black/[0.08] pt-6",
+      )}
+    >
       <div className="space-y-4">
         <div className="print-break-after-avoid">
-          <h2 className="mt-0 break-words font-serif text-2xl text-neutral-950">{title}</h2>
+          <h2 className="mt-0 break-words font-serif text-2xl text-neutral-950">
+            {title}
+          </h2>
         </div>
         {children}
       </div>
@@ -183,14 +216,14 @@ function ResumeSection({
 
 function HighlightSectionContent({
   section,
+  locale,
 }: {
   section: ResumeCustomSection;
+  locale: Locale;
 }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {section.items.map((entry) => {
-        const detail = entry.bullets[0] ?? entry.detailsMarkdown;
-
         return (
           <article
             className="print-break-inside-avoid rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
@@ -204,8 +237,22 @@ function HighlightSectionContent({
             <h3 className="mt-2 break-words text-[1.45rem] font-semibold leading-tight tracking-[-0.01em] text-neutral-950">
               {entry.title}
             </h3>
-            {detail ? (
-              <p className="mt-3 text-sm leading-7 text-neutral-700">{detail}</p>
+            {entry.bullets.length > 0 ? (
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-neutral-700">
+                {entry.bullets.map((bullet, index) => (
+                  <li key={`${entry.title}-${index}`}>{bullet}</li>
+                ))}
+              </ul>
+            ) : null}
+            {entry.detailsMarkdown ? (
+              <div className="mt-3">
+                <MarkdownContent markdown={entry.detailsMarkdown} />
+              </div>
+            ) : null}
+            {entry.links.length > 0 ? (
+              <div className="mt-3">
+                <LinkRow links={entry.links} locale={locale} />
+              </div>
             ) : null}
           </article>
         );
@@ -284,12 +331,16 @@ function ResumeEntryBlock({
   );
 
   return (
-    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
+    <article className="resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{entry.title}</h3>
+          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
+            {entry.title}
+          </h3>
           {entry.subtitle ? (
-            <p className="text-sm font-medium text-neutral-700">{entry.subtitle}</p>
+            <p className="text-sm font-medium text-neutral-700">
+              {entry.subtitle}
+            </p>
           ) : null}
           {entry.location ? (
             <p className="text-sm text-neutral-500">{entry.location}</p>
@@ -374,12 +425,16 @@ function ResumeProjectBlock({
     project.repoDescription !== project.subtitle;
 
   return (
-    <article className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
+    <article className="resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">{project.title}</h3>
+          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
+            {project.title}
+          </h3>
           {project.subtitle ? (
-            <p className="text-sm font-medium text-neutral-700">{project.subtitle}</p>
+            <p className="text-sm font-medium text-neutral-700">
+              {project.subtitle}
+            </p>
           ) : null}
           {project.location ? (
             <p className="text-sm text-neutral-500">{project.location}</p>
@@ -399,7 +454,12 @@ function ResumeProjectBlock({
         {project.repoCreatedAt ? (
           <span className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-600">
             {copy.shared.githubStart}:{" "}
-            {formatResumeDateRange(project.repoCreatedAt, undefined, false, locale)}
+            {formatResumeDateRange(
+              project.repoCreatedAt,
+              undefined,
+              false,
+              locale,
+            )}
           </span>
         ) : null}
       </div>
@@ -499,18 +559,21 @@ function CustomSectionContent({
   }
 
   return (
-    <div className={cn(section.layout === "compact" ? "space-y-3" : "space-y-4")}>
+    <div
+      className={cn(section.layout === "compact" ? "space-y-3" : "space-y-4")}
+    >
       {section.items.map((item) => (
-        <ResumeEntryBlock entry={item} key={`${section.id}-${item.title}`} locale={locale} />
+        <ResumeEntryBlock
+          entry={item}
+          key={`${section.id}-${item.title}`}
+          locale={locale}
+        />
       ))}
     </div>
   );
 }
 
-function getVisibilityLabel(
-  locale: Locale,
-  visibility: ResumeRepoVisibility,
-) {
+function getVisibilityLabel(locale: Locale, visibility: ResumeRepoVisibility) {
   const copy = getResumeCopy(locale);
   return visibility === "private" ? copy.shared.private : copy.shared.public;
 }
@@ -531,8 +594,10 @@ export function ResumeTemplate({
   const copy = getResumeCopy(locale);
   const resolvedAvatarUrl = resume.basics.avatarPath
     ? `/api/resume-asset?path=${encodeURIComponent(resume.basics.avatarPath)}`
-    : resume.basics.avatarUrl ?? avatarUrl;
-  const topLinks = resume.basics.links.filter((link) => link.kind !== "contact");
+    : (resume.basics.avatarUrl ?? avatarUrl);
+  const topLinks = resume.basics.links.filter(
+    (link) => link.kind !== "contact",
+  );
   const visibilityLabel = getVisibilityLabel(locale, resume.source.visibility);
   const projectsByExperience = new Map<string, ResumeProject[]>();
   const highlightSection = resume.customSections.find((section) =>
@@ -547,7 +612,8 @@ export function ResumeTemplate({
       return;
     }
 
-    const bucket = projectsByExperience.get(project.linkedExperienceTitle) ?? [];
+    const bucket =
+      projectsByExperience.get(project.linkedExperienceTitle) ?? [];
     bucket.push(project);
     projectsByExperience.set(project.linkedExperienceTitle, bucket);
   });
@@ -572,10 +638,7 @@ export function ResumeTemplate({
     <DocumentShell
       accent={
         <div className="flex flex-wrap gap-2">
-          <MetaRibbon
-            label={copy.template.ribbonTemplate}
-            value="Resume"
-          />
+          <MetaRibbon label={copy.template.ribbonTemplate} value="Resume" />
           <MetaRibbon
             label={copy.template.ribbonGenerated}
             value={formatDate(generatedAt, locale)}
@@ -587,13 +650,13 @@ export function ResumeTemplate({
         </div>
       }
     >
-      <header className="print-break-inside-avoid border-b border-black/[0.08] pb-8">
+      <header className="resume-header print-break-inside-avoid border-b border-black/[0.08] pb-8">
         <div className="space-y-4">
           <div>
             {resolvedAvatarUrl ? (
               <img
                 alt={resume.basics.name}
-                className="mb-5 h-20 w-20 rounded-[1.6rem] object-cover ring-1 ring-black/[0.08]"
+                className="resume-avatar float-right ml-5 h-20 w-20 rounded-xl object-cover ring-1 ring-black/[0.08]"
                 src={resolvedAvatarUrl}
               />
             ) : null}
@@ -628,29 +691,30 @@ export function ResumeTemplate({
             ) : null}
           </div>
 
-          {topLinks.length > 0 ? <LinkRow links={topLinks} locale={locale} /> : null}
+          {topLinks.length > 0 ? (
+            <LinkRow links={topLinks} locale={locale} />
+          ) : null}
         </div>
       </header>
 
       <div className="mt-8 space-y-8">
         {highlightSection ? (
           <ResumeSection bordered={false} title={highlightSection.title}>
-            <HighlightSectionContent section={highlightSection} />
+            <HighlightSectionContent
+              section={highlightSection}
+              locale={locale}
+            />
           </ResumeSection>
         ) : null}
 
-        <ResumeSection title={copy.template.sections.summary}>
-          {resume.summary ? (
+        {resume.summary ? (
+          <ResumeSection title={copy.template.sections.summary}>
             <MarkdownContent markdown={resume.summary} />
-          ) : (
-            <p className="text-sm leading-7 text-neutral-500">
-              {copy.template.noSummary}
-            </p>
-          )}
-        </ResumeSection>
+          </ResumeSection>
+        ) : null}
 
-        <ResumeSection title={copy.template.sections.experience}>
-          {resume.experience.length > 0 ? (
+        {resume.experience.length > 0 ? (
+          <ResumeSection title={copy.template.sections.experience}>
             <div className="space-y-4">
               {resume.experience.map((entry) => (
                 <ResumeEntryBlock
@@ -661,51 +725,49 @@ export function ResumeTemplate({
                 />
               ))}
             </div>
-          ) : (
-            <p className="text-sm leading-7 text-neutral-500">
-              {copy.template.emptyState}
-            </p>
-          )}
-        </ResumeSection>
+          </ResumeSection>
+        ) : null}
 
-        <ResumeSection title={copy.template.sections.projects}>
-          {resume.projects.length > 0 ? (
+        {resume.projects.length > 0 ? (
+          <ResumeSection title={copy.template.sections.projects}>
             <div className="space-y-4">
               {resume.projects.map((project) => (
-                <ResumeProjectBlock key={project.title} locale={locale} project={project} />
+                <ResumeProjectBlock
+                  key={project.title}
+                  locale={locale}
+                  project={project}
+                />
               ))}
             </div>
-          ) : (
-            <p className="text-sm leading-7 text-neutral-500">
-              {copy.template.emptyState}
-            </p>
-          )}
-        </ResumeSection>
+          </ResumeSection>
+        ) : null}
 
-        <ResumeSection title={copy.template.sections.education}>
-          {resume.education.length > 0 ? (
+        {resume.education.length > 0 ? (
+          <ResumeSection title={copy.template.sections.education}>
             <div className="space-y-4">
               {resume.education.map((entry) => (
-                <ResumeEntryBlock entry={entry} key={entry.title} locale={locale} />
+                <ResumeEntryBlock
+                  entry={entry}
+                  key={entry.title}
+                  locale={locale}
+                />
               ))}
             </div>
-          ) : (
-            <p className="text-sm leading-7 text-neutral-500">
-              {copy.template.emptyState}
-            </p>
-          )}
-        </ResumeSection>
+          </ResumeSection>
+        ) : null}
 
-        <ResumeSection title={copy.template.sections.skills}>
-          {resume.skills.length > 0 ? (
+        {resume.skills.length > 0 ? (
+          <ResumeSection title={copy.template.sections.skills}>
             <div className="space-y-4">
               {resume.skills.map((group, index) => (
                 <div
-                  className="rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
+                  className="resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5"
                   key={`${group.title ?? "skills"}-${index}`}
                 >
                   {group.title ? (
-                    <p className="text-sm font-medium text-neutral-900">{group.title}</p>
+                    <p className="text-sm font-medium text-neutral-900">
+                      {group.title}
+                    </p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {group.items.map((item) => (
@@ -720,24 +782,22 @@ export function ResumeTemplate({
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="text-sm leading-7 text-neutral-500">
-              {copy.template.emptyState}
-            </p>
-          )}
-        </ResumeSection>
-
-        {trailingSections.map((section) => (
-          <ResumeSection key={section.id} title={section.title}>
-            {section.items.length > 0 ? (
-              <CustomSectionContent locale={locale} section={section} />
-            ) : (
-              <p className="text-sm leading-7 text-neutral-500">
-                {copy.template.emptyState}
-              </p>
-            )}
           </ResumeSection>
-        ))}
+        ) : null}
+
+        {trailingSections
+          .filter((section) => section.items.length > 0)
+          .map((section) => (
+            <ResumeSection key={section.id} title={section.title}>
+              {section.items.length > 0 ? (
+                <CustomSectionContent locale={locale} section={section} />
+              ) : (
+                <p className="text-sm leading-7 text-neutral-500">
+                  {copy.template.emptyState}
+                </p>
+              )}
+            </ResumeSection>
+          ))}
       </div>
     </DocumentShell>
   );
