@@ -197,7 +197,7 @@ function InsightBenchmarkReading({
       ) : null}
       <div className="space-y-3">
         {topMetrics.map((metric) => (
-          <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" key={metric.id}>
+          <div className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4" data-document-group key={metric.id}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-medium text-neutral-900">{metric.label}</p>
               <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">

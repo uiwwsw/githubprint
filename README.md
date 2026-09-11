@@ -69,7 +69,8 @@ Current product limits:
 - Server-side GitHub URL normalization and public data collection
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
-- ATS-friendly Word export from a dedicated `resume` repository
+- Editable Word / Google Docs-compatible `.docx` exports for all four templates, with embedded Korean fonts
+- Public example previews at `/preview` and `/en/preview` without sign-in
 - A starter `resume` repository guide with photo support in [`docs/resume-template.md`](./docs/resume-template.md)
 - Fixture mode for UI work without external API calls
 
@@ -117,27 +118,28 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 - 서버 측 GitHub URL 정규화 및 공개 데이터 수집
 - AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
-- 전용 `resume` 레포에서 Word 이력서를 생성하는 ATS 친화 export
+- 모든 템플릿의 편집 가능한 Word / Google Docs 호환 `.docx` 내보내기와 한글 글꼴 포함
+- 로그인 없이 사용하는 `/preview`, `/en/preview` 예시 문서
 - 사진 필드까지 포함한 `resume` starter 가이드를 [`docs/resume-template.md`](./docs/resume-template.md)로 제공
 - 외부 API 없이 UI 작업이 가능한 fixture mode
 
 ## Architecture
 
-| Path | Responsibility |
-| --- | --- |
-| `app/page.tsx` / `app/en/page.tsx` | Localized home routes |
-| `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes |
-| `components/templates/` | Document templates for `brief`, `profile`, `insight`, and `resume` |
-| `lib/resume.ts` / `lib/resume-source.ts` | Resume schema parsing, normalization, and GitHub-backed activation checks |
-| `lib/github.ts` | GitHub collection, caching, fixture mode, and representative repository selection |
-| `lib/repo-identity.ts` | Contributor-editable repository identity inference driven by JSON rules |
-| `lib/analyze.ts` | AI analysis and fallback orchestration |
-| `lib/profile-features.ts` | Feature extraction from raw GitHub source data |
-| `data/signals/` | Signal definitions for languages, topics, files, and commit patterns |
-| `data/repo-identity/` | JSON rules for contributor-editable stack, framework, and project-type inference |
-| `data/rules/` | Scoring rules for orientation, working style, strengths, and role fit |
-| `lib/benchmark.ts` | Cohort benchmark comparison |
-| `lib/seo.ts` | Canonical metadata, alternates, sitemap, and robots rules |
+| Path                                             | Responsibility                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `app/page.tsx` / `app/en/page.tsx`               | Localized home routes                                                             |
+| `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes                                                           |
+| `components/templates/`                          | Document templates for `brief`, `profile`, `insight`, and `resume`                |
+| `lib/resume.ts` / `lib/resume-source.ts`         | Resume schema parsing, normalization, and GitHub-backed activation checks         |
+| `lib/github.ts`                                  | GitHub collection, caching, fixture mode, and representative repository selection |
+| `lib/repo-identity.ts`                           | Contributor-editable repository identity inference driven by JSON rules           |
+| `lib/analyze.ts`                                 | AI analysis and fallback orchestration                                            |
+| `lib/profile-features.ts`                        | Feature extraction from raw GitHub source data                                    |
+| `data/signals/`                                  | Signal definitions for languages, topics, files, and commit patterns              |
+| `data/repo-identity/`                            | JSON rules for contributor-editable stack, framework, and project-type inference  |
+| `data/rules/`                                    | Scoring rules for orientation, working style, strengths, and role fit             |
+| `lib/benchmark.ts`                               | Cohort benchmark comparison                                                       |
+| `lib/seo.ts`                                     | Canonical metadata, alternates, sitemap, and robots rules                         |
 
 ## Tech Stack
 
@@ -180,18 +182,18 @@ Repository identity inference is intentionally data-driven.
 
 ### Environment Variables
 
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `GITHUB_TOKEN` | Recommended | Raises GitHub API limits and improves local reliability |
-| `GITHUB_CLIENT_ID` | Optional | Enables GitHub OAuth sign-in for private-enriched self mode |
-| `GITHUB_CLIENT_SECRET` | Optional | Enables GitHub OAuth sign-in for private-enriched self mode |
-| `GITHUB_SESSION_SECRET` | Optional | Encrypts the server-side GitHub session cookie |
-| `OPENAI_API_KEY` | Optional | Enables AI analysis; fallback still works without it |
-| `OPENAI_MODEL` | Optional | Overrides the default model, currently `gpt-5-mini` |
-| `NEXT_PUBLIC_SITE_URL` | Optional | Canonical origin for metadata and Open Graph tags |
-| `GITHUBPRINT_USE_FIXTURE` | Optional | Enables local fixture mode for UI work |
-| `GITHUBPRINT_CAPTURE_INSIGHTS` | Optional | Captures internal scoring snapshots for tuning |
-| `GITHUBPRINT_BENCHMARK_OVERRIDE_PATH` | Optional | Loads an aggregated benchmark JSON during local testing |
+| Variable                              | Required    | Purpose                                                     |
+| ------------------------------------- | ----------- | ----------------------------------------------------------- |
+| `GITHUB_TOKEN`                        | Recommended | Raises GitHub API limits and improves local reliability     |
+| `GITHUB_CLIENT_ID`                    | Optional    | Enables GitHub OAuth sign-in for private-enriched self mode |
+| `GITHUB_CLIENT_SECRET`                | Optional    | Enables GitHub OAuth sign-in for private-enriched self mode |
+| `GITHUB_SESSION_SECRET`               | Optional    | Encrypts the server-side GitHub session cookie              |
+| `OPENAI_API_KEY`                      | Optional    | Enables AI analysis; fallback still works without it        |
+| `OPENAI_MODEL`                        | Optional    | Overrides the default model, currently `gpt-5-mini`         |
+| `NEXT_PUBLIC_SITE_URL`                | Optional    | Canonical origin for metadata and Open Graph tags           |
+| `GITHUBPRINT_USE_FIXTURE`             | Optional    | Enables local fixture mode for UI work                      |
+| `GITHUBPRINT_CAPTURE_INSIGHTS`        | Optional    | Captures internal scoring snapshots for tuning              |
+| `GITHUBPRINT_BENCHMARK_OVERRIDE_PATH` | Optional    | Loads an aggregated benchmark JSON during local testing     |
 
 For the GitHub OAuth App used by signed-in self mode:
 
@@ -219,15 +221,16 @@ Fixture mode is development-only.
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the Next.js development server |
-| `npm run build` | Create a production build |
-| `npm run start` | Start the production server |
-| `npm run typecheck` | Run TypeScript checks |
-| `npm run check` | Run build, typecheck, and quality regressions |
-| `npm run quality:regress` | Run fixture-based quality regressions |
-| `npm run insights:aggregate` | Aggregate captured internal insight snapshots |
+| Command                      | Description                                               |
+| ---------------------------- | --------------------------------------------------------- |
+| `npm run dev`                | Start the Next.js development server                      |
+| `npm run build`              | Create a production build                                 |
+| `npm run start`              | Start the production server                               |
+| `npm run typecheck`          | Run TypeScript checks                                     |
+| `npm run check`              | Run build, typecheck, and quality regressions             |
+| `npm run test:documents`     | Run Chromium export, pagination, mobile, and retry checks |
+| `npm run quality:regress`    | Run fixture-based quality regressions                     |
+| `npm run insights:aggregate` | Aggregate captured internal insight snapshots             |
 
 ## Verification
 
@@ -245,7 +248,17 @@ npm run check
 
 Regression reports are written to `.cache/githubprint/reports/`.
 
+For document and UI changes, also run:
+
+```bash
+npx playwright install chromium
+npm run test:documents
+```
+
+The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `localhost` when binding a development server; binding explicitly to `127.0.0.1` can produce locale rewrite loops in Next.js. Browser checks generate `.docx`, A4 PDF, and screen captures under `.cache/document-qa/`. They validate both locales and all four templates, including long documents, links, fonts, mobile overflow, print cancellation, and download errors. Render generated DOCX files in a Word-compatible viewer for visual QA. Some headless LibreOffice distributions ignore embedded fonts; point Fontconfig at `public/fonts` when using those renderers.
+
 ## Additional Docs
 
 - [Contributing](./CONTRIBUTING.md)
 - [Learning Loop](./docs/learning-loop.md)
+- [Document Exports](./docs/document-exports.md)

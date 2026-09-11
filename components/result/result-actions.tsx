@@ -1,68 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_SLUG } from "@/lib/brand";
 import { getDictionary } from "@/lib/i18n";
-import { scheduleWindowTopScroll } from "@/lib/instant-scroll";
-import { getResumeCopy } from "@/lib/resume-copy";
-import type { ResumeRepoVisibility } from "@/lib/resume";
 import { buildDownloadFileName } from "@/lib/result-document";
-import { getTemplateMeta } from "@/lib/templates";
-import {
-  type Locale,
-  type PrivateExposureMode,
-  type TemplateId,
-} from "@/lib/schemas";
-
-function parseAttachmentFileName(contentDisposition: string | null) {
-  if (!contentDisposition) {
-    return null;
-  }
-
-  const utf8Match = contentDisposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
-  if (utf8Match?.[1]) {
-    try {
-      return decodeURIComponent(utf8Match[1].trim().replace(/^"(.*)"$/, "$1"));
-    } catch {
-      return utf8Match[1].trim().replace(/^"(.*)"$/, "$1");
-    }
-  }
-
-  const plainMatch = contentDisposition.match(/filename\s*=\s*"([^"]+)"/i);
-  if (plainMatch?.[1]) {
-    return plainMatch[1].trim();
-  }
-
-  const unquotedMatch = contentDisposition.match(/filename\s*=\s*([^;]+)/i);
-  return unquotedMatch?.[1]?.trim() ?? null;
-}
-
-function isDocxContentType(contentType: string | null) {
-  if (!contentType) {
-    return false;
-  }
-
-  const normalized = contentType.toLowerCase();
-  return (
-    normalized.includes(
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ) || normalized.includes("application/octet-stream")
-  );
-}
+import { snapshotDocument } from "@/lib/document-snapshot";
+import { readDocumentAvatar } from "@/lib/document-avatar";
+import type { ResumeRepoVisibility } from "@/lib/resume";
+import type { Locale, PrivateExposureMode, TemplateId } from "@/lib/schemas";
 
 export function ResultActions({
   template,
-  mode,
-  dataMode = "public",
-  privateExposureMode = "aggregate",
   canDownload = true,
   backHref,
   downloadFileName,
   logoutHref,
   locale,
-  resumeDownloadUrl,
+  dataMode = "public",
+  privateExposureMode = "aggregate",
   resumeRepoVisibility,
 }: {
   template: TemplateId;
@@ -78,182 +34,224 @@ export function ResultActions({
   };
   logoutHref?: string;
   locale: Locale;
-  resumeDownloadUrl?: string;
   resumeRepoVisibility?: ResumeRepoVisibility;
 }) {
   const dict = getDictionary(locale);
-  const resumeCopy = getResumeCopy(locale);
-  const templateMeta = getTemplateMeta(locale);
-  const isResumeTemplate = template === "resume";
-  const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [isDownloadingWord, setIsDownloadingWord] = useState(false);
+  const copy = dict.studio;
+  const [busy, setBusy] = useState<"pdf" | "word" | null>(null);
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState("");
+  const [density, setDensity] = useState("comfortable");
+  const restorePrint = useRef<(() => void) | null>(null);
+  const exporting = useRef(false);
+  useEffect(
+    () => () => {
+      restorePrint.current?.();
+      delete document.documentElement.dataset.printDensity;
+    },
+    [],
+  );
 
-  function handlePdfDownload() {
-    setDownloadError(null);
+  const filename = () =>
+    buildDownloadFileName(
+      downloadFileName ?? {
+        generatedAt: new Date().toISOString(),
+        template,
+      },
+    );
 
-    const originalTitle = document.title;
-    const nextTitle = downloadFileName
-      ? buildDownloadFileName(downloadFileName)
-      : `${PRODUCT_SLUG}-document`;
-    let restored = false;
-
-    const restoreTitle = () => {
-      if (restored) {
-        return;
-      }
-      restored = true;
-      document.title = originalTitle;
-      window.removeEventListener("afterprint", restoreTitle);
-    };
-
-    document.title = nextTitle;
-    window.addEventListener("afterprint", restoreTitle, { once: true });
-    window.print();
+  async function handlePdf() {
+    if (exporting.current) return;
+    exporting.current = true;
+    setBusy("pdf");
+    setError("");
+    setStatus("");
+    try {
+      await Promise.race([
+        Promise.all([
+          document.fonts.ready,
+          ...Array.from(
+            document.querySelectorAll<HTMLImageElement>(".document-page img"),
+          ).map((img) => img.decode().catch(() => {})),
+        ]),
+        new Promise((resolve) => window.setTimeout(resolve, 5000)),
+      ]);
+      restorePrint.current?.();
+      const previousTitle = document.title;
+      let restored = false;
+      const restore = () => {
+        if (restored) return;
+        restored = true;
+        document.title = previousTitle;
+        window.removeEventListener("afterprint", restore);
+        window.removeEventListener("focus", onFocus);
+        exporting.current = false;
+        setBusy(null);
+      };
+      const onFocus = () => window.setTimeout(restore, 500);
+      restorePrint.current = restore;
+      window.addEventListener("afterprint", restore, { once: true });
+      window.addEventListener("focus", onFocus, { once: true });
+      document.title = filename();
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+      window.print();
+    } catch {
+      restorePrint.current?.();
+      exporting.current = false;
+      setBusy(null);
+      setError(copy.printError);
+    }
   }
 
-  async function handleWordDownload() {
-    setDownloadError(null);
-
-    if (!resumeDownloadUrl || isDownloadingWord) {
-      return;
-    }
-
-    setIsDownloadingWord(true);
-
+  async function handleWord() {
+    if (exporting.current) return;
+    exporting.current = true;
+    setBusy("word");
+    setError("");
+    setStatus("");
     try {
-      const response = await fetch(resumeDownloadUrl, {
-        credentials: "same-origin",
+      const root = document.querySelector<HTMLElement>("[data-document]");
+      if (!root) throw new Error("Document is unavailable");
+      const blocks = snapshotDocument(root);
+      if (!blocks.length) throw new Error("Document is empty");
+      // Generate from the exact preview locally, without re-fetching personal data.
+      const { buildDocumentDocx } = await import("@/lib/document-docx");
+      const fonts = await Promise.all(
+        ["Regular", "SemiBold"].map(async (weight) => {
+          const response = await fetch(`/fonts/Pretendard-${weight}.ttf`, {
+            signal: AbortSignal.timeout(15_000),
+          });
+          if (!response.ok) throw new Error("Document font is unavailable");
+          return new Uint8Array(await response.arrayBuffer());
+        }),
+      );
+      let avatarMissing = false;
+      const avatar = await readDocumentAvatar(root).catch(() => {
+        avatarMissing = true;
+        return null;
       });
-
-      if (!response.ok) {
-        throw new Error(`Resume download failed: ${response.status}`);
-      }
-
-      if (!isDocxContentType(response.headers.get("Content-Type"))) {
-        throw new Error("Resume download returned a non-DOCX response.");
-      }
-
-      const blob = await response.blob();
-      if (blob.size === 0) {
-        throw new Error("Resume download returned an empty file.");
-      }
-
-      const objectUrl = URL.createObjectURL(blob);
+      const blob = await buildDocumentDocx(
+        blocks,
+        locale,
+        filename(),
+        fonts[0],
+        fonts[1],
+        avatar,
+      );
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const fallbackName = `${
-        buildDownloadFileName(
-          downloadFileName ?? {
-            generatedAt: new Date().toISOString(),
-            template: "resume",
-          },
-        )
-      }.docx`;
-
-      link.href = objectUrl;
-      link.download =
-        parseAttachmentFileName(response.headers.get("Content-Disposition")) ??
-        fallbackName;
-      link.style.display = "none";
-
+      link.href = url;
+      link.download = `${filename()}.docx`;
+      link.hidden = true;
       document.body.append(link);
       link.click();
       link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setStatus(avatarMissing ? copy.exportedWithoutImage : copy.exported);
     } catch {
-      setDownloadError(resumeCopy.actions.downloadWordFailed);
+      setError(copy.exportError);
     } finally {
-      setIsDownloadingWord(false);
+      exporting.current = false;
+      setBusy(null);
     }
   }
 
   return (
-    <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex min-w-0 w-full flex-wrap items-center gap-2 text-sm text-neutral-600 sm:flex-1">
-        {backHref ? (
-          <Link
-            className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-black/[0.08] bg-white px-4 text-sm font-medium text-neutral-900 transition hover:bg-white/80"
-            href={backHref}
-            onClick={scheduleWindowTopScroll}
-            scroll={false}
-          >
-            {dict.result.backToTemplate}
-          </Link>
-        ) : null}
-        <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/80 px-3 py-1.5">
-          {dict.result.templateLabel}: {templateMeta[template].label}
-        </span>
-        {isResumeTemplate && resumeRepoVisibility ? (
-          <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
-            {resumeCopy.actions.repoVisibilityLabel}:{" "}
-            {resumeRepoVisibility === "private"
-              ? resumeCopy.shared.private
-              : resumeCopy.shared.public}
-          </span>
-        ) : !isResumeTemplate ? (
-          <>
-            <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
-              {dict.result.modeLabel}: {mode === "openai" ? dict.result.modeAi : dict.result.modeFallback}
-            </span>
-            <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
-              {dict.result.dataModeLabel}: {dataMode === "private_enriched" ? dict.result.dataModePrivate : dict.result.dataModePublic}
-            </span>
-            {dataMode === "private_enriched" ? (
-              <span className="whitespace-nowrap rounded-full border border-black/[0.08] bg-white/70 px-3 py-1.5">
-                {dict.result.privateExposureLabel}:{" "}
-                {privateExposureMode === "include"
-                  ? dict.result.privateExposureInclude
-                  : dict.result.privateExposureAggregate}
-              </span>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-      <div className="flex w-full flex-col items-stretch gap-1 sm:w-auto sm:shrink-0 sm:items-end">
-        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
-          {logoutHref ? (
-            <a
-              className={`${isResumeTemplate ? "col-span-2" : ""} inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-full border border-black/[0.08] bg-white/80 px-4 text-sm font-medium text-neutral-700 transition hover:bg-white sm:col-span-1 sm:h-10 sm:w-auto`}
-              href={logoutHref}
+    <div className="screen-toolbar screen-only mx-auto w-full max-w-[210mm]">
+      <div className="export-toolbar">
+        <div className="flex min-w-0 items-center gap-3">
+          {backHref ? (
+            <Link
+              className="toolbar-back"
+              href={backHref}
+              aria-label={dict.result.backToTemplate}
             >
-              {dict.home.authSignOut}
-            </a>
+              ←
+            </Link>
           ) : null}
-          {isResumeTemplate ? (
-            <>
-              <Button
-                className="w-full whitespace-nowrap sm:w-auto"
-                disabled={!canDownload}
-                onClick={handlePdfDownload}
-                variant="secondary"
-              >
-                {dict.result.downloadPdf}
-              </Button>
-              <Button
-                className="w-full whitespace-nowrap sm:w-auto"
-                disabled={!canDownload || isDownloadingWord}
-                onClick={handleWordDownload}
-              >
-                {isDownloadingWord
-                  ? resumeCopy.actions.downloadWordPending
-                  : resumeCopy.actions.downloadWord}
-              </Button>
-            </>
-          ) : (
-            <Button
-              className={`${logoutHref ? "" : "col-span-2"} w-full whitespace-nowrap sm:col-span-1 sm:w-auto`}
-              disabled={!canDownload}
-              onClick={handlePdfDownload}
-            >
-              {dict.result.downloadPdf}
-            </Button>
-          )}
+          <div className="min-w-0">
+            <p className="text-xs text-neutral-500">{copy.documentReady}</p>
+            <p className="font-semibold text-neutral-950">
+              {dict.templateMeta[template].label}{" "}
+              <span className="ml-1 text-xs font-normal text-neutral-500">
+                / A4
+              </span>
+            </p>
+          </div>
+          {(dataMode === "private_enriched" &&
+            privateExposureMode === "include") ||
+          resumeRepoVisibility === "private" ? (
+            <span className="rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
+              {dict.result.privateExposureInclude}
+            </span>
+          ) : null}
         </div>
-        {downloadError ? (
-          <p className="max-w-[20rem] text-left text-xs text-red-600 sm:text-right">
-            {downloadError}
-          </p>
-        ) : null}
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button
+            className="gap-2 rounded-lg"
+            disabled={!canDownload || !!busy}
+            onClick={handlePdf}
+            variant="secondary"
+            aria-busy={busy === "pdf"}
+          >
+            <span aria-hidden="true">↓</span>
+            {busy === "pdf" ? copy.pending : copy.pdf}
+          </Button>
+          <Button
+            className="gap-2 rounded-lg bg-[#176b50] hover:bg-[#10503b]"
+            disabled={!canDownload || !!busy}
+            onClick={handleWord}
+            aria-busy={busy === "word"}
+          >
+            <span aria-hidden="true">↓</span>
+            {busy === "word" ? copy.pending : copy.word}
+          </Button>
+        </div>
       </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-3 text-xs text-neutral-500">
+        <label className="flex items-center gap-2">
+          {copy.layout}
+          <select
+            aria-label={copy.layout}
+            className="rounded-md border border-black/10 bg-white px-2 py-1.5 text-neutral-700"
+            value={density}
+            disabled={!!busy}
+            onChange={(event) => {
+              setDensity(event.target.value);
+              document.documentElement.dataset.printDensity =
+                event.target.value;
+            }}
+          >
+            <option value="comfortable">{copy.comfortable}</option>
+            <option value="compact">{copy.compact}</option>
+          </select>
+        </label>
+        {logoutHref ? (
+          <a href={logoutHref} className="underline underline-offset-4">
+            {dict.home.authSignOut}
+          </a>
+        ) : null}
+        <details className="export-guide">
+          <summary className="cursor-pointer">{copy.guide}</summary>
+          <div className="mt-3 space-y-2 rounded-lg border border-black/10 bg-white p-4 text-xs leading-6 text-neutral-600">
+            <p>{copy.pdfHint}</p>
+            <p>{copy.wordHint}</p>
+            <p>{copy.exportHint}</p>
+          </div>
+        </details>
+      </div>
+      {status ? (
+        <p role="status" className="mt-2 text-xs text-[#176b50]">
+          {status}
+        </p>
+      ) : null}
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

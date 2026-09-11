@@ -259,7 +259,7 @@ export function SelfGenerator({
             </p>
           </div>
 
-          <label className="flex w-full min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[1.2rem] border border-black/[0.08] bg-black/[0.025] px-4 py-3 lg:w-auto lg:min-w-[17rem]">
+          <label className="has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-4 has-[:focus-visible]:outline-emerald-600 flex w-full min-w-0 cursor-pointer items-center justify-between gap-4 rounded-[1.2rem] border border-black/[0.08] bg-black/[0.025] px-4 py-3 lg:w-auto lg:min-w-[17rem]">
             <div className="min-w-0 space-y-1">
               <p className="text-sm font-medium text-neutral-900">
                 {dict.home.privateToggleLabel}
@@ -348,6 +348,7 @@ export function SelfGenerator({
                         : "border-black/[0.08] bg-white/80 text-neutral-900 hover:border-black/[0.15] hover:bg-white",
                   )}
                   key={template.id}
+                  aria-pressed={isSelected}
                   onClick={() => handleTemplateSelect(template.id)}
                   type="button"
                 >

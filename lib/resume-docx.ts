@@ -1,9 +1,10 @@
 import "server-only";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 import {
   AlignmentType,
   BorderStyle,
-  Document,
   ExternalHyperlink,
   HeadingLevel,
   ImageRun,
@@ -12,6 +13,7 @@ import {
   TextRun,
   type ParagraphChild,
 } from "docx";
+import { createDesignedDocument } from "@/lib/document-design";
 import { getResumeCopy } from "@/lib/resume-copy";
 import {
   buildResumeProjectEvidenceSummary,
@@ -26,7 +28,10 @@ import {
 } from "@/lib/resume";
 import type { Locale } from "@/lib/schemas";
 
-function createText(text: string, options?: ConstructorParameters<typeof TextRun>[0]) {
+function createText(
+  text: string,
+  options?: ConstructorParameters<typeof TextRun>[0],
+) {
   return new TextRun({
     ...(typeof options === "string" ? {} : options),
     text,
@@ -47,12 +52,13 @@ function createLink(label: string, url: string) {
 
 function createSectionHeading(title: string) {
   return new Paragraph({
-    heading: HeadingLevel.HEADING_2,
+    heading: HeadingLevel.HEADING_1,
     spacing: {
       after: 140,
       before: 280,
     },
-    thematicBreak: true,
+    keepNext: true,
+    keepLines: true,
     children: [createText(title, { bold: true })],
   });
 }
@@ -63,7 +69,10 @@ async function createAvatarParagraph(avatarUrl?: string) {
   }
 
   try {
-    const response = await fetch(avatarUrl, { cache: "no-store" });
+    const response = await fetch(avatarUrl, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
     if (!response.ok) {
       return null;
     }
@@ -85,7 +94,7 @@ async function createAvatarParagraph(avatarUrl?: string) {
     }
 
     return new Paragraph({
-      alignment: AlignmentType.CENTER,
+      alignment: AlignmentType.LEFT,
       spacing: {
         after: 100,
       },
@@ -117,10 +126,7 @@ function inferImageTypeFromContentType(contentType?: string) {
   return null;
 }
 
-function createAvatarParagraphFromBuffer(
-  data: Buffer,
-  contentType?: string,
-) {
+function createAvatarParagraphFromBuffer(data: Buffer, contentType?: string) {
   const imageType = inferImageTypeFromContentType(contentType);
 
   if (!imageType) {
@@ -128,7 +134,7 @@ function createAvatarParagraphFromBuffer(
   }
 
   return new Paragraph({
-    alignment: AlignmentType.CENTER,
+    alignment: AlignmentType.LEFT,
     spacing: {
       after: 100,
     },
@@ -203,13 +209,17 @@ function buildEntryParagraphs(
 
   paragraphs.push(
     new Paragraph({
+      heading: HeadingLevel.HEADING_2,
+      keepNext: true,
       spacing: {
         after: 40,
         before: 120,
       },
       children: [
         createText(entry.title, { bold: true }),
-        ...(entry.subtitle ? [createText(`  ${entry.subtitle}`, { italics: true })] : []),
+        ...(entry.subtitle
+          ? [createText(`  ${entry.subtitle}`, { italics: true })]
+          : []),
       ],
     }),
   );
@@ -249,7 +259,9 @@ function buildEntryParagraphs(
   }
 
   if (entry.links.length > 0) {
-    const children: ParagraphChild[] = [createText(`${linkLabel}: `, { bold: true })];
+    const children: ParagraphChild[] = [
+      createText(`${linkLabel}: `, { bold: true }),
+    ];
     entry.links.forEach((link, index) => {
       if (index > 0) {
         children.push(createText("  |  "));
@@ -434,7 +446,15 @@ function buildProjectParagraphs(
     );
   }
 
-  paragraphs.splice(2, 0, ...insertedParagraphs);
+  const hasMetadata = Boolean(
+    formatResumeDateRange(
+      project.start,
+      project.end,
+      project.current,
+      locale,
+    ) || project.location,
+  );
+  paragraphs.splice(hasMetadata ? 2 : 1, 0, ...insertedParagraphs);
 
   return paragraphs;
 }
@@ -461,7 +481,9 @@ function buildContactParagraph(document: ResumeDocumentData) {
   }
   if (document.basics.website) {
     pushSeparator();
-    contactParts.push(createLink(document.basics.website, document.basics.website));
+    contactParts.push(
+      createLink(document.basics.website, document.basics.website),
+    );
   }
   document.basics.links.forEach((link) => {
     pushSeparator();
@@ -469,7 +491,7 @@ function buildContactParagraph(document: ResumeDocumentData) {
   });
 
   return new Paragraph({
-    alignment: AlignmentType.CENTER,
+    alignment: AlignmentType.LEFT,
     spacing: {
       after: 180,
     },
@@ -477,22 +499,17 @@ function buildContactParagraph(document: ResumeDocumentData) {
   });
 }
 
-function buildHighlightParagraphs(section: ResumeCustomSection) {
-  return section.items.map((entry) => {
-    const detail = entry.bullets[0] ?? "";
-
-    return new Paragraph({
-      bullet: { level: 0 },
-      spacing: {
-        after: 70,
-      },
-      children: [
-        createText(entry.title, { bold: true }),
-        ...(entry.subtitle ? [createText(`  |  ${entry.subtitle}`)] : []),
-        ...(detail ? [createText(`  ${detail}`)] : []),
-      ],
-    });
-  });
+function buildHighlightParagraphs(
+  section: ResumeCustomSection,
+  locale: Locale,
+) {
+  return section.items.flatMap((entry) =>
+    buildEntryParagraphs(
+      entry,
+      locale,
+      getResumeCopy(locale).template.sections.links,
+    ),
+  );
 }
 
 export async function buildResumeDocx(
@@ -526,23 +543,15 @@ export async function buildResumeDocx(
   const children: Paragraph[] = [
     ...(avatarParagraph ? [avatarParagraph] : []),
     new Paragraph({
-      alignment: AlignmentType.CENTER,
-      spacing: {
-        after: 100,
-      },
-      children: [
-        createText(documentData.basics.name, {
-          bold: true,
-          size: 34,
-        }),
-      ],
+      heading: HeadingLevel.TITLE,
+      children: [createText(documentData.basics.name)],
     }),
   ];
 
   if (documentData.basics.headline) {
     children.push(
       new Paragraph({
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.LEFT,
         spacing: {
           after: 120,
         },
@@ -559,7 +568,7 @@ export async function buildResumeDocx(
     }
 
     children.push(createSectionHeading(section.title));
-    children.push(...buildHighlightParagraphs(section));
+    children.push(...buildHighlightParagraphs(section, locale));
   });
 
   if (documentData.summary) {
@@ -570,7 +579,9 @@ export async function buildResumeDocx(
   if (documentData.experience.length > 0) {
     children.push(createSectionHeading(copy.template.sections.experience));
     documentData.experience.forEach((entry) => {
-      children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
+      children.push(
+        ...buildEntryParagraphs(entry, locale, copy.template.sections.links),
+      );
     });
   }
 
@@ -596,7 +607,9 @@ export async function buildResumeDocx(
   if (documentData.education.length > 0) {
     children.push(createSectionHeading(copy.template.sections.education));
     documentData.education.forEach((entry) => {
-      children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
+      children.push(
+        ...buildEntryParagraphs(entry, locale, copy.template.sections.links),
+      );
     });
   }
 
@@ -609,7 +622,9 @@ export async function buildResumeDocx(
             after: 80,
           },
           children: [
-            ...(group.title ? [createText(`${group.title}: `, { bold: true })] : []),
+            ...(group.title
+              ? [createText(`${group.title}: `, { bold: true })]
+              : []),
             createText(group.items.join(", ")),
           ],
         }),
@@ -624,7 +639,9 @@ export async function buildResumeDocx(
 
     children.push(createSectionHeading(section.title));
     section.items.forEach((entry) => {
-      children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
+      children.push(
+        ...buildEntryParagraphs(entry, locale, copy.template.sections.links),
+      );
     });
   });
 
@@ -640,15 +657,16 @@ export async function buildResumeDocx(
     }),
   );
 
-  const document = new Document({
-    creator: "GitHubPrint",
-    description: "GitHubPrint resume export",
-    sections: [
-      {
-        children,
-      },
-    ],
+  const document = createDesignedDocument({
+    children,
+    locale,
     title: `${documentData.basics.name} Resume`,
+    fontData: await readFile(
+      path.join(process.cwd(), "public/fonts/Pretendard-Regular.ttf"),
+    ),
+    headingFontData: await readFile(
+      path.join(process.cwd(), "public/fonts/Pretendard-SemiBold.ttf"),
+    ),
   });
 
   return Packer.toBuffer(document);

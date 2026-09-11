@@ -1,5 +1,6 @@
 import type { Locale, TemplateId } from "@/lib/schemas";
 import { localeSchema, templateSchema } from "@/lib/schemas";
+import { documentCopy } from "@/lib/document-copy";
 
 export const defaultLocale: Locale = "ko";
 
@@ -789,5 +790,5 @@ export function detectLocaleFromPathname(pathname: string): Locale {
 }
 
 export function getDictionary(locale: Locale) {
-  return dictionaries[locale];
+  return { ...dictionaries[locale], studio: documentCopy[locale] };
 }
