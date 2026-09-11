@@ -10,22 +10,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "데모와 공개 결과물이 반복되어, 아이디어를 빠르게 형태로 옮기는 편으로 보입니다.",
-          "en": "Repeated demos and visible outputs suggest a prototyping-heavy way of working that turns ideas into concrete artifacts quickly."
+          "ko": "데모와 시제품 형태로 아이디어를 구현한 프로젝트가 반복됩니다.",
+          "en": "Demos and prototypes recur across the available projects."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "작은 결과물을 빠르게 만들어 보려는 흐름이 일부 확인됩니다.",
-          "en": "There is some visible tendency to test ideas through smaller, quickly assembled outputs."
+          "ko": "시제품 형태의 구현이 일부 프로젝트에서 확인됩니다.",
+          "en": "Some projects contain prototype implementations."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "프로토타이핑 경향은 제한적으로 보입니다.",
-          "en": "Prototyping signals are only partially visible."
+          "ko": "시제품 개발 패턴을 판단할 자료는 적습니다.",
+          "en": "There is little evidence to assess a prototyping pattern."
         }
       }
     ]
@@ -41,22 +41,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "배포 링크와 대표작 구성을 보면, 결과물을 직접 확인하고 판단할 수 있는 형태로 정리하는 편으로 보입니다.",
-          "en": "Deployment links and standout-project structure suggest a tendency to package work into something that can be inspected and evaluated directly."
+          "ko": "배포 링크를 통해 구현한 결과물을 직접 살펴볼 수 있습니다.",
+          "en": "Deployment links provide a way to inspect the finished work."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "구현 결과를 외부에 보여 주려는 정리 습관이 일부 보입니다.",
-          "en": "There are some visible habits around presenting implementation output externally."
+          "ko": "일부 프로젝트에 결과물을 확인할 링크가 있습니다.",
+          "en": "Some projects link to their working output."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "외부 공개 경향은 제한적입니다.",
-          "en": "Signals around presenting finished output are limited."
+          "ko": "배포된 결과물을 확인할 자료는 적습니다.",
+          "en": "There is little evidence of deployed output."
         }
       }
     ]
@@ -72,22 +72,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "README와 문서 구조를 보면 설명과 맥락을 남기려는 습관이 비교적 뚜렷합니다.",
-          "en": "README quality and documentation structure suggest a clear habit of leaving explanation and context behind."
+          "ko": "README와 문서에 프로젝트의 사용법과 구현 맥락을 남겼습니다.",
+          "en": "READMEs and documentation describe usage and implementation context."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "일부 프로젝트에서는 설명과 문서화에 신경 쓴 흔적이 확인됩니다.",
-          "en": "Some projects show a meaningful amount of care around explanation and documentation."
+          "ko": "일부 프로젝트에 사용법과 설명 문서가 있습니다.",
+          "en": "Some projects include usage notes and documentation."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "문서화 흔적은 제한적으로만 보입니다.",
-          "en": "Documentation signals are only partially visible."
+          "ko": "프로젝트 설명 문서는 제한적으로 확인됩니다.",
+          "en": "Project documentation is limited in the available sources."
         }
       }
     ]
@@ -103,22 +103,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "모노레포, 설정 파일, CI 구성을 보면 코드베이스 구조와 운영 기준을 정리하는 편으로 보입니다.",
-          "en": "Monorepo layouts, configuration files, and CI signals suggest an inclination toward structuring a codebase and clarifying operational standards."
+          "ko": "설정 파일과 워크플로우에서 코드 구조와 실행 과정을 정리한 흔적이 확인됩니다.",
+          "en": "Configuration and workflows show how code and execution are organized."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "일부 저장소에서 구조와 설정 관리에 신경 쓴 흔적이 보입니다.",
-          "en": "Some repositories show visible care around structure and configuration management."
+          "ko": "일부 저장소에서 구조와 설정 관리가 확인됩니다.",
+          "en": "Some repositories show structured configuration management."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "구조를 체계적으로 정리한 흔적은 제한적으로 보입니다.",
-          "en": "Structure-oriented signals are only partially visible."
+          "ko": "코드 구조를 비교할 자료가 충분하지 않습니다.",
+          "en": "There is not enough evidence to compare code organization."
         }
       }
     ]
@@ -134,22 +134,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "테스트와 검증 도구가 보여, 품질 관리에 일정 수준의 관심이 있는 것으로 보입니다.",
-          "en": "Testing and verification tooling suggest a meaningful concern for quality and reliability."
+          "ko": "테스트와 검증 도구를 프로젝트에 포함했습니다.",
+          "en": "Projects include testing and verification tools."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "테스트나 검증 관련 설정이 일부 저장소에서 확인됩니다.",
-          "en": "Testing or verification setup is visible in some repositories."
+          "ko": "일부 저장소에서 테스트·검증 설정이 확인됩니다.",
+          "en": "Some repositories include testing or verification setup."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "품질 검증 관련 흔적은 제한적입니다.",
-          "en": "Quality-verification signals are limited."
+          "ko": "테스트·검증 설정은 제한적으로 확인됩니다.",
+          "en": "Testing and verification setup is limited in the available sources."
         }
       }
     ]
@@ -165,22 +165,22 @@
       {
         "min": 65,
         "text": {
-          "ko": "최근 활동과 수정 흐름을 보면, 한 번 만들고 끝내기보다 반복적으로 손보며 다듬는 편으로 보입니다.",
-          "en": "Recent activity and maintenance patterns suggest a habit of revisiting and refining work rather than shipping it once and leaving it untouched."
+          "ko": "최근에도 저장소를 수정하며 구현을 이어가고 있습니다.",
+          "en": "Recent repository updates show continuing implementation work."
         }
       },
       {
         "min": 35,
         "text": {
-          "ko": "최근에도 간헐적으로 손을 대며 유지하는 흐름이 일부 확인됩니다.",
-          "en": "There is some visible pattern of revisiting and maintaining work over time."
+          "ko": "일부 저장소에 최근 수정 기록이 있습니다.",
+          "en": "Some repositories have recent updates."
         }
       },
       {
         "min": 0,
         "text": {
-          "ko": "반복적으로 개선한 흔적은 제한적입니다.",
-          "en": "Iterative-maintenance signals are limited."
+          "ko": "최근 수정 기록만으로 지속적인 작업 패턴을 판단하기 어렵습니다.",
+          "en": "Recent updates alone do not establish a sustained work pattern."
         }
       }
     ]

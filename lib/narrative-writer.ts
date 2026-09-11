@@ -2,7 +2,6 @@ import "server-only";
 
 import { localizeText } from "@/lib/data-loader";
 import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
-import type { RepoFeature } from "@/lib/profile-features";
 import { buildRepoTechStack, summarizeRepoStack } from "@/lib/repo-identity";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
 import {
@@ -50,17 +49,11 @@ function joinReadable(values: string[], locale: Locale) {
   if (compact.length === 0) {
     return locale === "ko" ? "여러 기술" : "multiple technologies";
   }
-  if (compact.length === 1) {
-    return compact[0];
-  }
-  if (compact.length === 2) {
-    return locale === "ko"
-      ? `${compact[0]}와 ${compact[1]}`
-      : `${compact[0]} and ${compact[1]}`;
-  }
-  const head = compact.slice(0, -1).join(", ");
-  const tail = compact[compact.length - 1];
-  return locale === "ko" ? `${head}, ${tail}` : `${head}, and ${tail}`;
+  return locale === "ko"
+    ? compact.join(" · ")
+    : new Intl.ListFormat("en", { style: "long", type: "conjunction" }).format(
+        compact,
+      );
 }
 
 function localizePrivateFacet(value: string, locale: Locale) {
@@ -107,8 +100,8 @@ function buildDeveloperTypeText(
   }
 
   return locale === "ko"
-    ? `${base} 보조적으로는 ${secondary.label} 관련 경험도 함께 보입니다.`
-    : `${base} Secondary signals around ${secondary.label} are also visible.`;
+    ? `${base} ${secondary.label} 관련 구현도 함께 확인됩니다.`
+    : `${base} The work also includes ${secondary.label} implementation.`;
 }
 
 function buildWorkingStyleText(scoring: ProfileScoringResult, locale: Locale) {
@@ -151,6 +144,12 @@ function buildSummaryText(
         ? "주요 공개 저장소"
         : "visible public repositories";
 
+  if (!projectNames.length && source.repos.length === 0) {
+    return locale === "ko"
+      ? "현재 확인할 수 있는 프로젝트가 없습니다. 저장소에 설명과 사용 기술을 남기면 다음 문서에 반영됩니다."
+      : "No projects are currently available to describe. Repository descriptions and technologies can be included when available.";
+  }
+
   const base = fillTemplate(template, {
     languages: joinReadable(
       (stackSummary.coreStack.length > 0
@@ -184,11 +183,11 @@ function buildSummaryText(
   if (insights.privateOnlyStack.length > 0) {
     return `${base} ${
       locale === "ko"
-        ? `비공개 쪽에서는 ${joinReadable(
+        ? `선택한 비공개 작업에서 ${joinReadable(
             insights.privateOnlyStack.slice(0, 2),
             locale,
-          )} 같은 추가 스택도 보입니다.`
-        : `Private work also adds stack signals around ${joinReadable(
+          )} 기술도 확인됩니다.`
+        : `Selected private work also uses ${joinReadable(
             insights.privateOnlyStack.slice(0, 2),
             locale,
           )}.`
@@ -198,18 +197,18 @@ function buildSummaryText(
   if (insights.topPrivateSurfaces.length > 0) {
     return `${base} ${
       locale === "ko"
-        ? `비공개 저장소를 함께 보면 ${joinReadable(
+        ? `선택한 비공개 저장소에는 ${joinReadable(
             insights.topPrivateSurfaces
               .slice(0, 2)
               .map((item) => localizePrivateFacet(item, locale)),
             locale,
-          )} 성격이 조금 더 분명해집니다.`
-        : `Private repositories also make ${joinReadable(
+          )} 관련 작업도 있습니다.`
+        : `Selected private repositories also include ${joinReadable(
             insights.topPrivateSurfaces
               .slice(0, 2)
               .map((item) => localizePrivateFacet(item, locale)),
             locale,
-          )} surfaces a bit clearer.`
+          )} work.`
     }`;
   }
 
@@ -217,30 +216,24 @@ function buildSummaryText(
 }
 
 function buildFallbackStrengths(source: GitHubSourceData, locale: Locale) {
-  const strengths: string[] = [];
-  const stackSummary = getStackSummary(source);
-  const primaryLanguage =
-    stackSummary.topLanguages[0] ?? source.topLanguages[0]?.name;
-
-  if (primaryLanguage) {
-    strengths.push(
-      locale === "ko"
-        ? `${primaryLanguage} 중심 구현 경험이 저장소 전반에서 반복적으로 보입니다.`
-        : `${primaryLanguage}-centered implementation work appears repeatedly across repositories.`,
-    );
-  }
-  strengths.push(
-    locale === "ko"
-      ? "대표 프로젝트를 기준으로 기술 선택과 관심 영역을 비교적 빠르게 파악할 수 있습니다."
-      : "The standout repositories make recurring technical choices and interests relatively easy to read.",
-  );
-  strengths.push(
-    locale === "ko"
-      ? "저장소 기준에서 구현 결과물이 지속적으로 축적된 흔적이 보입니다."
-      : "Repositories still show a visible pattern of accumulated implementation output.",
-  );
-
-  return strengths;
+  const stack = getStackSummary(source).coreStack.slice(0, 3);
+  const projects = source.representativeRepos;
+  return [
+    stack.length
+      ? locale === "ko"
+        ? `확인된 기술: ${stack.join(" · ")}`
+        : `Technologies: ${stack.join(" · ")}`
+      : locale === "ko"
+        ? "주력 기술을 판단할 자료가 적습니다."
+        : "There is little evidence to identify a main stack.",
+    projects.length
+      ? locale === "ko"
+        ? `살펴볼 수 있는 대표 프로젝트 ${projects.length}개`
+        : `${projects.length} selected projects to explore`
+      : locale === "ko"
+        ? "프로젝트 소개에 필요한 자료가 적습니다."
+        : "Project information is limited.",
+  ];
 }
 
 function buildFallbackRoles(scoring: ProfileScoringResult, locale: Locale) {
@@ -283,56 +276,36 @@ function buildFallbackRoles(scoring: ProfileScoringResult, locale: Locale) {
   );
   fallback.push(
     locale === "ko"
-      ? "작은 팀에서 여러 영역을 맡는 제품 개발 역할"
-      : "General product development in smaller teams",
+      ? "프로젝트 구현과 기술 문서 정리"
+      : "Project implementation and technical documentation",
   );
 
   return fallback;
 }
 
-function localizeRepoEvidence(
-  repoFeature: RepoFeature | undefined,
-  locale: Locale,
-) {
-  if (!repoFeature) {
-    return null;
-  }
-
-  const evidence = repoFeature.matchedSignals
-    .filter((signal) => signal.evidence)
-    .map((signal) => localizeText(signal.evidence!, locale));
-
-  if (evidence.length === 0) {
-    return null;
-  }
-
-  return [...new Set(evidence)].slice(0, 2).join(" ");
-}
-
-function buildProjects(
-  source: GitHubSourceData,
-  repoFeatureMap: Map<string, RepoFeature>,
-  locale: Locale,
-) {
+function buildProjects(source: GitHubSourceData, locale: Locale) {
   return source.representativeRepos.slice(0, 5).map((repo) => {
-    const repoFeature = repoFeatureMap.get(repo.name.toLowerCase());
-    const evidenceText = localizeRepoEvidence(repoFeature, locale);
+    const inspectedFiles = repo.rootFiles
+      .filter((name) =>
+        /^(readme|package\.json|src$|app$|tests?$|__tests__$|docs?$|cargo\.toml|pyproject\.toml|go\.mod)/i.test(
+          name,
+        ),
+      )
+      .slice(0, 4);
 
     return {
       description:
         repo.description ??
         (locale === "ko"
-          ? "설명이 짧아 저장소 이름과 구조 중심으로만 해석 가능합니다."
-          : "The description is limited, so interpretation relies mostly on the repository name and structure."),
-      evidence:
-        evidenceText ??
-        (repo.readme && repo.readme.length > 280
-          ? locale === "ko"
-            ? "README와 저장소 메타데이터가 함께 확인됩니다."
-            : "Both the README and repository metadata are visible."
-          : locale === "ko"
-            ? "저장소 설명, stars, 최근 업데이트 시점을 기준으로 선정했습니다."
-            : "Selection is based on repository description, stars, and recent update timing."),
+          ? "프로젝트 설명이 아직 없습니다. 구현 내용은 저장소에서 확인할 수 있습니다."
+          : "No project description is available. Explore the implementation in the repository."),
+      evidence: inspectedFiles.length
+        ? locale === "ko"
+          ? `살펴본 구성: ${inspectedFiles.join(" · ")}`
+          : `Repository structure: ${inspectedFiles.join(" · ")}`
+        : locale === "ko"
+          ? "저장소의 설명과 기술 정보를 참고했습니다."
+          : "Based on the repository description and technology information.",
       homepageUrl: repo.homepageUrl,
       name:
         repo.visibility === "private"
@@ -356,17 +329,21 @@ function buildProjects(
         return tech.length > 0 ? tech : ["GitHub"];
       })(),
       updatedAt: repo.updatedAt,
-      whyItMatters: evidenceText
+      whyItMatters: repo.isPinned
         ? locale === "ko"
-          ? `대표작 후보로 볼 만한 저장소이며, ${evidenceText}`
-          : `This looks like a standout project candidate, and ${evidenceText.charAt(0).toLowerCase()}${evidenceText.slice(1)}`
-        : repo.isPinned || repo.stars > 0
+          ? "GitHub 프로필에 고정한 프로젝트입니다."
+          : "Pinned on the author's GitHub profile."
+        : repo.homepageUrl
           ? locale === "ko"
-            ? `대표작 후보로 보이는 저장소입니다. ${repoSignalText(repo, locale)}.`
-            : `This repository looks like a standout project candidate. ${repoSignalText(repo, locale)}.`
-          : locale === "ko"
-            ? `최근 작업 흐름을 보여주는 저장소입니다. ${repoSignalText(repo, locale)}.`
-            : `This repository helps show the recent flow of work. ${repoSignalText(repo, locale)}.`,
+            ? "연결된 서비스에서 결과물을 살펴볼 수 있습니다."
+            : "The linked site offers a closer look at the work."
+          : repo.readme
+            ? locale === "ko"
+              ? "README에서 프로젝트 설명을 읽을 수 있습니다."
+              : "The README provides further project context."
+            : locale === "ko"
+              ? "저장소에서 구현 내용을 확인할 수 있습니다."
+              : "Explore the implementation in the repository.",
     };
   });
 }
@@ -481,11 +458,6 @@ export function buildRuleBasedAnalysis(
   locale: Locale,
 ): GitHubPrintAnalysis {
   const name = source.account.name ?? source.account.username;
-  const repoFeatureMap = new Map(
-    scoring.repoFeatures.map(
-      (item) => [item.repo.name.toLowerCase(), item] as const,
-    ),
-  );
   const strengths = [
     ...scoring.strengths,
     ...buildFallbackStrengths(source, locale),
@@ -595,6 +567,6 @@ export function buildRuleBasedAnalysis(
       summary: buildSummaryText(source, scoring, config, locale),
       username: source.account.username,
     },
-    projects: buildProjects(source, repoFeatureMap, locale),
+    projects: buildProjects(source, locale),
   });
 }

@@ -176,18 +176,18 @@ type Dictionary = {
       ribbonOpenAi: string;
       ribbonFallback: string;
       eyebrow: string;
-        sections: {
-          type: string;
-          workingStyle: string;
-          projects: string;
-          tech: string;
-          benchmark: string;
-          strengths: string;
-          bestFit: string;
-          evidence: string;
-          dataScope: string;
-          caution: string;
-        };
+      sections: {
+        type: string;
+        workingStyle: string;
+        projects: string;
+        tech: string;
+        benchmark: string;
+        strengths: string;
+        bestFit: string;
+        evidence: string;
+        dataScope: string;
+        caution: string;
+      };
     };
     insight: {
       ribbonTemplate: string;
@@ -197,19 +197,19 @@ type Dictionary = {
       ribbonOpenAi: string;
       ribbonFallback: string;
       eyebrow: string;
-        sections: {
-          type: string;
-          workingStyle: string;
-          fit: string;
-          strengths: string;
-          roles: string;
-          projectReading: string;
-          evidence: string;
-          benchmark: string;
-          dataScope: string;
-          tech: string;
-        };
+      sections: {
+        type: string;
+        workingStyle: string;
+        fit: string;
+        strengths: string;
+        roles: string;
+        projectReading: string;
+        evidence: string;
+        benchmark: string;
+        dataScope: string;
+        tech: string;
       };
+    };
   };
 };
 
@@ -223,7 +223,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHub 이력서·개발자 포트폴리오 PDF·Word 만들기 | GitHubPrint",
+      homeTitle:
+        "GitHub 이력서·개발자 포트폴리오 PDF·Word 만들기 | GitHubPrint",
       homeDescription:
         "GitHub 프로젝트와 개발 기록을 소개서, 포트폴리오, 리포트, 이력서로 정리하세요. 한국어·영어 템플릿을 미리 보고 제출용 PDF, 편집용 Word, 브라우저에서 읽는 HTML 파일로 저장하세요.",
       homeKeywords: [
@@ -267,12 +268,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       generatorDescription:
         "기본값은 공개 자료만 사용합니다. 선택한 비공개 작업은 익명 요약 또는 상세 소개로 추가할 수 있습니다.",
       privateToggleLabel: "비공개 저장소 포함하기",
-      privateToggleHint:
-        "공개 모드에서는 비공개 저장소를 읽지 않습니다.",
+      privateToggleHint: "공개 모드에서는 비공개 저장소를 읽지 않습니다.",
       privateToggleWarning:
         "켜면 비공개 저장소 이름, 설명, 링크가 문서와 저장 파일에 직접 포함될 수 있습니다.",
       templateHeading: "문서 템플릿 선택",
-      templateHint: "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
+      templateHint:
+        "같은 공개 정보를 바탕으로 하되, 템플릿마다 강조점과 읽는 방식이 다릅니다.",
       resumeTemplateBadge: "레포 기반",
       selected: "선택됨",
       select: "선택",
@@ -309,7 +310,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateExposureInclude: "비공개 상세 포함",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
-    downloadPdf: "PDF 다운로드",
+      downloadPdf: "PDF 다운로드",
       loadingEyebrow: "결과 미리보기",
       loadingMessage: "GitHub 정보를 바탕으로 문서 미리보기를 만드는 중입니다.",
       stateStatusLabel: "상태",
@@ -368,7 +369,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateInsightsShowcase: "비공개 하이라이트 저장소",
       privateInsightsShowcaseHint:
         "비공개 상세 포함 모드에서만 이름과 설명을 직접 노출합니다.",
-      signedInActivityTitle: "승인된 활동 스냅샷",
+      signedInActivityTitle: "최근 활동 요약",
       signedInActivityHint:
         "로그인한 본인 계정일 때만 읽을 수 있는 최근 1년 GitHub 활동 통계입니다.",
       signedInActivityWindow: "기준 기간",
@@ -382,27 +383,30 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "스냅샷",
-        description: "공개 GitHub에서 확인되는 사실을 짧고 선명하게 정리한 문서",
-        emphasis: "핵심 기술, 대표 프로젝트, 최근 활동을 빠르게 훑기 좋습니다.",
+        shortLabel: "빠른 소개",
+        description: "첫 소개에 필요한 기술과 대표작을 짧게 담습니다.",
+        emphasis:
+          "메일 첨부나 짧은 자기소개에. 핵심 기술과 대표작부터 보여주세요.",
       },
       profile: {
         label: "Profile",
-        shortLabel: "기본형",
-        description: "가장 무난하고 전달력이 좋은 기본 문서",
-        emphasis: "요약, 개발자 유형, 작업 방식, 근거가 균형 있게 담깁니다.",
+        shortLabel: "포트폴리오",
+        description: "무엇을 만들었는지, 프로젝트로 보여주는 포트폴리오.",
+        emphasis: "프로젝트의 설명, 기술, 확인할 링크를 중심으로 구성합니다.",
       },
       insight: {
         label: "Insight",
-        shortLabel: "내러티브",
-        description: "프로젝트 흐름과 작업 성향을 글 중심으로 풀어낸 리포트",
-        emphasis: "반복 패턴, 프로젝트 읽기, 해석 맥락을 더 깊게 보여줍니다.",
+        shortLabel: "분석 리포트",
+        description: "반복되는 기술 선택과 작업 패턴을 읽는 리포트.",
+        emphasis:
+          "작업 패턴과 비교 지표를 함께 살펴보며 다음 방향을 생각해 보세요.",
       },
       resume: {
         label: "Resume",
         shortLabel: "이력서",
-        description: "직접 작성한 resume 저장소의 경력과 프로젝트를 담은 이력서",
-        emphasis: "활성화되면 전체 경력, 프로젝트, 링크를 ATS 친화 문서로 정리합니다.",
+        description: "직접 쓴 경력과 프로젝트를 단정한 이력서로.",
+        emphasis:
+          "resume.yaml을 연결하면 작성한 내용과 순서를 유지해 정리합니다.",
       },
     },
     templates: {
@@ -415,12 +419,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         eyebrow: "GitHubPrint Brief",
         sections: {
           summary: "빠른 요약",
-          strengths: "확인된 특징",
+          strengths: "한눈에 보는 특징",
           projects: "대표 프로젝트",
           type: "개발자 유형",
           workingStyle: "작업 방식",
-          benchmark: "벤치마크 스냅샷",
-          bestFit: "어울리는 역할",
+          benchmark: "벤치마크 요약",
+          bestFit: "살펴볼 분야",
           evidence: "판단 근거",
           dataScope: "분석에 반영한 GitHub 데이터",
           source: "참고 링크",
@@ -441,7 +445,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           tech: "핵심 기술",
           benchmark: "유사한 개발자군 기준",
           strengths: "대표 강점",
-          bestFit: "어울리는 역할",
+          bestFit: "살펴볼 분야",
           evidence: "판단 근거",
           dataScope: "분석에 반영한 GitHub 데이터",
           caution: "해석 시 유의할 점",
@@ -458,9 +462,9 @@ const dictionaries: Record<Locale, Dictionary> = {
         sections: {
           type: "핵심 해석",
           workingStyle: "반복적으로 보이는 패턴",
-          fit: "강점과 역할 해석",
+          fit: "더 살펴볼 분야",
           strengths: "대표 강점",
-          roles: "어울리는 역할",
+          roles: "살펴볼 분야",
           projectReading: "프로젝트 읽기",
           evidence: "판단 근거",
           benchmark: "벤치마크 해석",
@@ -503,7 +507,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       description:
         "Sign in with GitHub and turn your own account into a resume, portfolio, and polished developer document right away.",
       authEyebrow: "Signed-in mode",
-      authTitle: "Sign in with GitHub and generate your resume and profile right away",
+      authTitle:
+        "Sign in with GitHub and generate your resume and profile right away",
       authDescription:
         "Create documents from public GitHub sources. If private work is relevant, choose the sources for your template and connect private access separately.",
       authReadyEyebrow: "Signed-in self mode",
@@ -522,12 +527,12 @@ const dictionaries: Record<Locale, Dictionary> = {
       generatorDescription:
         "The default uses public sources only. Selected private work can be added as an anonymous summary or detailed projects.",
       privateToggleLabel: "Include private repositories",
-      privateToggleHint:
-        "Public mode does not read private repositories.",
+      privateToggleHint: "Public mode does not read private repositories.",
       privateToggleWarning:
         "When on, private repository names, descriptions, and links may appear directly in the document and exported files.",
       templateHeading: "Choose a document template",
-      templateHint: "Templates use the same evidence, but differ in emphasis and reading style.",
+      templateHint:
+        "Templates use the same evidence, but differ in emphasis and reading style.",
       resumeTemplateBadge: "Repo-driven",
       selected: "Selected",
       select: "Select",
@@ -566,7 +571,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       modeFallback: "Fallback summary",
       downloadPdf: "Download PDF",
       loadingEyebrow: "Result Preview",
-      loadingMessage: "Reading GitHub data and generating the document preview.",
+      loadingMessage:
+        "Reading GitHub data and generating the document preview.",
       stateStatusLabel: "Status",
       stateStatusValue: "Unavailable",
       stateEyebrow: "GitHubPrint Result",
@@ -578,7 +584,8 @@ const dictionaries: Record<Locale, Dictionary> = {
       authRequiredMessage:
         "Result documents are generated only for the signed-in user's own account. Go back home and sign in with GitHub.",
       invalidSearchTitle: "The input is not valid",
-      invalidSearchMessage: "Please check the template selection and try again.",
+      invalidSearchMessage:
+        "Please check the template selection and try again.",
       notFoundTitle: "GitHub account not found",
       notFoundMessage:
         "Please verify the signed-in GitHub account and sign in again.",
@@ -590,7 +597,8 @@ const dictionaries: Record<Locale, Dictionary> = {
         "The GitHub API rate limit has been reached. Try generating the document again in a few minutes.",
       rateLimitResetPrefix: "Estimated reset time",
       fetchTitle: "Unable to fetch GitHub data",
-      fetchMessage: "Please check your network status or GitHub API quota and try again.",
+      fetchMessage:
+        "Please check your network status or GitHub API quota and try again.",
       unknownTitle: "Unable to generate the document",
       unknownMessage: "This may be a temporary issue. Please try again.",
     },
@@ -617,8 +625,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       privateInsightsHint:
         "These aggregates cover only selected private repositories, not all private activity. They summarize additional technology, documentation, testing, and automation signals.",
       privateInsightsTopStack: "Additional stack signals from private work",
-      privateInsightsAdditionalStack: "Stack that is less visible in public work",
-      privateInsightsTopSurfaces: "Work surfaces that become clearer in private work",
+      privateInsightsAdditionalStack:
+        "Stack that is less visible in public work",
+      privateInsightsTopSurfaces:
+        "Work surfaces that become clearer in private work",
       privateInsightsTopDomains: "Domains that become clearer in private work",
       privateInsightsShowcase: "Private highlights",
       privateInsightsShowcaseHint:
@@ -628,7 +638,8 @@ const dictionaries: Record<Locale, Dictionary> = {
         "These last-12-month GitHub activity counts are available only for the signed-in user's own account.",
       signedInActivityWindow: "Window",
       sampleSizeLabel: "Sample size",
-      noProjects: "There are not enough public repository signals to interpret standout projects.",
+      noProjects:
+        "There are not enough public repository signals to interpret standout projects.",
       repoLink: "GitHub repo",
       liveLink: "Live link",
       githubProfile: "GitHub profile",
@@ -637,27 +648,33 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "Snapshot",
-        description: "A fact-first document built for quick scanning.",
-        emphasis: "Optimized for verified signals, selected projects, and recent activity.",
+        shortLabel: "Introduction",
+        description:
+          "Your stack and selected projects, ready for a first introduction.",
+        emphasis:
+          "A concise attachment for introductions, with projects and technologies first.",
       },
       profile: {
         label: "Profile",
-        shortLabel: "Balanced",
-        description: "The default document with the best overall balance.",
-        emphasis: "Combines summary, developer type, working style, and evidence in one view.",
+        shortLabel: "Portfolio",
+        description: "A portfolio that puts the projects you built first.",
+        emphasis:
+          "Project descriptions, technologies, and links give your work room to speak.",
       },
       insight: {
         label: "Insight",
-        shortLabel: "Narrative",
-        description: "A prose-led report that reads the profile in context.",
-        emphasis: "Gives more room to recurring patterns, project reading, and interpretation.",
+        shortLabel: "Work report",
+        description:
+          "A report on recurring technical choices and work patterns.",
+        emphasis:
+          "Explore work patterns and comparison metrics to consider what comes next.",
       },
       resume: {
         label: "Resume",
         shortLabel: "Resume",
-        description: "A self-authored resume built from a dedicated `resume` repository.",
-        emphasis: "When activated, it turns career history, projects, and links into an ATS-friendly document.",
+        description: "Your own experience and projects in a considered resume.",
+        emphasis:
+          "Connect resume.yaml to format your content while preserving its order.",
       },
     },
     templates: {
@@ -670,12 +687,12 @@ const dictionaries: Record<Locale, Dictionary> = {
         eyebrow: "GitHubPrint Brief",
         sections: {
           summary: "Quick summary",
-          strengths: "Confirmed signals",
+          strengths: "At a glance",
           projects: "Selected projects",
           type: "Developer type",
           workingStyle: "Working style",
           benchmark: "Benchmark snapshot",
-          bestFit: "Best-fit roles",
+          bestFit: "Areas to explore",
           evidence: "Evidence",
           dataScope: "GitHub data used",
           source: "Reference link",
@@ -696,7 +713,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           tech: "Core stack",
           benchmark: "Peer benchmark",
           strengths: "Key strengths",
-          bestFit: "Best-fit roles",
+          bestFit: "Areas to explore",
           evidence: "Evidence",
           dataScope: "GitHub data used",
           caution: "Read with caution",
@@ -713,9 +730,9 @@ const dictionaries: Record<Locale, Dictionary> = {
         sections: {
           type: "Core reading",
           workingStyle: "Recurring patterns",
-          fit: "Strengths and role fit",
+          fit: "Areas to explore",
           strengths: "Key strengths",
-          roles: "Best-fit roles",
+          roles: "Areas to explore",
           projectReading: "Project reading",
           evidence: "Evidence",
           benchmark: "Benchmark reading",
@@ -772,9 +789,15 @@ export function getLocalizedResultPath(template: TemplateId, locale: Locale) {
   return getLocalizedPathname(`/result/${template}`, locale);
 }
 
-export function getResultTemplateFromPathname(pathname: string): TemplateId | null {
+export function getResultTemplateFromPathname(
+  pathname: string,
+): TemplateId | null {
   const normalizedPathname =
-    pathname === "/en" ? "/" : pathname.startsWith("/en/") ? pathname.slice(3) : pathname;
+    pathname === "/en"
+      ? "/"
+      : pathname.startsWith("/en/")
+        ? pathname.slice(3)
+        : pathname;
   const match = normalizedPathname.match(/^\/result\/([^/]+)$/);
 
   if (!match) {

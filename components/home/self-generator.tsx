@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { TemplatePreview } from "@/components/home/template-preview";
 import { ResumeActivationPanel } from "@/components/resume/resume-activation-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -250,20 +251,20 @@ export function SelfGenerator({
   ];
   const purpose = {
     brief: t(
-      "Brief는 소개에 필요한 핵심만 담습니다. 비공개 작업은 익명 요약으로 부족한 공개 근거를 보완할 수 있습니다.",
-      "Brief keeps an introduction focused. Anonymous private-work signals can supplement limited public evidence.",
+      "첫 소개에 필요한 기술과 대표작을 간결하게.",
+      "A concise introduction through your stack and selected work.",
     ),
     profile: t(
-      "Profile은 프로젝트가 중심입니다. 소개할 수 있는 비공개 작업만 골라 상세 사례로 추가하세요.",
-      "Profile centers on projects. Add only private work you can describe as a detailed case study.",
+      "무엇을 만들었는지, 프로젝트로 보여주는 포트폴리오.",
+      "A portfolio that puts the projects you built first.",
     ),
     insight: t(
-      "Insight는 작업 패턴을 살펴봅니다. 비공개 신호를 보완해도 벤치마크와 비교 지표는 공개 근거만 사용합니다.",
-      "Insight examines work patterns. Benchmarks and comparison metrics always use public evidence, even when private signals are added.",
+      "프로젝트에서 반복되는 기술 선택과 작업 패턴을 살펴보세요.",
+      "Explore the technical choices and patterns across your projects.",
     ),
     resume: t(
-      "Resume는 직접 작성한 경력과 프로젝트를 편집합니다. 원본의 보관 장소와 프로젝트 정보 보강 범위를 따로 선택하세요.",
-      "Resume formats the career and projects you authored. Choose source storage access separately from linked-project enrichment.",
+      "작성해 둔 이력서를 읽기 좋은 문서로 정리합니다.",
+      "Turn your authored resume into a well-formatted document.",
     ),
   };
 
@@ -276,10 +277,7 @@ export function SelfGenerator({
       <h2 className="mt-3 text-2xl font-semibold tracking-tight">
         {resumeOnly
           ? t("기존 이력서 연결", "Connect your existing resume")
-          : t(
-              "목적에 맞는 문서와 자료 선택",
-              "Choose your document and its sources",
-            )}
+          : t("어떤 문서를 만들까요?", "What would you like to make?")}
       </h2>
       {!resumeOnly && (
         <div
@@ -325,57 +323,55 @@ export function SelfGenerator({
         <div className="space-y-5">
           {resume ? (
             <>
-              <fieldset className="rounded-2xl border border-black/10 p-5">
-                <legend className="px-2 text-sm font-semibold">
-                  {t("1. 이력서 원본 접근", "1. Resume source access")}
+              <fieldset className="resume-source-picker">
+                <legend>
+                  {t("이력서가 있는 저장소", "Your resume repository")}
                 </legend>
-                <p className="mb-4 text-sm leading-6 text-neutral-500">
+                <p className="source-location">github.com/{username}/resume</p>
+                <div className="source-options">
+                  {(["public", "authorized"] as const).map((value) => (
+                    <label
+                      key={value}
+                      data-selected={options.resumeSource === value}
+                    >
+                      <input
+                        type="radio"
+                        name="resume-source"
+                        checked={options.resumeSource === value}
+                        onChange={() =>
+                          setOptions({ ...options, resumeSource: value })
+                        }
+                      />
+                      <span>
+                        {value === "public"
+                          ? t("공개 저장소", "Public repository")
+                          : t("비공개 저장소", "Private repository")}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="source-caption">
                   {t(
-                    `@${username}/resume의 resume.yaml과 연결한 Markdown·이미지만 읽습니다.`,
-                    `Read resume.yaml and its referenced Markdown and images in @${username}/resume.`,
-                  )}
-                </p>
-                {(["public", "authorized"] as const).map((value) => (
-                  <label
-                    key={value}
-                    className="mb-3 flex cursor-pointer items-start gap-3 text-sm"
-                  >
-                    <input
-                      className="mt-1 accent-emerald-800"
-                      type="radio"
-                      name="resume-source"
-                      checked={options.resumeSource === value}
-                      onChange={() =>
-                        setOptions({ ...options, resumeSource: value })
-                      }
-                    />
-                    <span>
-                      {value === "public"
-                        ? t(
-                            "공개 resume 저장소만 읽기",
-                            "Read a public resume repository only",
-                          )
-                        : t(
-                            "내 비공개 resume 저장소도 읽기",
-                            "Also allow my private resume repository",
-                          )}
-                    </span>
-                  </label>
-                ))}
-                <p className="mt-3 text-xs leading-6 text-neutral-500">
-                  {t(
-                    "원본이 비공개여도 작성한 연락처·경력·링크는 문서에 그대로 들어갑니다. 이 선택은 익명화 기능이 아닙니다.",
-                    "Even if the source is private, authored contact details, career history, and links appear in the document. This option does not anonymize them.",
+                    "작성한 경력·프로젝트·연락처를 그대로 담습니다.",
+                    "Your experience, projects, and contact details stay as written.",
                   )}
                 </p>
               </fieldset>
-              <fieldset className="rounded-2xl border border-black/10 p-5">
-                <legend className="px-2 text-sm font-semibold">
+              <details className="generator-extra">
+                <summary>
+                  <span>{t("프로젝트 정보 추가", "Add project details")}</span>
+                  <span>
+                    {options.resumeProjects === "authorized"
+                      ? t("사용 중", "On")
+                      : t("선택 사항", "Optional")}
+                  </span>
+                </summary>
+                <p>
                   {t(
-                    "2. 연결 프로젝트 정보 보강",
-                    "2. Linked-project enrichment",
+                    "기본으로 작성한 내용과 공개 프로젝트 정보를 사용합니다. 비공개 프로젝트의 기술·설명도 가져오려면 켜세요.",
+                    "Your own text and public project details are included by default. Turn this on to also add details from private projects.",
                   )}
-                </legend>
+                </p>
                 <label className="flex cursor-pointer items-start gap-3 text-sm">
                   <input
                     type="checkbox"
@@ -392,18 +388,18 @@ export function SelfGenerator({
                   />
                   <span>
                     {t(
-                      "원본의 repo 필드에 직접 연결한 내 비공개 프로젝트 정보도 사용",
-                      "Use metadata from my private projects explicitly linked in the source’s repo fields",
+                      "연결한 비공개 프로젝트 정보도 가져오기",
+                      "Include linked private project details",
                     )}
                   </span>
                 </label>
-                <p className="mt-3 text-xs leading-6 text-neutral-500">
+                <p className="text-xs">
                   {t(
-                    "끄면 공개 프로젝트 정보만 보강합니다. 켜면 연결한 비공개 프로젝트의 설명·기술 정보·링크를 보강하고 ‘비공개’로 표시합니다. 직접 작성한 문장은 어느 경우에도 유지합니다.",
-                    "When off, enrich from public projects only. When on, add descriptions, technology metadata, and links from referenced private projects, labeled Private. Your authored text is preserved in both cases.",
+                    "이력서에 직접 연결한 프로젝트만 읽습니다. 해당 프로젝트의 이름·설명·링크가 저장 파일에 포함됩니다.",
+                    "Only projects linked in your resume are read. Their names, descriptions, and links will appear in saved files.",
                   )}
                 </p>
-              </fieldset>
+              </details>
             </>
           ) : (
             <fieldset className="space-y-3">
@@ -451,8 +447,8 @@ export function SelfGenerator({
               </h3>
               <p className="mt-2 text-xs leading-6 text-amber-950">
                 {t(
-                  "GitHub OAuth의 repo 권한은 비공개 저장소 읽기·쓰기를 함께 허용합니다. GitHubPrint는 읽기 요청만 수행하며, 문서 생성에는 위에서 선택한 범위만 사용합니다.",
-                  "GitHub OAuth’s repo scope grants both read and write access to private repositories. GitHubPrint makes read requests only and uses the scope selected above for document generation.",
+                  "GitHub는 비공개 저장소의 읽기·쓰기 권한을 함께 요청합니다. GitHubPrint는 선택한 자료를 읽기만 합니다.",
+                  "GitHub requests both read and write permission for private repositories. GitHubPrint only reads the sources you select.",
                 )}
               </p>
               <a
@@ -494,14 +490,14 @@ export function SelfGenerator({
               <p className="mt-2">
                 {sourceState === "ready"
                   ? t(
-                      `@${username}/resume 원본을 읽을 수 있습니다. 아래 ‘${submitLabel}’을 누르면 이력서 미리보기가 열립니다.`,
-                      `@${username}/resume is readable. Select ${submitLabel} below to open your resume preview.`,
+                      "준비됐습니다. 문서를 열어 내용을 확인해 보세요.",
+                      "Ready. Open your document to review it.",
                     )
                   : sourceState === "missing_repo"
                     ? options.resumeSource === "public"
                       ? t(
-                          "공개 resume 저장소를 찾지 못했습니다. 원본이 비공개라면 ‘내 비공개 resume 저장소도 읽기’를 선택하세요.",
-                          "No public resume repository was found. For a private source, select ‘Also allow my private resume repository’.",
+                          "공개 이력서를 찾지 못했습니다. 저장소가 비공개라면 위에서 ‘비공개 저장소’를 선택하세요.",
+                          "No public resume was found. If yours is private, select ‘Private repository’ above.",
                         )
                       : t(
                           "연결한 계정에서 resume 저장소를 찾지 못했거나 접근할 수 없습니다. 저장소 이름·소유 계정과 GitHub의 앱 접근 설정을 확인하세요.",
@@ -725,49 +721,35 @@ export function SelfGenerator({
           ) : null}
         </div>
         <aside
-          className="rounded-2xl bg-neutral-950 p-6 text-white"
-          aria-label={t("생성 전 확인", "Before you generate")}
+          className="generator-preview hidden lg:block"
+          aria-label={t("선택한 템플릿", "Selected template")}
         >
-          <p className="text-[11px] tracking-[0.2em] text-emerald-300">
-            DOCUMENT CONTENTS
-          </p>
-          <h3 className="mt-3 font-serif text-2xl">
-            {t("파일에 들어갈 내용", "What goes into your files")}
-          </h3>
-          <p className="mt-4 text-sm leading-7 text-white/80">
-            {resume
-              ? t(
-                  "원본에 직접 작성한 경력·연락처·프로젝트와 허용한 연결 저장소 정보입니다. 저장소가 비공개라는 이유로 내용을 자동으로 숨기지 않습니다.",
-                  "Your authored career history, contact details, and projects, plus allowed linked-repository metadata. Private storage does not automatically hide its content.",
-                )
-              : choices.find((choice) => choice.value === options.analysisScope)
-                  ?.text}
-          </p>
-          <div className="my-5 border-t border-white/15" />
-          <p className="text-xs leading-6 text-white/60">
-            {t(
-              "PDF · Word · HTML 모두 미리보기와 같은 자료 범위를 사용합니다. 결과에서 내용을 확인한 뒤 저장하세요.",
-              "PDF, Word, and HTML all use the same source selection as the preview. Review the result before saving.",
-            )}
-          </p>
-          {needsPermission ? (
-            <p className="mt-4 text-xs leading-6 text-emerald-200">
+          <div className="generator-preview-paper">
+            <TemplatePreview locale={locale} template={options.template} />
+          </div>
+          <div className="generator-preview-caption">
+            <p>
+              {getTemplateMeta(locale)[options.template].label}
+              <span>PDF · Word · HTML</span>
+            </p>
+            <p>
               {t(
-                "선택한 비공개 데이터는 외부 AI로 보내거나 학습용 기록으로 저장하지 않습니다. 결과는 로그인한 본인에게만 표시됩니다.",
-                "Selected private data is not sent to external AI or saved as learning records. Results are shown only to you while signed in.",
+                "미리보기에서 확인하고, 원하는 형식으로 저장하세요.",
+                "Review your document, then save it in the format you need.",
               )}
             </p>
-          ) : null}
-          {!resume ? (
-            <p className="mt-4 text-xs leading-6 text-white/60">
-              {t(
-                "벤치마크는 공개 자료 기준입니다. 비공개 작업 요약이 경력·성과를 증명하지는 않습니다.",
-                "Benchmarks use public sources. Private-work summaries do not establish career history or outcomes.",
-              )}
-            </p>
-          ) : null}
+          </div>
         </aside>
       </div>
+      {needsPermission ? (
+        <p className="mt-4 text-xs leading-6 text-neutral-500">
+          {t(
+            "선택한 자료만 읽으며, 비공개 내용은 외부 AI로 보내지 않습니다. 결과 페이지는 나만 볼 수 있습니다.",
+            "Only selected sources are read. Private content is not sent to external AI. Your results page is visible only to you.",
+          )}
+        </p>
+      ) : null}
+
       {showGuide && resume ? (
         <div id="resume-setup-guide" className="mt-6 scroll-mt-5">
           <ResumeActivationPanel

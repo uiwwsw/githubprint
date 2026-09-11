@@ -1,16 +1,21 @@
 import type { ReactNode } from "react";
+import type { Locale, TemplateId } from "@/lib/schemas";
+import { formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 export function DocumentShell({
   accent,
   children,
+  template,
 }: {
   accent?: ReactNode;
+  template?: TemplateId;
   children: ReactNode;
 }) {
   return (
     <article
       data-document
+      data-template={template}
       className="document-page mx-auto bg-white p-6 sm:p-12"
     >
       {accent ? <div className="document-meta mb-8">{accent}</div> : null}
@@ -41,6 +46,26 @@ export function MetaRibbon({
       <span className="min-w-0 break-words font-medium text-neutral-800">
         {value}
       </span>
+    </div>
+  );
+}
+
+export function DocumentMasthead({
+  template,
+  generatedAt,
+  locale,
+}: {
+  template: string;
+  generatedAt: string;
+  locale: Locale;
+}) {
+  return (
+    <div className="document-masthead">
+      <p>
+        <strong>GITHUBPRINT</strong>{" "}
+        <span>{template}</span>
+      </p>
+      <p>{formatDate(generatedAt, locale)}</p>
     </div>
   );
 }

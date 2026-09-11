@@ -41,8 +41,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "저장소 설명, README, 기술 구성과 링크를 모아 작업을 살펴볼 출발점을 만듭니다. 결과물의 근거를 직접 확인할 수 있도록 저장소와 서비스 링크를 함께 전달합니다.",
         },
         {
-          title: "활동과 비교 지표의 해석",
-          body: "공개 활동과 비교 지표를 참고 정보로 제공합니다. 데이터가 적거나 해석의 신뢰도가 낮으면 보수적으로 표시하며, 숫자만으로 개발 역량이나 협업 능력을 단정하지 않습니다.",
+          title: "최근 활동과 자료 범위",
+          body: "최근 활동과 사용한 자료 범위를 짧게 정리합니다. 자세한 비교 지표와 작업 패턴 분석은 Insight에서 살펴볼 수 있습니다.",
         },
       ],
       preparation:
@@ -67,8 +67,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "프로젝트 설명과 기술 구성, README나 서비스 링크 등 확인 가능한 자료를 함께 제공합니다. 문서의 설명을 읽은 사람이 실제 코드와 결과물로 이동할 수 있습니다.",
         },
         {
-          title: "강점, 역할 적합성, 해석의 한계",
-          body: "프로젝트에서 드러난 기술적 특징을 바탕으로 강점과 어울리는 역할을 정리합니다. 공개 GitHub 정보만으로 재직 기간, 팀 리더십, 협업 성과를 증명할 수는 없다는 점을 함께 안내합니다.",
+          title: "사용 기술과 작업 특징",
+          body: "사용 기술과 프로젝트에서 확인되는 특징을 간결하게 정리합니다. 프로젝트 설명을 먼저 읽고, 구현한 코드와 결과물로 자연스럽게 이어갈 수 있습니다.",
         },
       ],
       preparation:
@@ -147,8 +147,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "Repository descriptions, README information, technical details, and product links provide starting points for exploring the work. Readers can follow the original sources rather than relying only on the generated description.",
         },
         {
-          title: "Activity and comparative context",
-          body: "Public activity and peer comparisons are supporting information. Small samples or lower confidence produce more conservative labels. A repository metric does not establish collaboration skills or overall engineering ability.",
+          title: "Recent activity and sources",
+          body: "Recent activity and source coverage provide concise context. Choose Insight for detailed comparisons and work-pattern analysis.",
         },
       ],
       preparation:
@@ -173,8 +173,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "Selected projects include descriptions, technologies, and available repository or product links. The document gives readers a route from a high-level overview to the actual code and output.",
         },
         {
-          title: "Strengths, role fit, and limitations",
-          body: "Technical patterns help describe potential strengths and suitable areas of work. Public GitHub records alone cannot prove employment duration, team leadership, collaboration quality, or business impact; the document explains those limits.",
+          title: "Technologies and work patterns",
+          body: "Technologies and observable project features are summarized concisely. Start with the project descriptions, then follow the links to inspect the code and output.",
         },
       ],
       preparation:

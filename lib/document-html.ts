@@ -54,7 +54,7 @@ export const DOCUMENT_TAGS = new Set([
   "code",
 ]);
 const SAFE_ATTRIBUTES =
-  /^(class|id|title|role|alt|width|height|datetime|start|colspan|rowspan|aria-label|aria-hidden|data-document|data-document-group|data-document-fact)$/;
+  /^(class|id|title|role|alt|width|height|datetime|start|colspan|rowspan|aria-label|aria-hidden|data-document|data-document-group|data-document-fact|data-template)$/;
 export const escapeDocumentHtml = (text: string) =>
   text.replace(
     /[&<>"']/g,

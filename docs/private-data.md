@@ -33,6 +33,8 @@ Use anonymous summaries when public activity understates private implementation 
 
 ## Resume source checks and access recovery
 
+Resume starts with a compact public/private choice for the `resume` repository. Optional linked-project enrichment is collapsed under “Add project details” and stays off by default. Expanding or collapsing it does not change the setting; an enabled setting remains visible in the summary. The source storage choice never enables project enrichment on its own.
+
 The generator checks `resume.yaml` and its referenced authored content through the authenticated, same-origin `POST /api/resume-readiness` endpoint. The request specifies public or authorized source access; public mode never probes a private source, and the check never enriches linked private projects. Responses contain readiness metadata rather than the document or tokens and use `private, no-store`.
 
 A readable source enables the single document-generation action next to the source controls. Reconnect links appear only for actual authentication/access failures. Missing public sources explain the private-source choice; malformed YAML opens preparation help; temporary failures and rate limits offer a source retry. Changing source options cancels the previous check, and stale replies cannot overwrite the current selection.

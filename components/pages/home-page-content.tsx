@@ -67,10 +67,16 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
             </h1>
             <p className="studio-description">{copy.description}</p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
+              {session ? (
+                <a className="studio-cta" href="#generator">
+                  {locale === "ko" ? "내 문서 만들기" : "Create my document"}
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ) : null}
               {!session && hasGitHubOAuthConfig() ? (
                 <a
                   className="studio-cta"
-                  href={buildGitHubLoginPath(`${prefix}/`)}
+                  href={buildGitHubLoginPath(`${prefix}/#generator`)}
                 >
                   {dict.home.authSignIn}
                   <span aria-hidden="true">↗</span>
@@ -78,7 +84,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
               ) : null}
               <Link
                 className={
-                  !session && hasGitHubOAuthConfig()
+                  session || hasGitHubOAuthConfig()
                     ? "text-sm text-neutral-600 underline underline-offset-4"
                     : "studio-cta"
                 }
