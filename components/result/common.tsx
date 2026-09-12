@@ -1,12 +1,8 @@
 import type { ReactNode } from "react";
-import {
-  formatBenchmarkRankLabel,
-  getBenchmarkInterpretationNote,
-} from "@/lib/benchmark-presentation";
 import { getDictionary } from "@/lib/i18n";
 import type {
   AuthorizedPrivateInsights,
-  BenchmarkSnapshot,
+  EvidenceReview,
   ContributionSummary,
   DataMode,
   GitHubPrintAnalysis,
@@ -136,90 +132,73 @@ export function FactGrid({
   );
 }
 
-export function BenchmarkSnapshotBlock({
-  benchmark,
+export function EvidenceReviewBlock({
+  evidenceReview,
   locale,
-  showInsight = true,
 }: {
-  benchmark: BenchmarkSnapshot;
+  evidenceReview: EvidenceReview;
   locale: Locale;
-  showInsight?: boolean;
 }) {
-  const dict = getDictionary(locale);
-  const interpretationNote = getBenchmarkInterpretationNote({
-    confidenceScore: benchmark.confidenceScore,
-    sampleSize: benchmark.sampleSize,
-    locale,
-  });
-
+  const copy = getDictionary(locale).common;
+  const { reviewedRepoCount, items, scopeNote } = evidenceReview;
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <FactCard
-          label={dict.common.benchmarkOverall}
-          value={formatBenchmarkRankLabel({
-            percentile: benchmark.overallPercentile,
-            confidenceScore: benchmark.confidenceScore,
-            sampleSize: benchmark.sampleSize,
-            locale,
-          })}
-        />
-        <FactCard
-          label={dict.common.confidenceLabel}
-          value={`${benchmark.confidenceScore}/100`}
-        />
-        <FactCard
-          label={dict.common.cohortLabel}
-          value={benchmark.cohortLabel}
-        />
-        <FactCard
-          label={dict.common.sampleSizeLabel}
-          value={formatNumber(benchmark.sampleSize, locale)}
-        />
-      </div>
-      {showInsight ? (
-        <p className="text-sm leading-7 text-neutral-600">
-          {benchmark.insight}
-        </p>
-      ) : null}
-      {interpretationNote ? (
-        <p className="text-sm leading-6 text-neutral-500">
-          {interpretationNote}
-        </p>
-      ) : null}
-      <div className="benchmark-metrics space-y-3">
-        {benchmark.metrics.map((metric) => (
-          <div
-            className="rounded-[1.1rem] border border-black/[0.08] bg-black/[0.025] p-4"
-            data-document-group
-            key={metric.id}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-medium text-neutral-900">
-                {metric.label}
+    <div className="space-y-4" data-evidence-review>
+      <p className="text-sm font-medium text-neutral-700">
+        {locale === "ko"
+          ? `검토한 공개 프로젝트 ${formatNumber(reviewedRepoCount, locale)}개에서 찾은 자료`
+          : `Materials found across ${formatNumber(reviewedRepoCount, locale)} reviewed public ${reviewedRepoCount === 1 ? "project" : "projects"}`}
+      </p>
+      {reviewedRepoCount === 0 ? (
+        <p className="text-sm text-neutral-600">{copy.reviewEmpty}</p>
+      ) : (
+        <div className="evidence-review-items">
+          {items.map((item) => (
+            <div data-document-group key={item.id}>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-medium text-neutral-900">
+                  {item.label}
+                </p>
+                <span className="text-sm font-medium text-neutral-700">
+                  {locale === "ko"
+                    ? `${item.count}개 프로젝트`
+                    : `${item.count} ${item.count === 1 ? "project" : "projects"}`}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-neutral-600">
+                {item.count > 0 ? item.note : copy.reviewNotObserved}
               </p>
-              <span className="rounded-full border border-black/[0.08] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-neutral-500">
-                {formatBenchmarkRankLabel({
-                  percentile: metric.percentile,
-                  confidenceScore: benchmark.confidenceScore,
-                  sampleSize: benchmark.sampleSize,
-                  locale,
-                })}
-              </span>
+              {item.evidence.length > 0 ? (
+                <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-600">
+                  {item.evidence.slice(0, 2).map((evidence) => (
+                    <li key={`${evidence.name}:${evidence.url}`}>
+                      <a
+                        href={evidence.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {evidence.name}
+                      </a>
+                      {` · ${evidence.detail}`}
+                    </li>
+                  ))}
+                  {item.evidence.length > 2 ? (
+                    <li>
+                      {locale === "ko"
+                        ? `외 ${item.evidence.length - 2}개 프로젝트`
+                        : `Plus ${item.evidence.length - 2} more ${item.evidence.length === 3 ? "project" : "projects"}`}
+                    </li>
+                  ) : null}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm leading-6 text-neutral-600">
+                  {item.nextStep}
+                </p>
+              )}
             </div>
-            <p className="mt-2 text-sm leading-6 text-neutral-600">
-              {metric.note}
-            </p>
-            {metric.evidence.length > 0 ? (
-              <ul className="mt-3 space-y-1.5 text-sm leading-6 text-neutral-500">
-                {metric.evidence.slice(0, 2).map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+      <p className="text-sm leading-6 text-neutral-500">{scopeNote}</p>
     </div>
   );
 }
@@ -251,8 +230,8 @@ export function PublicDataScope({
         <p>
           {dataMode === "private_enriched"
             ? locale === "ko"
-              ? "공개 자료와 선택한 비공개 작업을 반영했습니다. 비교 지표는 공개 자료 기준입니다."
-              : "Includes public sources and selected private work. Comparisons use public sources."
+              ? "공개 자료와 선택한 비공개 작업을 반영했습니다. 프로젝트 자료 목록은 공개 자료 기준입니다."
+              : "Includes public sources and selected private work. The project evidence review uses public sources."
             : locale === "ko"
               ? "공개 프로필과 저장소의 설명·기술·활동을 바탕으로 작성했습니다."
               : "Based on the public profile and repository descriptions, technologies, and activity."}

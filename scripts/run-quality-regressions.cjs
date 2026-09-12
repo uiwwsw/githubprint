@@ -79,7 +79,7 @@ function writeReports(results) {
     "",
     `Generated at: ${new Date().toISOString()}`,
     "",
-    "| Case | Orientation | Score | Cohort | Confidence | Top working styles | Result |",
+    "| Case | Orientation | Score | Reviewed projects | Confidence | Top working styles | Result |",
     "| --- | --- | ---: | --- | ---: | --- | --- |",
   ];
 
@@ -88,7 +88,7 @@ function writeReports(results) {
       .map((item) => `${item.id} (${item.score})`)
       .join(", ");
     lines.push(
-      `| ${result.id} | ${result.primaryOrientation ?? "-"} | ${result.primaryOrientationScore} | ${result.cohortId} | ${result.confidence} | ${styles} | ${result.ok ? "pass" : "fail"} |`,
+      `| ${result.id} | ${result.primaryOrientation ?? "-"} | ${result.primaryOrientationScore} | ${result.reviewedRepoCount} | ${result.confidence} | ${styles} | ${result.ok ? "pass" : "fail"} |`,
     );
   });
 
@@ -99,14 +99,17 @@ function main() {
   registerRuntime();
 
   const { profileEngineConfig } = require("../lib/data-loader.ts");
-  const { buildBenchmarkSnapshot } = require("../lib/benchmark.ts");
+  const { buildEvidenceReview } = require("../lib/evidence-review.ts");
   const { regressionCases } = require("../fixtures/regression-cases.ts");
   const { buildRuleBasedAnalysis } = require("../lib/narrative-writer.ts");
   const { extractProfileFeatures } = require("../lib/profile-features.ts");
   const { scoreProfile } = require("../lib/rule-engine.ts");
 
   const results = regressionCases.map((testCase) => {
-    const featureSet = extractProfileFeatures(testCase.source, profileEngineConfig);
+    const featureSet = extractProfileFeatures(
+      testCase.source,
+      profileEngineConfig,
+    );
     const scoringKo = scoreProfile(
       testCase.source,
       featureSet,
@@ -119,18 +122,8 @@ function main() {
       profileEngineConfig,
       "en",
     );
-    const benchmarkKo = buildBenchmarkSnapshot(
-      testCase.source,
-      featureSet,
-      scoringKo,
-      "ko",
-    );
-    const benchmarkEn = buildBenchmarkSnapshot(
-      testCase.source,
-      featureSet,
-      scoringEn,
-      "en",
-    );
+    const reviewKo = buildEvidenceReview(testCase.source, "ko");
+    const reviewEn = buildEvidenceReview(testCase.source, "en");
     const analysisKo = buildRuleBasedAnalysis(
       testCase.source,
       scoringKo,
@@ -148,8 +141,12 @@ function main() {
     const primaryOrientation = scoringKo.primaryOrientation;
 
     assertCondition(
-      benchmarkKo.cohortId === expectation.cohortId,
-      `expected cohort ${expectation.cohortId}, received ${benchmarkKo.cohortId}`,
+      reviewKo.items.every(
+        (item) =>
+          item.count === item.evidence.length &&
+          item.count <= reviewKo.reviewedRepoCount,
+      ),
+      "expected evidence counts to match source records",
       failures,
     );
 
@@ -163,7 +160,8 @@ function main() {
 
     if (typeof expectation.minPrimaryOrientationScore === "number") {
       assertCondition(
-        (primaryOrientation?.score ?? 0) >= expectation.minPrimaryOrientationScore,
+        (primaryOrientation?.score ?? 0) >=
+          expectation.minPrimaryOrientationScore,
         `expected primary orientation score >= ${expectation.minPrimaryOrientationScore}, received ${primaryOrientation?.score ?? 0}`,
         failures,
       );
@@ -171,7 +169,8 @@ function main() {
 
     if (typeof expectation.maxPrimaryOrientationScore === "number") {
       assertCondition(
-        (primaryOrientation?.score ?? 0) <= expectation.maxPrimaryOrientationScore,
+        (primaryOrientation?.score ?? 0) <=
+          expectation.maxPrimaryOrientationScore,
         `expected primary orientation score <= ${expectation.maxPrimaryOrientationScore}, received ${primaryOrientation?.score ?? 0}`,
         failures,
       );
@@ -253,14 +252,13 @@ function main() {
       failures,
     );
     assertCondition(
-      Boolean(benchmarkEn.insight.trim()),
-      "expected English benchmark insight to be non-empty",
+      Boolean(reviewEn.scopeNote.trim()),
+      "expected English evidence review scope to be non-empty",
       failures,
     );
 
     return {
-      benchmarkInsight: benchmarkKo.insight,
-      cohortId: benchmarkKo.cohortId,
+      reviewedRepoCount: reviewKo.reviewedRepoCount,
       confidence: scoringKo.confidence,
       description: testCase.description,
       failures,
@@ -279,7 +277,7 @@ function main() {
   console.table(
     results.map((result) => ({
       case: result.id,
-      cohort: result.cohortId,
+      reviewed: result.reviewedRepoCount,
       confidence: result.confidence,
       orientation: result.primaryOrientation ?? "-",
       score: result.primaryOrientationScore,

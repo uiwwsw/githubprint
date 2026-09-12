@@ -115,9 +115,8 @@ type Dictionary = {
     factDocumentedPrivateRepos: string;
     factVerifiedPrivateRepos: string;
     factAutomatedPrivateRepos: string;
-    benchmarkOverall: string;
-    confidenceLabel: string;
-    cohortLabel: string;
+    reviewEmpty: string;
+    reviewNotObserved: string;
     repoUnit: string;
     followerUnit: string;
     privateInsightsTitle: string;
@@ -131,7 +130,6 @@ type Dictionary = {
     signedInActivityTitle: string;
     signedInActivityHint: string;
     signedInActivityWindow: string;
-    sampleSizeLabel: string;
     noProjects: string;
     repoLink: string;
     liveLink: string;
@@ -161,7 +159,7 @@ type Dictionary = {
         projects: string;
         type: string;
         workingStyle: string;
-        benchmark: string;
+        evidenceReview: string;
         bestFit: string;
         evidence: string;
         dataScope: string;
@@ -181,7 +179,7 @@ type Dictionary = {
         workingStyle: string;
         projects: string;
         tech: string;
-        benchmark: string;
+        evidenceReview: string;
         strengths: string;
         bestFit: string;
         evidence: string;
@@ -205,7 +203,7 @@ type Dictionary = {
         roles: string;
         projectReading: string;
         evidence: string;
-        benchmark: string;
+        evidenceReview: string;
         dataScope: string;
         tech: string;
       };
@@ -296,7 +294,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         repositories:
           "공개 저장소와 직접 선택한 비공개 저장소의 README, topic, 최근 업데이트, 일부 루트 파일, 최근 커밋 메시지를 사용합니다. 다른 비공개 저장소 내용은 읽지 않습니다.",
         limits:
-          "벤치마크는 공개 자료만 사용합니다. 선택한 비공개 작업은 외부 AI나 학습 기록에 전송하지 않으며, 경력·협업 능력·비즈니스 성과를 단정하지 않습니다.",
+          "프로젝트 자료 목록은 공개 자료만 사용합니다. 선택한 비공개 작업은 외부 AI나 학습 기록에 전송하지 않으며, 경력·협업 능력·비즈니스 성과를 단정하지 않습니다.",
       },
     },
     result: {
@@ -354,9 +352,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       factDocumentedPrivateRepos: "문서 흔적 있는 비공개",
       factVerifiedPrivateRepos: "검증 흔적 있는 비공개",
       factAutomatedPrivateRepos: "자동화 흔적 있는 비공개",
-      benchmarkOverall: "유사한 개발자군 비교",
-      confidenceLabel: "분석 신뢰도",
-      cohortLabel: "비교 집단",
+      reviewEmpty:
+        "이번 조회에서 검토할 공개 프로젝트를 찾지 못했습니다. 공개 작업이 없다는 뜻은 아닙니다.",
+      reviewNotObserved:
+        "이번 조회 범위에서는 확인되지 않았습니다. 자료가 없다는 뜻은 아닙니다.",
       repoUnit: "개",
       followerUnit: "명",
       privateInsightsTitle: "선택한 비공개 작업",
@@ -373,7 +372,6 @@ const dictionaries: Record<Locale, Dictionary> = {
       signedInActivityHint:
         "로그인한 본인 계정일 때만 읽을 수 있는 최근 1년 GitHub 활동 통계입니다.",
       signedInActivityWindow: "기준 기간",
-      sampleSizeLabel: "표본 수",
       noProjects: "대표 프로젝트로 볼 만한 공개 저장소가 충분하지 않습니다.",
       repoLink: "저장소 링크",
       liveLink: "서비스 링크",
@@ -399,7 +397,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         shortLabel: "분석 리포트",
         description: "반복되는 기술 선택과 작업 패턴을 읽는 리포트.",
         emphasis:
-          "작업 패턴과 비교 지표를 함께 살펴보며 다음 방향을 생각해 보세요.",
+          "작업 패턴과 실제 자료를 살펴보고, 프로젝트 소개를 더 풍부하게 만들어 보세요.",
       },
       resume: {
         label: "Resume",
@@ -423,7 +421,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           projects: "대표 프로젝트",
           type: "개발자 유형",
           workingStyle: "작업 방식",
-          benchmark: "벤치마크 요약",
+          evidenceReview: "프로젝트를 뒷받침하는 자료",
           bestFit: "살펴볼 분야",
           evidence: "판단 근거",
           dataScope: "분석에 반영한 GitHub 데이터",
@@ -443,7 +441,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           workingStyle: "작업 방식",
           projects: "대표 프로젝트",
           tech: "핵심 기술",
-          benchmark: "유사한 개발자군 기준",
+          evidenceReview: "프로젝트를 뒷받침하는 자료",
           strengths: "대표 강점",
           bestFit: "살펴볼 분야",
           evidence: "판단 근거",
@@ -467,7 +465,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           roles: "살펴볼 분야",
           projectReading: "프로젝트 읽기",
           evidence: "판단 근거",
-          benchmark: "벤치마크 해석",
+          evidenceReview: "프로젝트를 뒷받침하는 자료",
           dataScope: "분석에 반영한 GitHub 데이터 범위",
           tech: "기술 흐름",
         },
@@ -555,7 +553,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         repositories:
           "Uses public repositories and explicitly selected private repositories: README, topics, update recency, some root files, and recent commit messages. Other private repository contents are not read.",
         limits:
-          "Benchmarks use only public sources. Selected private work is not sent to external AI or learning records, and tenure, collaboration quality, and business impact are not asserted.",
+          "The project evidence review uses only public sources. Selected private work is not sent to external AI or learning records, and tenure, collaboration quality, and business impact are not asserted.",
       },
     },
     result: {
@@ -616,9 +614,10 @@ const dictionaries: Record<Locale, Dictionary> = {
       factDocumentedPrivateRepos: "Documented private repos",
       factVerifiedPrivateRepos: "Verified private repos",
       factAutomatedPrivateRepos: "Automated private repos",
-      benchmarkOverall: "Peer benchmark",
-      confidenceLabel: "Confidence",
-      cohortLabel: "Cohort",
+      reviewEmpty:
+        "No public projects were available to review in this request. This does not establish an absence of public work.",
+      reviewNotObserved:
+        "Not observed in the fetched material. This does not establish that the material is absent.",
       repoUnit: "",
       followerUnit: "",
       privateInsightsTitle: "Selected private work",
@@ -637,7 +636,6 @@ const dictionaries: Record<Locale, Dictionary> = {
       signedInActivityHint:
         "These last-12-month GitHub activity counts are available only for the signed-in user's own account.",
       signedInActivityWindow: "Window",
-      sampleSizeLabel: "Sample size",
       noProjects:
         "There are not enough public repository signals to interpret standout projects.",
       repoLink: "GitHub repo",
@@ -667,7 +665,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         description:
           "A report on recurring technical choices and work patterns.",
         emphasis:
-          "Explore work patterns and comparison metrics to consider what comes next.",
+          "Explore work patterns and source materials to give your projects more context.",
       },
       resume: {
         label: "Resume",
@@ -691,7 +689,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           projects: "Selected projects",
           type: "Developer type",
           workingStyle: "Working style",
-          benchmark: "Benchmark snapshot",
+          evidenceReview: "Evidence behind the projects",
           bestFit: "Areas to explore",
           evidence: "Evidence",
           dataScope: "GitHub data used",
@@ -711,7 +709,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           workingStyle: "Working style",
           projects: "Selected projects",
           tech: "Core stack",
-          benchmark: "Peer benchmark",
+          evidenceReview: "Evidence behind the projects",
           strengths: "Key strengths",
           bestFit: "Areas to explore",
           evidence: "Evidence",
@@ -735,7 +733,7 @@ const dictionaries: Record<Locale, Dictionary> = {
           roles: "Areas to explore",
           projectReading: "Project reading",
           evidence: "Evidence",
-          benchmark: "Benchmark reading",
+          evidenceReview: "Evidence behind the projects",
           dataScope: "GitHub data used",
           tech: "Technology throughline",
         },

@@ -37,7 +37,7 @@ GitHubPrint turns GitHub evidence into a readable developer document for sharing
 - Analysis: OpenAI when available, schema-validated fallback otherwise
 - Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
 
-Each template serves a different reading task: Brief introduces two selected projects, Profile puts project case studies first, Insight separates observed patterns from comparison metrics, and Resume preserves authored experience and section order. PDF, offline HTML, and editable Word capture the selected template's layout, typography, and colors. Word pagination can vary with the editor's font metrics.
+Each template serves a different reading task: Brief introduces two selected projects, Profile puts project case studies first, Insight separates observed patterns from project evidence, and Resume preserves authored experience and section order. PDF, offline HTML, and editable Word capture the selected template's layout, typography, and colors. Word pagination can vary with the editor's font metrics.
 
 Automatic introductions cite the repositories and technologies behind each description. A specialty needs supporting implementation signals in at least two distinct, non-fork repositories; topic labels or popularity alone are insufficient. Work-pattern descriptions refer to actual README, project-link, test, or workspace evidence. Both AI and fallback output preserve these grounded identity fields, while authored Resume text remains under the author's control. Wording and evidence thresholds live in `data/templates/introductions.json`.
 
@@ -69,7 +69,7 @@ Current product limits:
 ### Features
 
 - Three inference templates plus one `resume` repo-driven template
-- Cohort benchmark snapshot for activity, documentation, publication, quality, portfolio clarity, and specialization clarity
+- Source-linked review of READMEs, project links, test setups, and profile pins; no peer rankings or ability scores
 - Server-side GitHub URL normalization and public data collection
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
@@ -120,7 +120,7 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 ### 주요 기능
 
 - 같은 분석 데이터를 쓰는 세 가지 추론형 템플릿과, `resume` 레포 기반 이력서 템플릿 제공
-- 활동성, 문서화, 외부 공개, 검증 흔적, 포트폴리오 선명도, 전문성 선명도를 보여주는 벤치마크 스냅샷
+- README, 프로젝트 링크, 테스트 구성, 프로필 고정 여부를 출처와 함께 보여주는 자료 목록 · 순위나 능력 점수 없음
 - 서버 측 GitHub URL 정규화 및 공개 데이터 수집
 - AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
@@ -146,7 +146,7 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 | `data/signals/`                                  | Signal definitions for languages, topics, files, and commit patterns              |
 | `data/repo-identity/`                            | JSON rules for contributor-editable stack, framework, and project-type inference  |
 | `data/rules/`                                    | Scoring rules for orientation, working style, strengths, and role fit             |
-| `lib/benchmark.ts`                               | Cohort benchmark comparison                                                       |
+| `lib/evidence-review.ts`                               | Project evidence inventory                                                       |
 | `lib/seo.ts`                                     | Canonical metadata, alternates, sitemap, and robots rules                         |
 
 ## Tech Stack
@@ -201,7 +201,6 @@ Repository identity inference is intentionally data-driven.
 | `NEXT_PUBLIC_SITE_URL`                | Optional    | Canonical origin for metadata and Open Graph tags           |
 | `GITHUBPRINT_USE_FIXTURE`             | Optional    | Enables local fixture mode for UI work                      |
 | `GITHUBPRINT_CAPTURE_INSIGHTS`        | Optional    | Captures internal scoring snapshots for tuning              |
-| `GITHUBPRINT_BENCHMARK_OVERRIDE_PATH` | Optional    | Loads an aggregated benchmark JSON during local testing     |
 
 For the GitHub OAuth App used by signed-in self mode:
 
@@ -280,3 +279,5 @@ Run `npm run test:seo:browser` for crawler and social-image checks. See [SEO con
 ### Private sources
 
 Public-only is the default, even after sign-in. Brief, Profile, and Insight can optionally summarize or display up to three selected private projects. Resume separates private source storage from explicitly linked project enrichment. See [private data choices and verification](docs/private-data.md).
+
+Percentile rankings have been removed. See [the evidence review and ranking audit](docs/evidence-review.md) for the source limitations, replacement behavior, and verification.

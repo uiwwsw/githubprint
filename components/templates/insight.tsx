@@ -7,7 +7,7 @@ import {
   ProjectList,
   PublicDataScope,
   SectionBlock,
-  BenchmarkSnapshotBlock,
+  EvidenceReviewBlock,
 } from "@/components/result/common";
 import {
   DocumentShell,
@@ -16,7 +16,7 @@ import {
 import { composeInsightTemplateView } from "@/lib/template-composers";
 import type {
   AuthorizedPrivateInsights,
-  BenchmarkSnapshot,
+  EvidenceReview,
   ContributionSummary,
   DataMode,
   GitHubPrintAnalysis,
@@ -26,7 +26,7 @@ import type {
 export function InsightTemplate({
   analysis,
   authorizedPrivateInsights,
-  benchmark,
+  evidenceReview,
   contributionSummary,
   dataMode,
   generatedAt,
@@ -36,7 +36,7 @@ export function InsightTemplate({
 }: {
   analysis: GitHubPrintAnalysis;
   authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
-  benchmark: BenchmarkSnapshot;
+  evidenceReview: EvidenceReview;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
@@ -46,7 +46,7 @@ export function InsightTemplate({
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
-  const view = composeInsightTemplateView(analysis, benchmark, locale);
+  const view = composeInsightTemplateView(analysis, evidenceReview, locale);
   return (
     <DocumentShell
       template="insight"
@@ -78,14 +78,10 @@ export function InsightTemplate({
         <EditorialList items={analysis.inferred.strengths.slice(0, 3)} />
       </SectionBlock>
       <SectionBlock
-        title={dict.templates.insight.sections.benchmark}
-        eyebrow="02 / CONTEXT"
+        title={dict.templates.insight.sections.evidenceReview}
+        eyebrow="02 / PROJECT EVIDENCE"
       >
-        <BenchmarkSnapshotBlock
-          benchmark={benchmark}
-          locale={locale}
-          showInsight={false}
-        />
+        <EvidenceReviewBlock evidenceReview={evidenceReview} locale={locale} />
       </SectionBlock>
       <SectionBlock
         title={dict.templates.insight.sections.projectReading}

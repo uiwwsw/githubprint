@@ -115,9 +115,9 @@ export function TemplatePreview({
             {lines}
           </div>
           <div className="mini-section">
-            <b>{ko ? "02 / 비교 지표" : "02 / CONTEXT"}</b>
+            <b>{ko ? "02 / 근거 자료" : "02 / EVIDENCE"}</b>
             <div className="mini-metrics">
-              {["ACTIVITY", "DOCS", "TESTS", "STRUCTURE"].map((label) => (
+              {["README", "LINKS", "TESTS", "PINNED"].map((label) => (
                 <div key={label}>
                   <span>{label}</span>
                   <i />

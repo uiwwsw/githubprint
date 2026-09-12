@@ -28,8 +28,8 @@ export function DataUseReceipt({
           ? "공개 프로필과 공개 저장소만 사용했습니다. 비공개 저장소는 읽지 않았습니다."
           : "Used only your public profile and public repositories. Private repositories were not read."
         : ko
-          ? `선택한 비공개 저장소 ${privateCount}개 · ${options.analysisScope === "private-details" ? "이름·설명·링크 포함" : "익명 집계만 포함"}. 벤치마크는 공개 자료 기준이며, 비공개 데이터는 외부 AI와 학습 기록에 전달하지 않았습니다.`
-          : `${privateCount} selected private repositories · ${options.analysisScope === "private-details" ? "names, descriptions, and links included" : "anonymous aggregates only"}. Benchmarks use public evidence. Private data was not sent to external AI or learning records.`;
+          ? `선택한 비공개 저장소 ${privateCount}개 · ${options.analysisScope === "private-details" ? "이름·설명·링크 포함" : "익명 집계만 포함"}. 프로젝트 자료 목록은 공개 자료 기준이며, 비공개 데이터는 외부 AI와 학습 기록에 전달하지 않았습니다.`
+          : `${privateCount} selected private repositories · ${options.analysisScope === "private-details" ? "names, descriptions, and links included" : "anonymous aggregates only"}. The project evidence review uses public evidence. Private data was not sent to external AI or learning records.`;
   return (
     <section
       className="screen-only mx-auto max-w-[210mm] rounded-xl border border-emerald-900/15 bg-emerald-50/70 px-5 py-4"

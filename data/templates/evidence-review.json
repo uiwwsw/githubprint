@@ -1,0 +1,54 @@
+{
+  "ko": {
+    "scopeNote": "선정된 공개 프로젝트의 README, 등록 링크, 조회된 최상위 파일과 프로필 고정 여부를 확인했습니다. 일부 자료만 조회하므로 확인되지 않은 항목도 실제로는 존재할 수 있습니다. 비공개 프로젝트와 포크는 이 목록에서 제외합니다.",
+    "linkLabel": "등록된 프로젝트 링크",
+    "items": {
+      "readme": {
+        "label": "프로젝트 소개",
+        "note": "README 본문을 읽을 수 있는 프로젝트입니다. 설명의 완성도나 정확성을 평가한 수치는 아닙니다.",
+        "nextStep": "소개를 보완하려면 README에 프로젝트의 목적, 실행 방법, 본인이 구현한 내용을 담아 보세요."
+      },
+      "links": {
+        "label": "결과물로 가는 링크",
+        "note": "저장소에 등록된 웹 주소입니다. 서비스 동작이나 배포 상태는 확인하지 않았습니다.",
+        "nextStep": "결과물을 보여주려면 저장소의 Website에 데모, 문서 또는 패키지 페이지를 연결해 보세요."
+      },
+      "tests": {
+        "label": "테스트 구성",
+        "note": "조회된 파일 목록에서 테스트 설정 또는 디렉터리를 찾았습니다. 테스트 통과나 코드 품질을 뜻하지는 않습니다.",
+        "nextStep": "검증 방법을 전달하려면 README에 테스트 실행 명령과 실제 실행 결과를 함께 남겨 보세요."
+      },
+      "pinned": {
+        "label": "먼저 보여줄 프로젝트",
+        "note": "GitHub 프로필에 고정된 프로젝트입니다. 독자가 먼저 살펴볼 작업을 선택한 기록입니다.",
+        "nextStep": "먼저 보여줄 작업이 있다면 GitHub 프로필의 Customize your pins에서 선택해 보세요."
+      }
+    }
+  },
+  "en": {
+    "scopeNote": "Checked READMEs, registered links, fetched root paths, and profile pins for selected public projects. Only part of each repository is fetched, so unobserved items may still exist. Private projects and forks are excluded from this list.",
+    "linkLabel": "Registered project link",
+    "items": {
+      "readme": {
+        "label": "Project introductions",
+        "note": "Projects with readable README content. This count does not assess the completeness or accuracy of the explanation.",
+        "nextStep": "To add context, describe the purpose, setup steps, and your own implementation in the README."
+      },
+      "links": {
+        "label": "Links to explore",
+        "note": "Web addresses registered on repositories. Service availability and deployment status have not been checked.",
+        "nextStep": "To show the output, add a demo, documentation, or package page to the repository Website field."
+      },
+      "tests": {
+        "label": "Test setup",
+        "note": "Fetched root paths include a test configuration or directory. This does not establish passing tests or code quality.",
+        "nextStep": "To explain verification, include test commands and actual run results in the README."
+      },
+      "pinned": {
+        "label": "Work to explore first",
+        "note": "Projects pinned to the GitHub profile, recording the work selected for readers to explore first.",
+        "nextStep": "To highlight selected work, use Customize your pins on the GitHub profile."
+      }
+    }
+  }
+}

@@ -27,6 +27,19 @@ for (const locale of ["ko", "en"] as const) {
       expect(response?.status()).toBe(200);
       await expect(page.locator("[data-document]")).toBeVisible();
       await page.evaluate(() => document.fonts.ready);
+      if (template !== "resume") {
+        await expect(page.locator("[data-document]")).not.toContainText(
+          /상위\s*\d|Top\s*\d+%|비교 집단|Peer benchmark|\d+\/100/,
+        );
+      }
+      if (template === "insight") {
+        await expect(page.locator("[data-evidence-review]")).toContainText(
+          locale === "ko" ? "검토한 공개 프로젝트" : "reviewed public",
+        );
+        await expect(
+          page.locator("[data-evidence-review] a").first(),
+        ).toHaveAttribute("href", /^https:\/\//);
+      }
       const expectedText = await page
         .locator("[data-document]")
         .evaluate((root) => {
@@ -123,11 +136,15 @@ for (const locale of ["ko", "en"] as const) {
       if (template === "brief") {
         // The fixed example is a concise introduction; its notes must not spill onto page two.
         expect(await page.locator(".document-project").count()).toBe(2);
-        expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
+        expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(
+          1,
+        );
       }
       if (template === "insight") {
         // Named introduction evidence must not leave only the source notes on a fourth page.
-        expect((pdf.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length).toBeLessThanOrEqual(3);
+        expect(
+          (pdf.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length,
+        ).toBeLessThanOrEqual(3);
       }
       await page.screenshot({
         path: path.join(output, `${filename}-screen.png`),

@@ -42,7 +42,7 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
         },
         {
           title: "최근 활동과 자료 범위",
-          body: "최근 활동과 사용한 자료 범위를 짧게 정리합니다. 자세한 비교 지표와 작업 패턴 분석은 Insight에서 살펴볼 수 있습니다.",
+          body: "최근 활동과 사용한 자료 범위를 짧게 정리합니다. 프로젝트별 근거 자료와 작업 패턴 분석은 Insight에서 살펴볼 수 있습니다.",
         },
       ],
       preparation:
@@ -93,8 +93,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "각 프로젝트가 전체 활동에서 어떤 특징을 보여주는지 설명합니다. 단순히 사용하는 언어를 세는 대신, 확인 가능한 결과물과 문서화 흔적을 함께 살펴볼 수 있습니다.",
         },
         {
-          title: "비교 지표와 데이터 범위",
-          body: "유사한 공개 GitHub 기록과 비교한 지표를 해석의 보조 자료로 제공합니다. 표본과 신뢰도에 따라 보수적인 표현을 사용하며, 데이터에 없는 경력이나 비즈니스 성과를 만들어 내지 않습니다.",
+          title: "프로젝트를 뒷받침하는 자료",
+          body: "선정된 공개 프로젝트에서 README, 등록된 웹 링크, 테스트 구성, 프로필 고정 여부를 확인합니다. 각 항목의 프로젝트 수와 출처를 보여 주며, 발견하지 못한 자료를 보완하는 방법도 안내합니다. 조회 범위를 명시하고 순위나 능력 점수는 매기지 않습니다.",
         },
       ],
       preparation:
@@ -148,7 +148,7 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
         },
         {
           title: "Recent activity and sources",
-          body: "Recent activity and source coverage provide concise context. Choose Insight for detailed comparisons and work-pattern analysis.",
+          body: "Recent activity and source coverage provide concise context. Choose Insight for project evidence and work-pattern analysis.",
         },
       ],
       preparation:
@@ -199,8 +199,8 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
           body: "Each project is considered in the context of the wider body of work. Available output and documentation provide more context than a simple count of programming languages.",
         },
         {
-          title: "Benchmarks and data boundaries",
-          body: "Comparisons with similar public GitHub records serve as interpretive aids. Labels take sample size and confidence into account. The report does not invent employment experience or commercial outcomes that are absent from the evidence.",
+          title: "Evidence behind the projects",
+          body: "The review lists READMEs, registered web links, test setups, and profile pins found in selected public projects. Each item shows project counts and sources, with practical suggestions for material not observed. The fetched scope is explicit; there are no rankings or ability scores.",
         },
       ],
       preparation:
