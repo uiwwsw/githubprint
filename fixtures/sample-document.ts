@@ -1,5 +1,5 @@
 import { mockGitHubProfile } from "@/fixtures/mock-profile";
-import { buildBenchmarkSnapshot } from "@/lib/benchmark";
+import { buildEvidenceReview } from "@/lib/evidence-review";
 import { profileEngineConfig } from "@/lib/data-loader";
 import { buildRuleBasedAnalysis } from "@/lib/narrative-writer";
 import { extractProfileFeatures } from "@/lib/profile-features";
@@ -46,7 +46,7 @@ export function buildSampleAnalysis(locale: Locale) {
       profileEngineConfig,
       locale,
     ),
-    benchmark: buildBenchmarkSnapshot(source, features, scoring, locale),
+    evidenceReview: buildEvidenceReview(source, locale),
     mode: "fallback" as const,
   };
 }

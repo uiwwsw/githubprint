@@ -56,7 +56,7 @@ export function RenderTemplate(
       <BriefTemplate
         analysis={props.analysisResult.analysis}
         authorizedPrivateInsights={props.authorizedPrivateInsights}
-        benchmark={props.analysisResult.benchmark}
+        evidenceReview={props.analysisResult.evidenceReview}
         contributionSummary={props.contributionSummary}
         generatedAt={props.generatedAt}
         locale={props.locale}
@@ -69,7 +69,7 @@ export function RenderTemplate(
       <InsightTemplate
         analysis={props.analysisResult.analysis}
         authorizedPrivateInsights={props.authorizedPrivateInsights}
-        benchmark={props.analysisResult.benchmark}
+        evidenceReview={props.analysisResult.evidenceReview}
         contributionSummary={props.contributionSummary}
         generatedAt={props.generatedAt}
         locale={props.locale}
@@ -82,7 +82,7 @@ export function RenderTemplate(
       <ProfileTemplate
         analysis={props.analysisResult.analysis}
         authorizedPrivateInsights={props.authorizedPrivateInsights}
-        benchmark={props.analysisResult.benchmark}
+        evidenceReview={props.analysisResult.evidenceReview}
         contributionSummary={props.contributionSummary}
         generatedAt={props.generatedAt}
         locale={props.locale}

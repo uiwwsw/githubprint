@@ -2,7 +2,6 @@ import type { GitHubRepoSnapshot, GitHubSourceData } from "@/lib/github";
 import { buildRepoDisplayLanguages } from "@/lib/repo-identity";
 
 export type RegressionExpectation = {
-  cohortId: string;
   maxConfidence?: number;
   maxPrimaryOrientationScore?: number;
   minConfidence?: number;
@@ -656,7 +655,6 @@ export const regressionCases: RegressionCase[] = [
   {
     description: "Frontend-heavy product and design-system work should read as frontend with visible prototyping and shipping signals.",
     expectation: {
-      cohortId: "frontend",
       minConfidence: 70,
       minPrimaryOrientationScore: 70,
       minProjectCount: 3,
@@ -677,7 +675,6 @@ export const regressionCases: RegressionCase[] = [
   {
     description: "Backend services with infra files and workflow structure should read as backend with strong structural signals.",
     expectation: {
-      cohortId: "backend",
       minConfidence: 68,
       minPrimaryOrientationScore: 70,
       minProjectCount: 3,
@@ -696,9 +693,8 @@ export const regressionCases: RegressionCase[] = [
     source: backendSource,
   },
   {
-    description: "Applied AI projects should resolve to the AI cohort without losing visible product-delivery signals.",
+    description: "Applied AI projects should retain an AI orientation without losing visible product-delivery signals.",
     expectation: {
-      cohortId: "ai",
       minConfidence: 65,
       minPrimaryOrientationScore: 65,
       minProjectCount: 3,
@@ -719,7 +715,6 @@ export const regressionCases: RegressionCase[] = [
   {
     description: "Mobile-first repos with iOS/Android surfaces should read as mobile and support product-style delivery signals.",
     expectation: {
-      cohortId: "mobile",
       minConfidence: 60,
       minPrimaryOrientationScore: 70,
       minProjectCount: 3,
@@ -740,7 +735,6 @@ export const regressionCases: RegressionCase[] = [
   {
     description: "CLI and automation-heavy repositories should resolve to devtools with structure and quality signals.",
     expectation: {
-      cohortId: "devtools",
       minConfidence: 68,
       minPrimaryOrientationScore: 70,
       minProjectCount: 3,
@@ -761,7 +755,6 @@ export const regressionCases: RegressionCase[] = [
   {
     description: "Manifest dependency strings alone should be enough to surface Next.js-based frontend stack signals.",
     expectation: {
-      cohortId: "frontend",
       minConfidence: 45,
       minPrimaryOrientationScore: 45,
       minProjectCount: 1,
@@ -773,9 +766,8 @@ export const regressionCases: RegressionCase[] = [
     source: manifestDrivenFrontendSource,
   },
   {
-    description: "Sparse mixed-signal repositories should stay conservative and land in the generalist cohort.",
+    description: "Sparse mixed-signal repositories should stay conservative and avoid a forced specialization.",
     expectation: {
-      cohortId: "generalist",
       maxConfidence: 60,
       maxPrimaryOrientationScore: 44,
       minProjectCount: 2,

@@ -6,20 +6,10 @@ import { PRODUCT_SLUG } from "@/lib/brand";
 import { readEnv } from "@/lib/env";
 import type { GitHubSourceData } from "@/lib/github";
 import type { ProfileScoringResult } from "@/lib/rule-engine";
-import type { BenchmarkSnapshot, Locale } from "@/lib/schemas";
+import type { Locale } from "@/lib/schemas";
 
 export type LearningSnapshot = {
-  benchmark: {
-    cohortId: string;
-    confidenceScore: number;
-    metrics: Array<{
-      id: string;
-      percentile: number;
-      value: number;
-    }>;
-    overallPercentile: number;
-    sampleSize: number;
-  };
+  schemaVersion: 2;
   generatedAt: string;
   locale: Locale;
   matchedSignalIds: string[];
@@ -54,21 +44,10 @@ const INSIGHT_CAPTURE_DIR = path.join(
 export function buildLearningSnapshot(
   source: GitHubSourceData,
   scoring: ProfileScoringResult,
-  benchmark: BenchmarkSnapshot,
   locale: Locale,
 ): LearningSnapshot {
   return {
-    benchmark: {
-      cohortId: benchmark.cohortId,
-      confidenceScore: benchmark.confidenceScore,
-      metrics: benchmark.metrics.map((metric) => ({
-        id: metric.id,
-        percentile: metric.percentile,
-        value: Math.round(metric.value),
-      })),
-      overallPercentile: benchmark.overallPercentile,
-      sampleSize: benchmark.sampleSize,
-    },
+    schemaVersion: 2,
     generatedAt: new Date().toISOString(),
     locale,
     matchedSignalIds: scoring.matchedSignalIds,
@@ -95,7 +74,9 @@ export function buildLearningSnapshot(
 }
 
 export async function captureLearningSnapshot(snapshot: LearningSnapshot) {
-  if (readEnv("GITHUBPRINT_CAPTURE_INSIGHTS", "GITFOLIO_CAPTURE_INSIGHTS") !== "1") {
+  if (
+    readEnv("GITHUBPRINT_CAPTURE_INSIGHTS", "GITFOLIO_CAPTURE_INSIGHTS") !== "1"
+  ) {
     return;
   }
 

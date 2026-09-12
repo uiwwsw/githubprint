@@ -1,5 +1,5 @@
 import type {
-  BenchmarkSnapshot,
+  EvidenceReview,
   DataMode,
   GitHubPrintAnalysis,
   Locale,
@@ -17,7 +17,7 @@ function firstSentences(text: string, count: number) {
 
 export function composeBriefTemplateView(
   analysis: GitHubPrintAnalysis,
-  _benchmark: BenchmarkSnapshot,
+  _evidenceReview: EvidenceReview,
   _locale: Locale,
   _dataMode: DataMode = "public",
 ) {
@@ -30,7 +30,7 @@ export function composeBriefTemplateView(
 
 export function composeProfileTemplateView(
   analysis: GitHubPrintAnalysis,
-  _benchmark: BenchmarkSnapshot,
+  _evidenceReview: EvidenceReview,
   _locale: Locale,
   _dataMode: DataMode = "public",
 ) {
@@ -39,7 +39,7 @@ export function composeProfileTemplateView(
 
 export function composeInsightTemplateView(
   analysis: GitHubPrintAnalysis,
-  _benchmark: BenchmarkSnapshot,
+  _evidenceReview: EvidenceReview,
   locale: Locale,
 ) {
   return {

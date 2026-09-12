@@ -45,23 +45,25 @@ export const resultSearchParamsSchema = z.object({
 
 const optionalUrlSchema = z.union([z.url(), z.literal("")]);
 
-export const benchmarkMetricSnapshotSchema = z.object({
-  id: z.string().min(1),
+export const evidenceReviewItemSchema = z.object({
+  id: z.enum(["readme", "links", "tests", "pinned"]),
   label: z.string().min(1),
+  count: z.number().int().nonnegative(),
   note: z.string().min(1),
-  percentile: z.number().int().min(1).max(99),
-  value: z.number().min(0).max(100),
-  evidence: z.array(z.string().min(1)).max(3),
+  nextStep: z.string().min(1),
+  evidence: z.array(
+    z.object({
+      name: z.string().min(1),
+      url: z.url(),
+      detail: z.string().min(1),
+    }),
+  ),
 });
 
-export const benchmarkSnapshotSchema = z.object({
-  cohortId: z.string().min(1),
-  cohortLabel: z.string().min(1),
-  confidenceScore: z.number().int().min(0).max(100),
-  insight: z.string().min(1),
-  metrics: z.array(benchmarkMetricSnapshotSchema).min(3).max(6),
-  overallPercentile: z.number().int().min(1).max(99),
-  sampleSize: z.number().int().positive(),
+export const evidenceReviewSchema = z.object({
+  reviewedRepoCount: z.number().int().nonnegative(),
+  scopeNote: z.string().min(1),
+  items: z.array(evidenceReviewItemSchema).length(4),
 });
 
 export const analysisSchema = z.object({
@@ -115,4 +117,4 @@ export const analysisSchema = z.object({
 
 export type GitHubPrintAnalysis = z.infer<typeof analysisSchema>;
 export type GitFolioAnalysis = GitHubPrintAnalysis;
-export type BenchmarkSnapshot = z.infer<typeof benchmarkSnapshotSchema>;
+export type EvidenceReview = z.infer<typeof evidenceReviewSchema>;

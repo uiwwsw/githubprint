@@ -5,7 +5,7 @@ import {
   composeInsightTemplateView,
   composeProfileTemplateView,
 } from "../lib/template-composers";
-import type { GitHubPrintAnalysis, BenchmarkSnapshot } from "../lib/schemas";
+import type { GitHubPrintAnalysis, EvidenceReview } from "../lib/schemas";
 const analysis = {
   profile: {
     summary:
@@ -18,27 +18,27 @@ const analysis = {
   },
   facts: { activityNote: "최근 업데이트" },
 } as GitHubPrintAnalysis;
-const benchmark = {} as BenchmarkSnapshot;
+const evidenceReview = {} as EvidenceReview;
 
 test("Brief keeps dotted technologies, versions, and domains intact when shortening a summary", () => {
   assert.equal(
-    composeBriefTemplateView(analysis, benchmark, "ko").summary,
+    composeBriefTemplateView(analysis, evidenceReview, "ko").summary,
     "Next.js와 Python 3.12로 구현했습니다. example.dev에서 확인할 수 있습니다.",
   );
   assert.equal(
-    composeProfileTemplateView(analysis, benchmark, "ko").summary,
+    composeProfileTemplateView(analysis, evidenceReview, "ko").summary,
     analysis.profile.summary,
   );
 });
 test("Brief uses readable highlights without concatenating raw API evidence", () => {
   assert.deepEqual(
-    composeBriefTemplateView(analysis, benchmark, "ko").highlights,
+    composeBriefTemplateView(analysis, evidenceReview, "ko").highlights,
     analysis.inferred.strengths,
   );
 });
 test("Insight identifies exploratory areas without implying verified job fit", () => {
   for (const locale of ["ko", "en"] as const) {
-    const result = composeInsightTemplateView(analysis, benchmark, locale);
+    const result = composeInsightTemplateView(analysis, evidenceReview, locale);
     assert.match(
       result.fitNarrative,
       locale === "ko"

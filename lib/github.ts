@@ -2563,7 +2563,7 @@ export async function getGitHubSource(
     : getCachedGitHubSource(username, locale);
 }
 
-/** Public-only source for benchmark eligibility and anonymous-mode narrative. */
+/** Public-only source for project evidence review and anonymous-mode narrative. */
 export function projectPublicSource(
   source: GitHubSourceData,
   locale: Locale,

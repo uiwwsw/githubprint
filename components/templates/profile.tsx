@@ -15,7 +15,7 @@ import {
 import { composeProfileTemplateView } from "@/lib/template-composers";
 import type {
   AuthorizedPrivateInsights,
-  BenchmarkSnapshot,
+  EvidenceReview,
   ContributionSummary,
   DataMode,
   GitHubPrintAnalysis,
@@ -25,7 +25,7 @@ import type {
 export function ProfileTemplate({
   analysis,
   authorizedPrivateInsights,
-  benchmark,
+  evidenceReview,
   contributionSummary,
   dataMode,
   generatedAt,
@@ -35,7 +35,7 @@ export function ProfileTemplate({
 }: {
   analysis: GitHubPrintAnalysis;
   authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
-  benchmark: BenchmarkSnapshot;
+  evidenceReview: EvidenceReview;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
@@ -47,7 +47,7 @@ export function ProfileTemplate({
   const dict = getDictionary(locale);
   const view = composeProfileTemplateView(
     analysis,
-    benchmark,
+    evidenceReview,
     locale,
     dataMode,
   );

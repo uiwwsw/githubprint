@@ -367,8 +367,8 @@ export function buildRuleBasedAnalysis(
     disclaimer:
       source.dataMode === "private_enriched"
         ? locale === "ko"
-          ? "이 문서는 공개 자료와 사용자가 선택한 비공개 작업을 바탕으로 작성되었습니다. 비공개 작업은 선택한 공개 범위로만 표시하며, 벤치마크는 공개 근거만 사용합니다. 경력, 협업 능력, 비즈니스 성과를 단정하지 않습니다."
-          : "This document uses public sources and selected private work, displayed at the chosen level of detail. Benchmarks use only public evidence. Career tenure, collaboration quality, and business impact are not asserted."
+          ? "이 문서는 공개 자료와 사용자가 선택한 비공개 작업을 바탕으로 작성되었습니다. 비공개 작업은 선택한 공개 범위로만 표시하며, 프로젝트 자료 목록은 공개 근거만 사용합니다. 경력, 협업 능력, 비즈니스 성과를 단정하지 않습니다."
+          : "This document uses public sources and selected private work, displayed at the chosen level of detail. The project evidence review uses only public evidence. Career tenure, collaboration quality, and business impact are not asserted."
         : localizeText(config.templates.disclaimer, locale),
     evidence: evidence.slice(0, 6),
     facts: {

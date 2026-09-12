@@ -240,7 +240,7 @@ test("private access fails before network requests with public_repo-only scope",
 });
 
 for (const locale of ["ko", "en"]) {
-  test(`anonymous private analysis removes raw details before narrative, benchmark, and serialization (${locale})`, async () => {
+  test(`anonymous private analysis removes raw details before narrative, evidenceReview, and serialization (${locale})`, async () => {
     const source = await getGitHubSource(fixture.username, {
       authContext: auth,
       privateRepoNames: ["private-atlas"],
@@ -268,7 +268,7 @@ for (const locale of ["ko", "en"]) {
     );
   });
 
-  test(`private detail includes exactly selected projects while keeping benchmark public (${locale})`, async () => {
+  test(`private detail includes exactly selected projects while keeping evidenceReview public (${locale})`, async () => {
     const summary = await getGitHubSource(fixture.username, {
       authContext: auth,
       privateRepoNames: ["private-atlas"],
@@ -283,7 +283,7 @@ for (const locale of ["ko", "en"]) {
     });
     const result = await analyzeGitHubSource(source, { locale });
     const summarized = await analyzeGitHubSource(summary, { locale });
-    assert.deepEqual(result.benchmark, summarized.benchmark);
+    assert.deepEqual(result.evidenceReview, summarized.evidenceReview);
     assert.match(JSON.stringify(result.analysis.projects), /private-atlas/);
     assert.match(JSON.stringify(result.analysis.projects), /Private|비공개/);
     assert.doesNotMatch(

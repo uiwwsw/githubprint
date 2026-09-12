@@ -15,7 +15,7 @@ import {
 import { composeBriefTemplateView } from "@/lib/template-composers";
 import type {
   AuthorizedPrivateInsights,
-  BenchmarkSnapshot,
+  EvidenceReview,
   ContributionSummary,
   DataMode,
   GitHubPrintAnalysis,
@@ -25,7 +25,7 @@ import type {
 export function BriefTemplate({
   analysis,
   authorizedPrivateInsights,
-  benchmark,
+  evidenceReview,
   contributionSummary,
   dataMode,
   generatedAt,
@@ -35,7 +35,7 @@ export function BriefTemplate({
 }: {
   analysis: GitHubPrintAnalysis;
   authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
-  benchmark: BenchmarkSnapshot;
+  evidenceReview: EvidenceReview;
   contributionSummary?: ContributionSummary | null;
   dataMode: DataMode;
   generatedAt: string;
@@ -45,7 +45,12 @@ export function BriefTemplate({
   locale: Locale;
 }) {
   const dict = getDictionary(locale);
-  const view = composeBriefTemplateView(analysis, benchmark, locale, dataMode);
+  const view = composeBriefTemplateView(
+    analysis,
+    evidenceReview,
+    locale,
+    dataMode,
+  );
   return (
     <DocumentShell
       template="brief"
