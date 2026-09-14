@@ -34,7 +34,8 @@
     "test:privacy": "node --require ./tests/helpers/register-runtime.cjs --test tests/private-data.test.cjs",
     "test:privacy:browser": "playwright test --config playwright.privacy.config.ts",
     "test:copy": "node --import tsx --test tests/template-composers.test.ts && node --require ./tests/helpers/register-runtime.cjs --test tests/profile-introduction.test.cjs",
-    "test:evidence": "node --require ./tests/helpers/register-runtime.cjs --test tests/evidence-review.test.cjs"
+    "test:evidence": "node --require ./tests/helpers/register-runtime.cjs --test tests/evidence-review.test.cjs",
+    "test:docx:structure": "node scripts/validate-docx.cjs"
   },
   "dependencies": {
     "@fontsource-variable/noto-serif-kr": "^5.2.10",

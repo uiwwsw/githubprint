@@ -10,6 +10,7 @@ import {
   type ParagraphChild,
 } from "docx";
 import type { Locale } from "@/lib/schemas";
+import { WORD_FONTS } from "@/lib/document-fonts";
 
 // A4, 17 mm margins. Shared by browser exports and the authenticated API.
 export const DOCUMENT_PAGE = { width: 11906, height: 16838, margin: 964 };
@@ -47,26 +48,15 @@ export function createDesignedDocument({
   children,
   title,
   locale,
-  fontData,
-  headingFontData,
   templateLayout = false,
 }: {
   children: ISectionOptions["children"];
   title: string;
   locale: Locale;
-  fontData?: Uint8Array;
-  headingFontData?: Uint8Array;
   templateLayout?: boolean;
 }) {
   return new Document({
     creator: "GitHubPrint",
-    // docx's obfuscator accepts Uint8Array in both browser and Node runtimes.
-    fonts: [
-      ...(fontData ? [{ name: "Pretendard", data: fontData as Buffer }] : []),
-      ...(headingFontData
-        ? [{ name: "Pretendard SemiBold", data: headingFontData as Buffer }]
-        : []),
-    ],
     title,
     description: "GitHubPrint developer document",
     styles: {
@@ -81,14 +71,7 @@ export function createDesignedDocument({
       default: {
         document: {
           run: {
-            font: fontData
-              ? "Pretendard"
-              : {
-                  ascii: "Arial",
-                  hAnsi: "Arial",
-                  eastAsia: "Malgun Gothic",
-                  cs: "Arial",
-                },
+            font: WORD_FONTS,
             size: 21,
             color: "28332E",
             language: {
@@ -101,8 +84,8 @@ export function createDesignedDocument({
         title: {
           run: {
             size: 56,
-            bold: !headingFontData,
-            font: headingFontData ? "Pretendard SemiBold" : undefined,
+            bold: true,
+            font: WORD_FONTS,
             color: "111916",
           },
           paragraph: {
@@ -114,8 +97,8 @@ export function createDesignedDocument({
         heading1: {
           run: {
             size: 27,
-            bold: !headingFontData,
-            font: headingFontData ? "Pretendard SemiBold" : undefined,
+            bold: true,
+            font: WORD_FONTS,
             color: "111916",
           },
           paragraph: {
@@ -137,8 +120,8 @@ export function createDesignedDocument({
         heading2: {
           run: {
             size: 23,
-            bold: !headingFontData,
-            font: headingFontData ? "Pretendard SemiBold" : undefined,
+            bold: true,
+            font: WORD_FONTS,
             color: "111916",
           },
           paragraph: {

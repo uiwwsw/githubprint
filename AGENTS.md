@@ -52,4 +52,5 @@ Repository-wide guidance for agents working in `gitfolio`.
 - For TypeScript or UI changes: run `npm run typecheck`.
 - For scoring, evidence review, template, or inference changes: run `npm run quality:regress`.
 - Before shipping broader changes: run `npm run check`.
+- For Word export changes: generate files with `npm run test:documents`, then run `npm run test:docx:structure` (requires a .NET 8 SDK). Package validation and rendered-page inspection are separate requirements; a successful LibreOffice render alone is insufficient.
 

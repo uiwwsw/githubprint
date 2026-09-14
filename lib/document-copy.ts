@@ -59,7 +59,7 @@ export const documentCopy = {
     pdfHint:
       "인쇄 창에서 ‘PDF로 저장’을 선택하세요. 용지 A4, 배율 100%, 머리글·바닥글 끄기를 권장합니다.",
     wordHint:
-      "Word는 편집 가능한 .docx 파일입니다. Google Docs에서도 파일을 열어 편집할 수 있습니다.",
+      "기본 글꼴로 저장하는 편집 가능한 .docx 파일입니다. Word와 Google Docs에서 열 수 있습니다.",
     exportHint:
       "HTML과 PDF는 같은 템플릿 스타일을 사용합니다. Word는 카드·표·서식을 편집 가능한 형태로 유지하며, 사용하는 문서 앱에 따라 줄바꿈과 페이지 수는 조금 달라질 수 있습니다.",
     exportError: "파일을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.",
@@ -137,7 +137,7 @@ export const documentCopy = {
     pdfHint:
       "Choose “Save as PDF” in the print dialog. Use A4 paper, 100% scale, and turn off browser headers and footers.",
     wordHint:
-      "Word exports are editable .docx files. You can also open and edit them in Google Docs.",
+      "An editable .docx using standard fonts. Open it in Word or Google Docs.",
     exportHint:
       "HTML and PDF use the same template styles. Word preserves cards, tables, and formatting as editable content; line wrapping and page counts can vary by document app.",
     exportError: "We couldn't prepare the file. Please try again in a moment.",

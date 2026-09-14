@@ -5,6 +5,7 @@ import {
   type DocumentVisualSnapshot,
 } from "@/lib/document-html";
 import { readDocumentImage } from "@/lib/document-avatar";
+import { WORD_LAYOUT_FONTS } from "@/lib/document-fonts";
 
 const SKIP =
   ".screen-only,[data-export-ignore],script,style,template,iframe,object,embed,form,input,button,select,textarea,svg";
@@ -28,7 +29,11 @@ function includesCharacters(range: string, text: string) {
 }
 
 /** Bundle only fonts used by this document, including its Korean glyph ranges. */
-async function captureStyles(root: HTMLElement, signal: AbortSignal) {
+async function captureStyles(
+  root: HTMLElement,
+  signal: AbortSignal,
+  embedFonts: boolean,
+) {
   const elements = [root, ...root.querySelectorAll<HTMLElement>("*")];
   const families = new Set(
     elements
@@ -73,6 +78,7 @@ async function captureStyles(root: HTMLElement, signal: AbortSignal) {
       return rulesText(imported.styleSheet.cssRules, imported.href, print);
     }
     if (rule.type === CSSRule.FONT_FACE_RULE) {
+      if (!embedFonts) return "";
       const font = rule as CSSFontFaceRule;
       if (
         !families.has(
@@ -133,15 +139,23 @@ async function captureStyles(root: HTMLElement, signal: AbortSignal) {
       ).join("\n"),
     ),
   );
-  return { css, printCss };
+  const fontOverride = embedFonts
+    ? ""
+    : `\n[data-document], [data-document] * { font-family: ${WORD_LAYOUT_FONTS} !important; }`;
+  return { css: css + fontOverride, printCss: printCss + fontOverride };
 }
 
 export async function snapshotVisualDocument(
   root: HTMLElement,
   signal: AbortSignal,
+  options: { embedFonts?: boolean } = {},
 ): Promise<{ snapshot: DocumentVisualSnapshot; imageMissing: boolean }> {
   await document.fonts.ready;
-  const styles = await captureStyles(root, signal);
+  const styles = await captureStyles(
+    root,
+    signal,
+    options.embedFonts !== false,
+  );
   const images = new Map<HTMLImageElement, string>();
   let imageMissing = false;
   await Promise.all(

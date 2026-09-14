@@ -17,6 +17,7 @@ import {
   type ParagraphChild,
 } from "docx";
 import { createDesignedDocument, DOCUMENT_PAGE } from "@/lib/document-design";
+import { WORD_FONTS } from "@/lib/document-fonts";
 import type {
   DocumentLayout,
   LayoutStyle,
@@ -51,6 +52,14 @@ function borders(style: LayoutStyle) {
     ]),
   );
 }
+function paragraphBorders(style: LayoutStyle) {
+  // Do not emit table-style border resets on paragraphs. Apart from being
+  // unnecessary, docx 9.x serializes bottom before left in multi-edge pBdr.
+  const visible = Object.entries(borders(style)).filter(
+    ([, border]) => border.style !== BorderStyle.NONE,
+  );
+  return visible.length ? Object.fromEntries(visible) : undefined;
+}
 function bytes(data: string) {
   return Uint8Array.from(atob(data.split(",")[1]), (character) =>
     character.charCodeAt(0),
@@ -62,8 +71,6 @@ export async function buildDocumentDocx(
   layout: DocumentLayout,
   locale: Locale,
   title: string,
-  fontData?: Uint8Array,
-  headingFontData?: Uint8Array,
 ) {
   type Child = Paragraph | Table;
   function retainShortGroups(node: DocumentLayout) {
@@ -109,9 +116,8 @@ export async function buildDocumentDocx(
     const href = value.href && safeDocumentLink(value.href);
     const text = new TextRun({
       text: value.text,
-      font:
-        value.bold && headingFontData ? "Pretendard SemiBold" : "Pretendard",
-      bold: value.bold && !headingFontData,
+      font: WORD_FONTS,
+      bold: value.bold,
       italics: value.italic,
       color: value.color,
       size: Math.max(14, Math.round(value.size * 1.5)),
@@ -212,7 +218,7 @@ export async function buildDocumentDocx(
           borders: noBorders,
           rows: [
             new TableRow({
-              cantSplit: style.keepTogether,
+              cantSplit: style.keepTogether || undefined,
               children: [
                 new TableCell({
                   children: children.length ? children : [spacer(1)],
@@ -280,7 +286,7 @@ export async function buildDocumentDocx(
                 }
               : undefined,
           border:
-            node.heading === 1 ? undefined : boxed ? noBorders : borders(style),
+            node.heading === 1 || boxed ? undefined : paragraphBorders(style),
           shading:
             style.background && !boxed
               ? {
@@ -370,9 +376,10 @@ export async function buildDocumentDocx(
         }
         rows.push(
           new TableRow({
-            cantSplit: node.children
-              .slice(offset, offset + count)
-              .every((child) => child.style.height < 700),
+            cantSplit:
+              node.children
+                .slice(offset, offset + count)
+                .every((child) => child.style.height < 700) || undefined,
             children: cells,
           }),
         );
@@ -414,8 +421,6 @@ export async function buildDocumentDocx(
       children: render(layout, DOCUMENT_PAGE.width - DOCUMENT_PAGE.margin * 2),
       title,
       locale,
-      fontData,
-      headingFontData,
       templateLayout: true,
     }),
   );

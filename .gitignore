@@ -7,4 +7,6 @@ coverage
 npm-debug.log*
 *.tsbuildinfo
 .cache
+tests/docx-validator/bin/
+tests/docx-validator/obj/
 .DS_Store
