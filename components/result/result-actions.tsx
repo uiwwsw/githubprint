@@ -165,22 +165,16 @@ export function ResultActions({
         return response;
       };
       const [{ snapshot, imageMissing }, license] = await Promise.all([
-        snapshotVisualDocument(root, controller.signal),
-        fetchAsset("/fonts/OFL.txt").then((response) => response.text()),
+        snapshotVisualDocument(root, controller.signal, {
+          embedFonts: format !== "word",
+        }),
+        format === "html"
+          ? fetchAsset("/fonts/OFL.txt").then((response) => response.text())
+          : Promise.resolve(""),
       ]);
       if (!mounted.current || controller.signal.aborted) return;
       let blob: Blob;
       if (format === "word") {
-        const fonts = await Promise.all(
-          ["Regular", "SemiBold"].map(
-            async (weight) =>
-              new Uint8Array(
-                await (
-                  await fetchAsset(`/fonts/Pretendard-${weight}.ttf`)
-                ).arrayBuffer(),
-              ),
-          ),
-        );
         const { snapshotDocumentLayout } = await import(
           "@/lib/document-layout"
         );
@@ -190,13 +184,7 @@ export function ResultActions({
           locale,
           controller.signal,
         );
-        blob = await buildDocumentDocx(
-          layout,
-          locale,
-          name,
-          fonts[0],
-          fonts[1],
-        );
+        blob = await buildDocumentDocx(layout, locale, name);
       } else {
         const { buildDocumentHtml } = await import("@/lib/document-html");
         blob = new Blob(

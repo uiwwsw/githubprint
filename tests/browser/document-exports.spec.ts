@@ -15,7 +15,7 @@ const unescapeXml = (value: string) =>
 
 for (const locale of ["ko", "en"] as const) {
   for (const template of ["brief", "profile", "insight", "resume"] as const) {
-    test(`${locale} ${template} exports the preview text, A4 styles, links and embedded Korean fonts`, async ({
+    test(`${locale} ${template} exports the preview text, A4 styles, links and standard fonts without encrypted or embedded font parts`, async ({
       page,
     }) => {
       await mkdir(output, { recursive: true });
@@ -103,14 +103,21 @@ for (const locale of ["ko", "en"] as const) {
             : "27674C";
       expect(xml).toContain(`w:color="${accent}"`);
       const fonts = await zip.file("word/fontTable.xml")!.async("string");
-      expect(fonts).toContain("w:embedRegular");
+      expect(fonts).not.toMatch(/w:embed|w:fontKey/);
       expect(
-        (await zip.file("word/fonts/Pretendard.odttf")!.async("uint8array"))
-          .length,
-      ).toBeGreaterThan(100_000);
+        Object.keys(zip.files).filter((key) => key.startsWith("word/fonts/")),
+      ).toEqual([]);
       expect(
-        Object.keys(zip.files).filter((key) => key.endsWith(".odttf")),
-      ).toHaveLength(2);
+        await zip.file("word/_rels/fontTable.xml.rels")!.async("string"),
+      ).not.toContain('relationships/font"');
+      const settings = await zip.file("word/settings.xml")!.async("string");
+      expect(settings).not.toMatch(
+        /documentProtection|writeProtection|cryptProvider|cryptAlgorithm/,
+      );
+      expect(xml).not.toContain("Pretendard");
+      expect(xml).toContain('w:ascii="Arial"');
+      expect(xml).toContain('w:eastAsia="Malgun Gothic"');
+      expect(xml).not.toMatch(/<w:cantSplit w:val="false"/);
       if ((await page.locator("[data-document] img").count()) > 0) {
         expect(
           Object.keys(zip.files).some(
@@ -226,15 +233,24 @@ test("download failure is actionable and the button can be retried", async ({
   page,
 }) => {
   await page.goto("/preview?template=resume");
-  await page.route("**/fonts/Pretendard-Regular.ttf", (route) =>
-    route.fulfill({ status: 503, body: "Unavailable" }),
-  );
+  await page.evaluate(() => {
+    const original = URL.createObjectURL;
+    URL.createObjectURL = () => {
+      URL.createObjectURL = original;
+      throw new Error("Simulated download failure");
+    };
+  });
   await page.getByRole("button", { name: "저장·공유" }).click();
   await page.getByRole("button", { name: "Word로 저장" }).click();
   await expect(page.locator(".screen-toolbar [role=alert]")).toContainText(
     "다시 시도",
   );
   await expect(page.getByRole("button", { name: "Word로 저장" })).toBeEnabled();
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Word로 저장" }).click(),
+  ]);
+  expect(await download.failure()).toBeNull();
 });
 
 test("long entries keep every paragraph and only safe hyperlink targets", async ({
@@ -279,3 +295,41 @@ test("long entries keep every paragraph and only safe hyperlink targets", async 
     printBackground: true,
   });
 });
+
+for (const locale of ["ko", "en"] as const) {
+  test(`${locale} Word export has no dependency on web font downloads`, async ({
+    page,
+  }) => {
+    await page.goto(`${locale === "ko" ? "" : "/en"}/preview?template=resume`);
+    await page.evaluate(() => document.fonts.ready);
+    const requestedFonts: string[] = [];
+    await page.route(
+      /\.(?:woff2?|ttf|otf)(?:\?|$)|\/fonts\/OFL\.txt/,
+      (route) => {
+        // The toolbar can load a CSS glyph subset for its progress text.
+        // Export bundling uses fetch; none of those requests should be needed.
+        if (route.request().resourceType() === "fetch")
+          requestedFonts.push(route.request().url());
+        return route.fulfill({ status: 503, body: "Font asset unavailable" });
+      },
+    );
+    await page
+      .getByRole("button", {
+        name: locale === "ko" ? "저장·공유" : "Save & share",
+      })
+      .click();
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page
+        .getByRole("button", {
+          name: locale === "ko" ? "Word로 저장" : "Save Word",
+        })
+        .click(),
+    ]);
+    expect(await download.failure()).toBeNull();
+    expect(requestedFonts).toEqual([]);
+    await expect(
+      page.locator(".screen-toolbar [role=alert]"),
+    ).not.toBeVisible();
+  });
+}

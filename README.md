@@ -73,7 +73,7 @@ Current product limits:
 - Server-side GitHub URL normalization and public data collection
 - AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
-- Editable Word / Google Docs-compatible `.docx` exports for all four templates, with embedded Korean fonts
+- Editable Word / Google Docs-compatible `.docx` exports for all four templates, with standard fonts and no font embedding
 - Responsive, offline HTML files preserving the template markup, fonts, photos, cards, and A4 print styles
 - A purpose-based save dialog, document navigation, and link copying for explicitly public examples/showcases
 - Public example previews at `/preview` and `/en/preview` without sign-in
@@ -262,7 +262,7 @@ npx playwright install chromium
 npm run test:documents
 ```
 
-The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `localhost` when binding a development server; binding explicitly to `127.0.0.1` can produce locale rewrite loops in Next.js. Browser checks generate `.docx`, A4 PDF, and screen captures under `.cache/document-qa/`, plus standalone HTML and offline render captures under `.cache/html-qa/`. They validate both locales and all four templates, including long documents, links, fonts, mobile overflow, print cancellation, and download errors. Render generated DOCX files in a Word-compatible viewer for visual QA. Some headless LibreOffice distributions ignore embedded fonts; point Fontconfig at `public/fonts` when using those renderers.
+The browser suite starts (or reuses) a server at `http://localhost:3107`. Use `localhost` when binding a development server; binding explicitly to `127.0.0.1` can produce locale rewrite loops in Next.js. Browser checks generate `.docx`, A4 PDF, and screen captures under `.cache/document-qa/`, plus standalone HTML and offline render captures under `.cache/html-qa/`. They validate both locales and all four templates, including long documents, links, fonts, mobile overflow, print cancellation, and download errors. Render generated DOCX files in a Word-compatible viewer for visual QA. Run `npm run test:docx:structure` with a .NET 8 SDK to validate generated packages using the Microsoft Open XML SDK. Word uses standard fonts; PDF and HTML retain their template fonts.
 
 ## Additional Docs
 

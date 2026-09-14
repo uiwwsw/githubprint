@@ -1,6 +1,4 @@
 import "server-only";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 import {
   AlignmentType,
@@ -661,12 +659,6 @@ export async function buildResumeDocx(
     children,
     locale,
     title: `${documentData.basics.name} Resume`,
-    fontData: await readFile(
-      path.join(process.cwd(), "public/fonts/Pretendard-Regular.ttf"),
-    ),
-    headingFontData: await readFile(
-      path.join(process.cwd(), "public/fonts/Pretendard-SemiBold.ttf"),
-    ),
   });
 
   return Packer.toBuffer(document);
