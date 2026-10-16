@@ -399,9 +399,11 @@ function ResumeEntryBlock({
 }
 
 function ResumeProjectBlock({
+  authoredOnly = false,
   locale,
   project,
 }: {
+  authoredOnly?: boolean;
   locale: Locale;
   project: ResumeProject;
 }) {
@@ -418,11 +420,12 @@ function ResumeProjectBlock({
   const localizedProjectLabels = project.projectLabels.map((label) =>
     formatResumeProjectLabel(label, locale),
   );
-  const projectEvidenceSummary = buildResumeProjectEvidenceSummary(
+  const projectEvidenceSummary = authoredOnly ? "" : buildResumeProjectEvidenceSummary(
     project,
     locale,
   );
   const showRepoDescription =
+    !authoredOnly &&
     Boolean(project.repoDescription) &&
     project.repoDescription !== project.subtitle;
 
@@ -450,10 +453,10 @@ function ResumeProjectBlock({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-900">
+        {(!authoredOnly || project.linkedExperienceTitle) && <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-900">
           {projectContext}
-        </span>
-        {project.repoCreatedAt ? (
+        </span>}
+        {!authoredOnly && project.repoCreatedAt ? (
           <span className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-600">
             {copy.shared.githubStart}:{" "}
             {formatResumeDateRange(
@@ -466,7 +469,7 @@ function ResumeProjectBlock({
         ) : null}
       </div>
 
-      {localizedProjectLabels.length > 0 ? (
+      {!authoredOnly && localizedProjectLabels.length > 0 ? (
         <div className="mt-4 rounded-[1rem] bg-black/[0.025] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">
             {copy.template.projectProfile}
@@ -576,12 +579,14 @@ function CustomSectionContent({
 }
 
 export function ResumeTemplate({
+  authoredOnly = false,
   avatarUrl,
   generatedAt,
   locale,
   profileUrl,
   resume,
 }: {
+  authoredOnly?: boolean;
   avatarUrl?: string;
   generatedAt: string;
   locale: Locale;
@@ -722,6 +727,7 @@ export function ResumeTemplate({
             <div className="space-y-4">
               {resume.projects.map((project) => (
                 <ResumeProjectBlock
+                  authoredOnly={authoredOnly}
                   key={project.title}
                   locale={locale}
                   project={project}

@@ -281,3 +281,7 @@ Run `npm run test:seo:browser` for crawler and social-image checks. See [SEO con
 Public-only is the default, even after sign-in. Brief, Profile, and Insight can optionally summarize or display up to three selected private projects. Resume separates private source storage from explicitly linked project enrichment. See [private data choices and verification](docs/private-data.md).
 
 Percentile rankings have been removed. See [the evidence review and ranking audit](docs/evidence-review.md) for the source limitations, replacement behavior, and verification.
+
+### Reusing the Resume renderer
+
+`ResumeTemplate` accepts `authoredOnly` for partner views such as 9BOX. It keeps the same document layout and authored entries while omitting repository enrichment descriptions, inferred project labels and repository creation metadata. The default GitHubPrint document is unchanged. Both Korean and English use the same option. Consumers should copy a pinned renderer and its pure normalizer with provenance, and must enforce their own document access checks; do not embed authenticated result URLs or forward GitHub credentials.
