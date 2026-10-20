@@ -10,7 +10,7 @@ Each indexable page has a self-referencing canonical, reciprocal `ko`/`en` alter
 
 ## Sitemap and crawl controls
 
-`/sitemap.xml` contains the 12 canonical public URLs and their language alternatives. It excludes result pages, examples, authentication endpoints, and legacy aliases. Home and guide dates are maintained in `PUBLIC_CONTENT_UPDATED_AT` in `lib/template-guides.ts`: update this value when the public content changes materially. A deploy by itself does not make content newly modified. The source-driven showcase omits an unknown modification date.
+`/sitemap.xml` contains the 12 canonical public URLs and their language alternatives. It excludes result pages, examples, authentication endpoints, and legacy aliases. Home dates use `HOME_CONTENT_UPDATED_AT` and guide dates use `PUBLIC_CONTENT_UPDATED_AT` in `lib/template-guides.ts`: update this value when the public content changes materially. A deploy by itself does not make content newly modified. The source-driven showcase omits an unknown modification date.
 
 `/robots.txt` allows content, styles, and social images. It blocks authentication and private download routes, while leaving `/result` and `/preview` crawlable so crawlers can read their `noindex` directives. Those pages also send `X-Robots-Tag`. Authentication and private download responses carry `noindex` headers. Public showcase images remain available to crawlers.
 
@@ -44,6 +44,12 @@ References: [Google canonical guidance](https://developers.google.com/search/doc
 
 ## 2026-10-20 search wording update
 
-Korean and English home titles, descriptions and the visible H1 now explicitly describe GitHub resume/CV generation, Korean/English output and PDF/Word/HTML export. Authored Resume content still requires the user's resume repository; this does not invent employment history from GitHub activity. Home content lastmod is2026-10-20; unchanged template guides retain2026-09-11. Existing canonicals/hreflang/private-result noindex remain.
+Korean and English home titles, descriptions and the visible H1 now explicitly describe GitHub resume/CV generation, Korean/English output and PDF/Word/HTML export. Authored Resume content still requires the user's resume repository; this does not invent employment history from GitHub activity. Home content lastmod is 2026-10-20; unchanged template guides retain 2026-09-11. Existing canonicals/hreflang/private-result noindex remain.
 
-The Google and Naver account-issued verification HTML files are retained inpublic/ for ownership verification. They are public site verification artifacts, not authentication credentials. Console ownership/sitemap submission results are recorded after deployment verification.
+The Google and Naver account-issued verification HTML files are retained in `public/` for ownership verification. They are public site verification artifacts, not authentication credentials. Console ownership/sitemap submission results are recorded after deployment verification.
+
+## 2026-10-20 production verification
+
+Production https://githubprint.vercel.app/ was deployed from source commit 9e87cb9. Google Search Console and Naver Search Advisor both verified ownership and accepted sitemap submission. Naver displayed the submitted sitemap at 2026-10-20 13:24:02 KST.
+
+The full npm run check passed. A production Googlebot HTTP check verified all 12 sitemap pages, their canonicals/language alternatives, and noindex headers on four result/preview routes. Korean and English home pages were checked in Chrome at desktop and 390px mobile widths without horizontal overflow. Ownership verification and sitemap submission request discovery; they do not guarantee indexing or ranking. Public product URLs and release status are unchanged; the workspace showcase plan reports up to date.
