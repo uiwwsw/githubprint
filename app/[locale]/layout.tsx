@@ -27,6 +27,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} data-scroll-behavior="smooth">
+      <head><link rel="preload" href="/fonts/SUITE-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /></head>
       <body>
         <NextIntlClientProvider locale={locale}>
           {children}
