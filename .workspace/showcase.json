@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "githubprint",
+  "visibility": "public",
+  "name": "GitHubPrint",
+  "en": "GitHubPrint",
+  "category": "개발 도구",
+  "symbol": "▤",
+  "color": "#d8c5a9",
+  "summary": "GitHub의 기록을, 전달할 수 있는 문서로.",
+  "description": "공개 GitHub 자료를 출처와 함께 정리해 개발자 문서를 만듭니다. brief·profile·insight·resume 네 가지 템플릿과 한국어·영어 미리보기를 제공하고, PDF·Word·오프라인 HTML로 내보냅니다. 직접 작성한 Resume 내용과 순서를 유지합니다.",
+  "features": [
+    "GitHub 출처를 함께 보여주는 개발자 문서",
+    "brief·profile·insight·resume 4가지 템플릿",
+    "로그인 없이 보는 한국어·영어 템플릿 미리보기",
+    "PDF·편집 가능한 Word·오프라인 HTML 내보내기",
+    "직접 작성한 Resume의 내용·순서 유지"
+  ],
+  "status": "live",
+  "links": [
+    {
+      "platform": "web",
+      "url": "https://githubprint.vercel.app/"
+    }
+  ],
+  "evidence": {
+    "verifiedAt": "2026-10-20",
+    "note": "README의 템플릿·공개 데이터 범위·내보내기·프리뷰 설명과 구현 확인. 공개 홈, /preview 및 /en/preview HTTP200과 제품 제목 확인. 개인 개발자 계정 대상이며 연차·능력 순위·성과를 추정하지 않음."
+  }
+}
