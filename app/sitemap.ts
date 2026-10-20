@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPublicAlternates, getPublicUrl } from "@/lib/seo";
-import { TEMPLATE_IDS, PUBLIC_CONTENT_UPDATED_AT } from "@/lib/template-guides";
+import { TEMPLATE_IDS, PUBLIC_CONTENT_UPDATED_AT, HOME_CONTENT_UPDATED_AT } from "@/lib/template-guides";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const paths = [
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: getPublicUrl(pathname, locale),
       // The showcase follows its source repository; omit unknown modification dates.
       ...(pathname !== "/showcase"
-        ? { lastModified: PUBLIC_CONTENT_UPDATED_AT }
+        ? { lastModified: pathname === "/" ? HOME_CONTENT_UPDATED_AT : PUBLIC_CONTENT_UPDATED_AT }
         : {}),
       alternates: { languages: getPublicAlternates(pathname) },
     })),

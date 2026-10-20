@@ -2,10 +2,10 @@ export const documentCopy = {
   ko: {
     brandNote: "개발자의 작업을, 한 장의 가능성으로.",
     eyebrow: "YOUR WORK, WELL DOCUMENTED",
-    titleTop: "만든 것을,",
-    titleBottom: "나를 설명하는 문서로.",
+    titleTop: "GitHub 기록을,",
+    titleBottom: "나의 이력서로.",
     description:
-      "GitHub를 연결하고 템플릿을 고르세요. 프로젝트 소개부터 직접 쓴 이력서까지, 읽기 좋은 문서로 정리해 드립니다.",
+      "GitHub를 연결하면 프로젝트와 개발 기록을 이력서·포트폴리오로 자동 정리합니다. 직접 쓴 resume 저장소도 연결하고, 한국어·영어 PDF와 Word로 저장하세요.",
     preview: "예시 문서 살펴보기",
     templates: "문서 템플릿",
     templateHint: "전달하려는 이야기에 맞는 구성을 선택하세요.",
@@ -80,10 +80,10 @@ export const documentCopy = {
   en: {
     brandNote: "A considered document for the work you do.",
     eyebrow: "YOUR WORK, WELL DOCUMENTED",
-    titleTop: "Show your work.",
-    titleBottom: "Tell your story.",
+    titleTop: "Your GitHub work.",
+    titleBottom: "Your next resume.",
     description:
-      "Connect GitHub and choose a template. Turn your projects or authored resume into a document you can review, edit, and share.",
+      "Build a developer resume or CV from GitHub projects and your authored resume repository. Choose an English or Korean template, review the content, and export PDF, Word or HTML.",
     preview: "Explore example documents",
     templates: "Document templates",
     templateHint: "Choose the structure that tells your story best.",

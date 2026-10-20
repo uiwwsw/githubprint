@@ -222,12 +222,14 @@ const dictionaries: Record<Locale, Dictionary> = {
     },
     metadata: {
       homeTitle:
-        "GitHub 이력서·개발자 포트폴리오 PDF·Word 만들기 | GitHubPrint",
+        "깃헙프린트 — GitHub 이력서 자동 생성·PDF·Word",
       homeDescription:
-        "GitHub 프로젝트와 개발 기록을 소개서, 포트폴리오, 리포트, 이력서로 정리하세요. 한국어·영어 템플릿을 미리 보고 제출용 PDF, 편집용 Word, 브라우저에서 읽는 HTML 파일로 저장하세요.",
+        "GitHub 기록으로 개발자 이력서와 포트폴리오를 자동으로 정리하세요. 직접 쓴 resume 저장소의 경력도 연결할 수 있습니다. 한국어·영어 이력서를 PDF, Word, HTML로 저장하는 GitHubPrint(깃헙프린트)입니다.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub 이력서",
+        "깃헙프린트",
+        "깃허브 이력서 자동 생성",
         "GitHub 포트폴리오",
         "개발자 이력서 생성기",
         "개발자 프로필 생성기",
@@ -481,9 +483,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHub Resume & Portfolio Builder — PDF & Word | GitHubPrint",
+      homeTitle: "GitHub Resume Builder — PDF, Word & CV | GitHubPrint",
       homeDescription:
-        "Turn GitHub projects into a developer portfolio, brief, report, or resume. Explore Korean and English templates, then save a PDF to send, Word to edit, or an offline HTML file to read.",
+        "Automatically turn GitHub projects and your authored resume repository into a developer resume, CV or portfolio. Build in English or Korean and export PDF, Word or offline HTML with GitHubPrint.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub resume",

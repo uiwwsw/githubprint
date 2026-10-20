@@ -10,3 +10,5 @@ npm-debug.log*
 tests/docx-validator/bin/
 tests/docx-validator/obj/
 .DS_Store
+.vercel
+.env*

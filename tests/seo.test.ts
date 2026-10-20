@@ -112,6 +112,6 @@ test("sitemap includes canonical public pages with truthful stable dates", () =>
     assert.ok(entry.alternates?.languages?.["x-default"]);
     if (entry.url.endsWith("showcase"))
       assert.equal(entry.lastModified, undefined);
-    else assert.equal(entry.lastModified, "2026-09-11");
+    else assert.equal(entry.lastModified, /\/templates\//.test(entry.url) ? "2026-09-11" : "2026-10-20");
   }
 });

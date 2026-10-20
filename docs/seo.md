@@ -41,3 +41,9 @@ Use the actual ownership verification values from the site's account; never inve
 Use `DOCUMENT_TEST_URL` to check a deployed site. `SEO_CANONICAL_ORIGIN` defaults to `https://githubprint.vercel.app`; override it when testing a custom canonical domain. Generated visual artifacts are saved to `.cache/seo-qa/`.
 
 References: [Google canonical guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls), [localized pages](https://developers.google.com/search/docs/specialty/international/localized-versions), [accurate sitemap dates](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap), [crawlable noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing), and [Next.js metadata](https://nextjs.org/docs/app/getting-started/metadata-and-og-images).
+
+## 2026-10-20 search wording update
+
+Korean and English home titles, descriptions and the visible H1 now explicitly describe GitHub resume/CV generation, Korean/English output and PDF/Word/HTML export. Authored Resume content still requires the user's resume repository; this does not invent employment history from GitHub activity. Home content lastmod is2026-10-20; unchanged template guides retain2026-09-11. Existing canonicals/hreflang/private-result noindex remain.
+
+The Google and Naver account-issued verification HTML files are retained inpublic/ for ownership verification. They are public site verification artifacts, not authentication credentials. Console ownership/sitemap submission results are recorded after deployment verification.

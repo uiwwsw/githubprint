@@ -6,6 +6,7 @@ export const TEMPLATE_IDS: TemplateId[] = [
   "insight",
   "resume",
 ];
+export const HOME_CONTENT_UPDATED_AT = "2026-10-20";
 export const PUBLIC_CONTENT_UPDATED_AT = "2026-09-11";
 export const getTemplateGuidePath = (id: TemplateId, locale: Locale) =>
   `${locale === "en" ? "/en" : ""}/templates/${id}`;
