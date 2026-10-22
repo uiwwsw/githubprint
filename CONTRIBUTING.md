@@ -18,11 +18,11 @@ GitHubPrint is intentionally small. Contributions should respect the product con
 
 Read these files first:
 
-- [`<home>/gitfolio/README.md`](<home>/gitfolio/README.md)
-- [`<home>/gitfolio/lib/schemas.ts`](<home>/gitfolio/lib/schemas.ts)
-- [`<home>/gitfolio/lib/github.ts`](<home>/gitfolio/lib/github.ts)
-- [`<home>/gitfolio/lib/analyze.ts`](<home>/gitfolio/lib/analyze.ts)
-- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)
+- [`README.md`](./README.md)
+- [`lib/schemas.ts`](./lib/schemas.ts)
+- [`lib/github.ts`](./lib/github.ts)
+- [`lib/analyze.ts`](./lib/analyze.ts)
+- [`docs/learning-loop.md`](./docs/learning-loop.md)
 
 ### Working Rules
 
@@ -48,11 +48,11 @@ npm run check
 
 If you change product behavior, update at least one of these:
 
-- [`<home>/gitfolio/README.md`](<home>/gitfolio/README.md)
-- [`<home>/gitfolio/.env.example`](<home>/gitfolio/.env.example)
-- [`<home>/gitfolio/CONTRIBUTING.md`](<home>/gitfolio/CONTRIBUTING.md)
-- [`<home>/gitfolio/data/`](<home>/gitfolio/data)
-- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)
+- [`README.md`](./README.md)
+- [`.env.example`](./.env.example)
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- [`data/`](./data/)
+- [`docs/learning-loop.md`](./docs/learning-loop.md)
 
 ## 한국어
 
@@ -68,10 +68,10 @@ GitHubPrint는 의도적으로 작은 제품입니다. 기여 시 아래 계약�
 
 ### 작업 전 확인 파일
 
-- [`<home>/gitfolio/README.md`](<home>/gitfolio/README.md)
-- [`<home>/gitfolio/lib/schemas.ts`](<home>/gitfolio/lib/schemas.ts)
-- [`<home>/gitfolio/lib/github.ts`](<home>/gitfolio/lib/github.ts)
-- [`<home>/gitfolio/lib/analyze.ts`](<home>/gitfolio/lib/analyze.ts)
+- [`README.md`](./README.md)
+- [`lib/schemas.ts`](./lib/schemas.ts)
+- [`lib/github.ts`](./lib/github.ts)
+- [`lib/analyze.ts`](./lib/analyze.ts)
 
 ### 작업 원칙
 
@@ -97,8 +97,8 @@ npm run check
 
 제품 동작이 바뀌면 최소 하나 이상 같이 갱신합니다.
 
-- [`<home>/gitfolio/README.md`](<home>/gitfolio/README.md)
-- [`<home>/gitfolio/.env.example`](<home>/gitfolio/.env.example)
-- [`<home>/gitfolio/CONTRIBUTING.md`](<home>/gitfolio/CONTRIBUTING.md)
-- [`<home>/gitfolio/data/`](<home>/gitfolio/data)
-- [`<home>/gitfolio/docs/learning-loop.md`](<home>/gitfolio/docs/learning-loop.md)
+- [`README.md`](./README.md)
+- [`.env.example`](./.env.example)
+- [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- [`data/`](./data/)
+- [`docs/learning-loop.md`](./docs/learning-loop.md)
