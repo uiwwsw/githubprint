@@ -10,5 +10,6 @@
     "app/robots.ts"
   ],
   "packages": [],
-  "outputs": []
+  "outputs": [],
+  "uiPolicy": "source-only"
 }
