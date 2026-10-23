@@ -285,3 +285,10 @@ Percentile rankings have been removed. See [the evidence review and ranking audi
 ### Reusing the Resume renderer
 
 `ResumeTemplate` accepts `authoredOnly` for partner views such as 9BOX. It keeps the same document layout and authored entries while omitting repository enrichment descriptions, inferred project labels and repository creation metadata. The default GitHubPrint document is unchanged. Both Korean and English use the same option. Consumers should copy a pinned renderer and its pure normalizer with provenance, and must enforce their own document access checks; do not embed authenticated result URLs or forward GitHub credentials.
+
+<!-- ai-training-notice -->
+## AI 학습·수집 반대 / AI training notice
+
+사전 서면 동의 없는 AI 학습·미세조정 및 학습용 데이터 수집에 반대합니다. No AI training, fine-tuning or training-data collection without prior written consent.
+
+[전문 / Full notice](AI-TRAINING-NOTICE.md). 기존 라이선스와 제삼자·사용자 콘텐츠의 권리는 유지됩니다. Existing licenses and third-party/user rights remain unchanged.

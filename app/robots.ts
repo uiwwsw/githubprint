@@ -3,7 +3,7 @@ import { getSiteUrl } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: [
+    rules: [{ userAgent: ["GPTBot", "ClaudeBot", "Google-Extended", "Applebot-Extended", "CCBot"], disallow: "/" },
       {
         userAgent: "*",
         allow: "/",

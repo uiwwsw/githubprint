@@ -1,0 +1,14 @@
+{
+  "assets": [
+    "public/ai-training-notice.txt",
+    "AI-TRAINING-NOTICE.md"
+  ],
+  "surfaces": [
+    "app/[locale]/layout.tsx"
+  ],
+  "robots": [
+    "app/robots.ts"
+  ],
+  "packages": [],
+  "outputs": []
+}
