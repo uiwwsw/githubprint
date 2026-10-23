@@ -33,3 +33,11 @@ tests/docx-validator/obj/
 AGENTS.md
 CLAUDE.md
 GEMINI.md
+
+# Shared private-file exclusions
+.private/
+.secrets/
+*.p8
+*.mobileprovision
+*.provisionprofile
+*.cer
