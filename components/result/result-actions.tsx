@@ -327,6 +327,7 @@ export function ResultActions({
             className="gap-2 rounded-lg bg-[#176b50] hover:bg-[#10503b]"
             disabled={!canDownload || !!busy}
             onClick={openDialog}
+            data-usage-target="export_open"
             aria-haspopup="dialog"
           >
             {copy.saveShare}
@@ -429,6 +430,7 @@ export function ResultActions({
               size="sm"
               disabled={!!busy}
               onClick={copyLink}
+              data-usage-target="result_copy_link"
             >
               {publicShare.kind === "example"
                 ? copy.copyExampleLink

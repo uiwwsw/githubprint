@@ -1,3 +1,4 @@
+import { UsageAnalytics } from "../usage-analytics";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
@@ -33,6 +34,7 @@ export default async function LocaleLayout({
           {children}
         </NextIntlClientProvider>
 
+        <UsageAnalytics />
       </body>
     </html>
   );
