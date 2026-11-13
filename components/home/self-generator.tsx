@@ -15,7 +15,6 @@ import { getDictionary } from "@/lib/i18n";
 import { SELF_GENERATOR_TEMPLATE_KEY } from "@/lib/self-generator-preferences";
 import { getTemplateMeta } from "@/lib/templates";
 import type { Locale, TemplateId } from "@/lib/schemas";
-import { cn } from "@/lib/utils";
 import type { ResumeReadiness } from "@/lib/resume-readiness";
 
 type RepoChoice = { name: string; archived: boolean };
@@ -271,17 +270,19 @@ export function SelfGenerator({
   return (
     <section
       id="generator"
-      className="mx-auto my-10 max-w-5xl scroll-mt-8 rounded-3xl border border-black/10 bg-white p-5 shadow-sm sm:p-8"
+      className="gp-generator"
+      aria-labelledby="generator-title"
     >
-      <p className="studio-eyebrow">YOUR DOCUMENT / @{username}</p>
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+      <p className="gp-generator-account">@{username}</p>
+      <h2 id="generator-title" className="mt-1">
         {resumeOnly
           ? t("기존 이력서 연결", "Connect your existing resume")
           : t("어떤 문서를 만들까요?", "What would you like to make?")}
       </h2>
       {!resumeOnly && (
         <div
-          className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4"
+          className="gp-template-picker"
+          role="group"
           aria-label={t("문서 템플릿", "Document template")}
         >
           {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
@@ -291,24 +292,9 @@ export function SelfGenerator({
                 key={id}
                 aria-pressed={options.template === id}
                 onClick={() => selectTemplate(id)}
-                className={cn(
-                  "rounded-2xl border p-4 text-left transition",
-                  options.template === id
-                    ? "border-emerald-800 bg-emerald-950 text-white"
-                    : "border-black/10 hover:bg-neutral-50",
-                )}
               >
-                <span className="block font-serif text-2xl">
-                  {getTemplateMeta(locale)[id].label}
-                </span>
-                <span
-                  className={cn(
-                    "mt-2 block text-xs leading-5",
-                    options.template === id
-                      ? "text-emerald-100"
-                      : "text-neutral-500",
-                  )}
-                >
+                <strong>{getTemplateMeta(locale)[id].label}</strong>
+                <span>
                   {getTemplateMeta(locale)[id].shortLabel}
                 </span>
               </button>
@@ -316,7 +302,7 @@ export function SelfGenerator({
           )}
         </div>
       )}
-      <p className="my-6 text-sm leading-7 text-neutral-600">
+      <p className="my-6 text-[15px] leading-7 text-ink-soft">
         {purpose[options.template]}
       </p>
       <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -332,6 +318,7 @@ export function SelfGenerator({
                   {(["public", "authorized"] as const).map((value) => (
                     <label
                       key={value}
+                      className="gp-choice items-center"
                       data-selected={options.resumeSource === value}
                     >
                       <input
@@ -375,7 +362,7 @@ export function SelfGenerator({
                 <label className="flex cursor-pointer items-start gap-3 text-sm">
                   <input
                     type="checkbox"
-                    className="mt-1 accent-emerald-800"
+                    className="mt-1"
                     checked={options.resumeProjects === "authorized"}
                     onChange={(event) =>
                       setOptions({
@@ -403,33 +390,29 @@ export function SelfGenerator({
             </>
           ) : (
             <fieldset className="space-y-3">
-              <legend className="mb-3 text-sm font-semibold">
+              <legend className="mb-3 text-[15px] font-bold">
                 {t("사용할 자료 범위", "Sources to use")}
               </legend>
               {choices.map((choice) => (
                 <label
                   key={choice.value}
-                  className={cn(
-                    "flex cursor-pointer items-start gap-3 rounded-2xl border p-4",
-                    options.analysisScope === choice.value
-                      ? "border-emerald-700 bg-emerald-50/70"
-                      : "border-black/10",
-                  )}
+                  className="gp-choice"
+                  data-selected={options.analysisScope === choice.value}
                 >
                   <input
                     type="radio"
                     name="analysis-scope"
-                    className="mt-1 accent-emerald-800"
+                    className="mt-1"
                     checked={options.analysisScope === choice.value}
                     onChange={() =>
                       setOptions({ ...options, analysisScope: choice.value })
                     }
                   />
                   <span>
-                    <span className="block text-sm font-medium">
+                    <span className="block text-[15px] font-bold">
                       {choice.title}
                     </span>
-                    <span className="mt-1 block text-xs leading-6 text-neutral-600">
+                    <span className="mt-1 block text-[13px] leading-6 text-ink-soft">
                       {choice.text}
                     </span>
                   </span>
@@ -438,14 +421,14 @@ export function SelfGenerator({
             </fieldset>
           )}
           {needsPermission && !canReadPrivate ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-              <h3 className="text-sm font-semibold">
+            <div className="gp-status" data-tone="problem">
+              <h3 className="font-bold">
                 {t(
                   "비공개 접근 권한 연결",
                   "Connect private repository access",
                 )}
               </h3>
-              <p className="mt-2 text-xs leading-6 text-amber-950">
+              <p className="mt-2 text-[13px] leading-6">
                 {t(
                   "GitHub는 비공개 저장소의 읽기·쓰기 권한을 함께 요청합니다. GitHubPrint는 선택한 자료를 읽기만 합니다.",
                   "GitHub requests both read and write permission for private repositories. GitHubPrint only reads the sources you select.",
@@ -463,21 +446,23 @@ export function SelfGenerator({
                     /* optional draft */
                   }
                 }}
-                className="mt-4 inline-flex rounded-lg bg-amber-950 px-4 py-2 text-sm text-white"
+                className="gp-button gp-button-small mt-4"
               >
-                {t("GitHub에서 권한 연결", "Connect access on GitHub")} ↗
+                {t("GitHub에서 권한 연결", "Connect access on GitHub")}
               </a>
             </div>
           ) : null}
           {resume &&
           !(options.resumeSource === "authorized" && !canReadPrivate) ? (
             <div
-              className={cn(
-                "rounded-2xl border p-5 text-sm leading-6",
+              className="gp-status"
+              data-tone={
                 sourceState === "ready"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-950"
-                  : "border-black/10 bg-neutral-50 text-neutral-700",
-              )}
+                  ? "ready"
+                  : sourceState
+                    ? "problem"
+                    : undefined
+              }
               aria-live="polite"
             >
               <p className="font-semibold">
@@ -583,17 +568,17 @@ export function SelfGenerator({
             </div>
           ) : null}
           {privateAnalysis && canReadPrivate ? (
-            <div className="rounded-2xl border border-black/10 p-5">
-              <h3 className="text-sm font-semibold">
+            <div className="gp-status">
+              <h3 className="font-bold">
                 {t(
                   "분석할 비공개 저장소 선택",
                   "Select private repositories to analyze",
                 )}{" "}
-                <span className="text-neutral-500">
+                <span className="font-medium text-ink-soft">
                   {options.privateRepos.length}/{MAX_PRIVATE_REPOS}
                 </span>
               </h3>
-              <p className="mt-2 text-xs leading-6 text-neutral-500">
+              <p className="mt-2 text-[13px] leading-6 text-ink-soft">
                 {t(
                   "선택을 위해 본인 소유 비공개 저장소 이름 목록을 불러옵니다. 내용은 선택한 저장소만 읽습니다.",
                   "Load names of your owned private repositories for selection. Only selected repositories have their contents read.",
@@ -637,10 +622,10 @@ export function SelfGenerator({
                     onChange={(event) => setQuery(event.target.value)}
                     aria-label={t("저장소 검색", "Search repositories")}
                     placeholder={t("저장소 검색", "Search repositories")}
-                    className="mt-3 w-full rounded-lg border border-black/15 px-3 py-2 text-sm"
+                    className="mt-3 w-full rounded-md border border-rule bg-paper px-3 py-2 text-sm"
                   />
                   {options.privateRepos.length ? (
-                    <p className="mt-3 break-all text-xs leading-6 text-emerald-900">
+                    <p className="mt-3 break-all text-[13px] font-semibold leading-6">
                       {t("선택됨: ", "Selected: ")}
                       {options.privateRepos.join(", ")}
                     </p>
@@ -657,10 +642,10 @@ export function SelfGenerator({
                         return (
                           <label
                             key={repo.name}
-                            className="flex cursor-pointer items-start gap-3 rounded-lg p-2 text-sm hover:bg-neutral-50"
+                            className="flex cursor-pointer items-start gap-3 rounded-md p-2 text-sm hover:bg-paper"
                           >
                             <input
-                              className="mt-1 accent-emerald-800"
+                              className="mt-1"
                               type="checkbox"
                               checked={selected}
                               disabled={
@@ -685,7 +670,7 @@ export function SelfGenerator({
                             <span className="min-w-0 break-all">
                               {repo.name}
                               {repo.archived ? (
-                                <span className="ml-2 text-xs text-neutral-500">
+                                <span className="ml-2 text-xs text-ink-soft">
                                   Archived
                                 </span>
                               ) : null}
@@ -699,7 +684,8 @@ export function SelfGenerator({
             </div>
           ) : null}
           <Button
-            className="w-full bg-emerald-900 text-white hover:bg-emerald-950"
+            size="lg"
+            className="w-full"
             disabled={
               pending ||
               (resume && sourceState !== "ready") ||
@@ -715,24 +701,19 @@ export function SelfGenerator({
             {pending ? dict.home.submitting : submitLabel}
           </Button>
           {error ? (
-            <p role="alert" className="mt-3 text-sm leading-6 text-red-700">
+            <p role="alert" className="mt-3 text-sm leading-6 text-proof">
               {error}
             </p>
           ) : null}
         </div>
         <aside
-          className="generator-preview hidden lg:block"
+          className="gp-generator-preview hidden lg:block"
           aria-label={t("선택한 템플릿", "Selected template")}
         >
-          <div className="generator-preview-paper">
-            <TemplatePreview locale={locale} template={options.template} />
-          </div>
-          <div className="generator-preview-caption">
+          <TemplatePreview locale={locale} template={options.template} />
+          <div>
             <p>
-              {getTemplateMeta(locale)[options.template].label}
-              <span>PDF · Word · HTML</span>
-            </p>
-            <p>
+              <strong>{getTemplateMeta(locale)[options.template].label}</strong>
               {t(
                 "미리보기에서 확인하고, 원하는 형식으로 저장하세요.",
                 "Review your document, then save it in the format you need.",
@@ -742,7 +723,7 @@ export function SelfGenerator({
         </aside>
       </div>
       {needsPermission ? (
-        <p className="mt-4 text-xs leading-6 text-neutral-500">
+        <p className="mt-4 text-[13px] leading-6 text-ink-soft">
           {t(
             "선택한 자료만 읽으며, 비공개 내용은 외부 AI로 보내지 않습니다. 결과 페이지는 나만 볼 수 있습니다.",
             "Only selected sources are read. Private content is not sent to external AI. Your results page is visible only to you.",

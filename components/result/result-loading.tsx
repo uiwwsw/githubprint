@@ -9,35 +9,30 @@ export function ResultLoading() {
   const dict = getDictionary(locale);
 
   return (
-    <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-10">
+    <main className="min-h-screen">
       <PageEnterScrollTop />
-      <div className="mx-auto max-w-[1200px] space-y-5">
-        <div className="screen-toolbar screen-only mx-auto flex w-full max-w-[210mm] flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-            <div className="h-10 w-28 animate-pulse rounded-full bg-white/70" />
-            <div className="h-10 w-28 animate-pulse rounded-full bg-white/70" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <div className="h-11 w-28 animate-pulse rounded-full bg-white/70" />
+      <div className="gp-container space-y-4 pb-16 pt-6">
+        <div className="screen-only mx-auto w-full max-w-[210mm]">
+          <div className="export-toolbar">
+            <div className="h-6 w-32 animate-pulse rounded bg-desk" />
+            <div className="h-9 w-24 animate-pulse rounded-md bg-desk" />
           </div>
         </div>
-        <div className="document-page mx-auto rounded-[2rem] border border-black/[0.08] bg-white/[0.85] p-6 shadow-[0_40px_100px_-56px_rgba(0,0,0,0.45)] sm:p-9">
-          <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-            {dict.result.loadingEyebrow}
+        <div className="document-page mx-auto bg-paper p-6 sm:p-12" aria-busy="true">
+          <p className="text-lg font-bold text-ink">{dict.result.loadingEyebrow}</p>
+          <p className="mt-2 text-sm text-ink-soft" role="status">
+            {dict.result.loadingMessage}
           </p>
-          <p className="mt-3 text-sm text-neutral-500">{dict.result.loadingMessage}</p>
-          <div className="mt-5 h-4 w-24 animate-pulse rounded bg-black/[0.07]" />
-          <div className="mt-4 h-14 w-3/4 animate-pulse rounded bg-black/[0.07]" />
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div className="h-24 animate-pulse rounded-[1.2rem] bg-black/[0.06]" key={index} />
-            ))}
-          </div>
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div className="h-52 animate-pulse rounded-[1.4rem] bg-black/[0.06]" key={index} />
-            ))}
-          </div>
+          <div className="mt-10 h-12 w-2/3 animate-pulse rounded bg-desk" />
+          <div className="mt-4 h-4 w-1/3 animate-pulse rounded bg-desk" />
+          <div className="mt-8 h-0.5 w-full bg-desk" />
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div className="mt-8 space-y-3" key={index}>
+              <div className="h-5 w-40 animate-pulse rounded bg-desk" />
+              <div className="h-3 w-full animate-pulse rounded bg-desk" />
+              <div className="h-3 w-5/6 animate-pulse rounded bg-desk" />
+            </div>
+          ))}
         </div>
       </div>
     </main>

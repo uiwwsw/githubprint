@@ -32,18 +32,23 @@ export function DataUseReceipt({
           : `${privateCount} selected private repositories · ${options.analysisScope === "private-details" ? "names, descriptions, and links included" : "anonymous aggregates only"}. The project evidence review uses public evidence. Private data was not sent to external AI or learning records.`;
   return (
     <section
-      className="screen-only mx-auto max-w-[210mm] rounded-xl border border-emerald-900/15 bg-emerald-50/70 px-5 py-4"
+      className="gp-notice screen-only mx-auto max-w-[210mm]"
       aria-label={ko ? "사용한 자료" : "Sources used"}
     >
-      <h2 className="text-xs font-semibold text-emerald-950">
+      <h2 className="text-sm font-bold">
         {ko
-          ? "사용한 자료 · PDF / Word / HTML 동일 적용"
-          : "Sources used · applies to PDF / Word / HTML"}
+          ? "이 문서에 사용한 자료"
+          : "Sources used in this document"}
       </h2>
-      <p className="mt-2 text-xs leading-6 text-emerald-950/80">{text}</p>
+      <p className="mt-1 text-[13px] leading-6 text-ink-soft">
+        {text}{" "}
+        {ko
+          ? "PDF, Word, HTML 모두 같은 자료로 저장됩니다."
+          : "PDF, Word and HTML files use the same sources."}
+      </p>
       <a
         href={locale === "ko" ? "/#generator" : "/en#generator"}
-        className="mt-2 inline-block text-xs underline underline-offset-4"
+        className="gp-text-link mt-2 inline-block text-[13px]"
       >
         {ko ? "자료 범위 다시 선택" : "Choose sources again"}
       </a>

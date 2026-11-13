@@ -33,74 +33,93 @@ export async function GET(
   const heading = template.success
     ? getTemplateGuide(template.data, locale.data).ogTitle
     : ko
-      ? "GitHub 기록을\nPDF와 Word로."
-      : "Your GitHub work.\nReady for PDF & Word.";
+      ? "GitHub에 남긴 것으로\n쓰는 이력서"
+      : "A resume written from\nwhat you put on GitHub";
   const font = await readFile(
     join(process.cwd(), "public/fonts/Pretendard-SemiBold.ttf"),
   );
-  const sections = ko
-    ? ["프로필과 핵심 기술", "대표 프로젝트", "작업의 근거"]
-    : ["PROFILE & SKILLS", "SELECTED PROJECTS", "THE WORK BEHIND IT"];
+  const ink = "#26292e";
+  const proof = "#c0392b";
+  const notes = ko
+    ? ["README와 프로필 소개", "프로필에 고정한 저장소", "저장소 파일에서 확인한 기술"]
+    : ["From READMEs and your bio", "Pinned repositories", "Tools found in repository files"];
+  const blocks = [
+    { top: 196, height: 46 },
+    { top: 282, height: 92 },
+    { top: 414, height: 30 },
+  ];
   return new ImageResponse(
     <div
       style={{
         display: "flex",
         width: "100%",
         height: "100%",
-        background: "#f4f7f2",
-        color: "#17271d",
-        padding: "58px 64px",
+        background: "#e7e8ea",
+        color: ink,
+        padding: "56px 64px",
         fontFamily: "Pretendard",
         position: "relative",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", width: 740 }}>
+      <div style={{ display: "flex", flexDirection: "column", width: 560 }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
             gap: 14,
-            fontSize: 27,
+            fontSize: 28,
           }}
         >
-          <span
+          <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#176b50",
-              color: "white",
-              width: 44,
-              height: 44,
-              borderRadius: 9,
-              fontSize: 28,
+              position: "relative",
+              width: 34,
+              height: 34,
             }}
           >
-            G/
-          </span>
+            <div
+              style={{
+                position: "absolute",
+                left: 7,
+                top: 7,
+                width: 20,
+                height: 20,
+                borderRadius: 999,
+                border: `3px solid ${ink}`,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: 15.5,
+                top: 0,
+                width: 3,
+                height: 34,
+                background: ink,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 15.5,
+                width: 34,
+                height: 3,
+                background: ink,
+              }}
+            />
+          </div>
           GitHubPrint
         </div>
         <div
           style={{
             display: "flex",
-            color: "#537863",
-            fontSize: 17,
-            letterSpacing: 3,
-            marginTop: 60,
-          }}
-        >
-          {kind === "home"
-            ? "YOUR WORK, WELL DOCUMENTED"
-            : `${kind.toUpperCase()} / TEMPLATE GUIDE`}
-        </div>
-        <div
-          style={{
-            display: "flex",
             flexDirection: "column",
-            fontSize: ko ? 60 : 54,
-            lineHeight: 1.2,
+            fontSize: ko ? 58 : 52,
+            lineHeight: 1.18,
             letterSpacing: -2,
-            marginTop: 24,
+            marginTop: template.success ? 70 : 96,
           }}
         >
           {heading.split("\n").map((line) => (
@@ -112,24 +131,18 @@ export async function GET(
         <div
           style={{
             display: "flex",
-            color: "#65766c",
-            fontSize: 22,
+            color: "#5d636b",
+            fontSize: 24,
             marginTop: 30,
           }}
         >
-          {ko
-            ? "개발자 소개서 · 포트폴리오 · 리포트 · 이력서"
-            : "Developer briefs, portfolios, reports & resumes"}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            color: "#176b50",
-            fontSize: 20,
-            marginTop: 48,
-          }}
-        >
-          PDF + DOCX / 한국어 · English
+          {template.success
+            ? ko
+              ? `${kind[0].toUpperCase()}${kind.slice(1)} 템플릿 · PDF, Word, HTML`
+              : `${kind[0].toUpperCase()}${kind.slice(1)} template · PDF, Word, HTML`
+            : ko
+              ? "공개 GitHub 자료로 만드는 A4 개발자 문서"
+              : "A4 developer documents from public GitHub work"}
         </div>
       </div>
       <div
@@ -137,71 +150,91 @@ export async function GET(
           position: "absolute",
           display: "flex",
           flexDirection: "column",
-          right: 55,
-          top: 90,
+          left: 660,
+          top: 70,
           width: 300,
-          height: 445,
+          height: 560,
           background: "white",
-          border: "1px solid #dce5df",
-          borderRadius: 4,
-          padding: 30,
-          boxShadow: "0 20px 40px #17271d14",
-          transform: "rotate(5deg)",
+          padding: "34px 30px",
+          boxShadow: "0 18px 40px rgba(38,41,46,0.25)",
         }}
       >
+        <div style={{ display: "flex", fontSize: 34, letterSpacing: -1 }}>
+          {ko ? "김하늘" : "Alex Morgan"}
+        </div>
+        <div style={{ display: "flex", fontSize: 15, marginTop: 6 }}>
+          {ko ? "웹 인터페이스를 만드는 개발자" : "Developer building web interfaces"}
+        </div>
         <div
-          style={{
-            display: "flex",
-            color: "#71907b",
-            fontSize: 13,
-            paddingBottom: 18,
-            borderBottom: "3px solid #176b50",
-          }}
-        >
-          {kind === "home" ? "GITHUBPRINT" : kind.toUpperCase()}
-        </div>
-        <div style={{ display: "flex", fontSize: 26, marginTop: 23 }}>
-          {ko ? "나의 작업, 한눈에." : "Your work, on paper."}
-        </div>
-        {sections.map((section) => (
+          style={{ display: "flex", height: 3, background: ink, marginTop: 22 }}
+        />
+        {[0, 1, 2].map((index) => (
           <div
-            key={section}
-            style={{ display: "flex", flexDirection: "column", marginTop: 30 }}
+            key={index}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              position: "absolute",
+              left: 30,
+              top: blocks[index].top,
+              width: 240,
+              gap: 9,
+            }}
           >
-            <div style={{ display: "flex", color: "#38644c", fontSize: 13 }}>
-              {section}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                height: 5,
-                width: "100%",
-                background: "#e9eee9",
-                marginTop: 12,
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                height: 5,
-                width: "75%",
-                background: "#e9eee9",
-                marginTop: 7,
-              }}
-            />
+            {Array.from({ length: Math.round(blocks[index].height / 16) }).map(
+              (_, line) => (
+                <div
+                  key={line}
+                  style={{
+                    display: "flex",
+                    height: 7,
+                    width: line % 2 ? "72%" : "100%",
+                    background: "#dfe2e5",
+                  }}
+                />
+              ),
+            )}
           </div>
         ))}
+      </div>
+      {notes.map((note, index) => (
         <div
+          key={note}
           style={{
+            position: "absolute",
             display: "flex",
-            color: "#7d8f83",
-            fontSize: 11,
-            marginTop: 34,
+            alignItems: "center",
+            left: 948,
+            top: 70 + blocks[index].top - 4,
+            height: blocks[index].height + 8,
           }}
         >
-          A4 / {ko ? "문서 구성 예시" : "EXAMPLE LAYOUT"}
+          <div
+            style={{
+              display: "flex",
+              width: 10,
+              height: "100%",
+              border: `2.5px solid ${proof}`,
+              borderLeft: "none",
+            }}
+          />
+          <div
+            style={{ display: "flex", width: 22, height: 2.5, background: proof }}
+          />
+          <div
+            style={{
+              display: "flex",
+              width: 190,
+              marginLeft: 8,
+              color: proof,
+              fontSize: 17,
+              lineHeight: 1.3,
+            }}
+          >
+            {note}
+          </div>
         </div>
-      </div>
+      ))}
     </div>,
     {
       width: 1200,

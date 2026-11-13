@@ -9,11 +9,9 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
-  primary:
-    "bg-neutral-950 text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] hover:bg-neutral-800",
-  secondary:
-    "border border-line-strong bg-white/80 text-neutral-900 hover:bg-white",
-  ghost: "text-neutral-700 hover:bg-neutral-900/5",
+  primary: "border border-ink bg-ink text-paper hover:bg-black",
+  secondary: "border border-ink bg-paper text-ink hover:bg-desk",
+  ghost: "text-ink hover:bg-desk",
 };
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -32,7 +30,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-full font-medium transition disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-45",
         variantClasses[variant],
         sizeClasses[size],
         className,

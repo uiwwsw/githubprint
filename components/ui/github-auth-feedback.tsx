@@ -42,7 +42,7 @@ export function GitHubAuthFeedback({ locale }: { locale: Locale }) {
   return (
     <p
       role={outcome === "connected" ? "status" : "alert"}
-      className="mb-4 rounded-xl border border-emerald-900/15 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-950"
+      className={`gp-notice mb-4 ${outcome === "connected" ? "" : "gp-notice-error"}`}
     >
       {messages[outcome][locale === "ko" ? 0 : 1]}
     </p>

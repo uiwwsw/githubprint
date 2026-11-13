@@ -32,6 +32,7 @@ import { RenderTemplate } from "@/components/result/render-template";
 import { ResumeResultState } from "@/components/result/resume-result-state";
 import { ResultState } from "@/components/result/result-state";
 import { LanguageToggle } from "@/components/ui/language-toggle";
+import { SiteHeader } from "@/components/ui/site-header";
 import { PageEnterScrollTop } from "@/components/ui/page-enter-scroll-top";
 
 export type ResultPageSearchParams = {
@@ -141,12 +142,12 @@ export async function ResultPageContent({
 
   if (!session) {
     return (
-      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
+      <main className="min-h-screen pb-16">
         <PageEnterScrollTop />
-        <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="screen-only flex justify-end">
+        <div className="gp-container space-y-4">
+          <SiteHeader locale={locale}>
             <LanguageToggle locale={locale} />
-          </div>
+          </SiteHeader>
           <ResultActions
             backHref={homeHref}
             canDownload={false}
@@ -205,12 +206,12 @@ export async function ResultPageContent({
       const resumeCopy = getResumeCopy(locale);
 
       return (
-        <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
+        <main className="min-h-screen pb-16">
           <PageEnterScrollTop />
-          <div className="mx-auto max-w-[1200px] space-y-5">
-            <div className="screen-only flex justify-end">
-              <LanguageToggle locale={locale} />
-            </div>
+          <div className="gp-container space-y-4">
+            <SiteHeader locale={locale}>
+            <LanguageToggle locale={locale} />
+          </SiteHeader>
             <ResultActions
               backHref={homeHref}
               canDownload={availability.state === "ready"}
@@ -241,8 +242,8 @@ export async function ResultPageContent({
             {availability.state === "ready" ? (
               <>
                 {availability.document.warnings.length > 0 ? (
-                  <section className="screen-only rounded-[1.25rem] border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-950">
-                    <p className="font-medium">
+                  <section className="gp-notice gp-notice-error screen-only mx-auto max-w-[210mm]">
+                    <p className="font-bold">
                       {resumeCopy.resultState.warningTitle}
                     </p>
                     <p className="mt-1 leading-6">
@@ -298,12 +299,12 @@ export async function ResultPageContent({
     });
 
     return (
-      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
+      <main className="min-h-screen pb-16">
         <PageEnterScrollTop />
-        <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="screen-only flex justify-end">
+        <div className="gp-container space-y-4">
+          <SiteHeader locale={locale}>
             <LanguageToggle locale={locale} />
-          </div>
+          </SiteHeader>
           <ResultActions
             backHref={homeHref}
             dataMode={source.dataMode}
@@ -343,12 +344,12 @@ export async function ResultPageContent({
     const presentation = getErrorPresentation(error, locale);
 
     return (
-      <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
+      <main className="min-h-screen pb-16">
         <PageEnterScrollTop />
-        <div className="mx-auto max-w-[1200px] space-y-5">
-          <div className="screen-only flex justify-end">
+        <div className="gp-container space-y-4">
+          <SiteHeader locale={locale}>
             <LanguageToggle locale={locale} />
-          </div>
+          </SiteHeader>
           <ResultActions
             backHref={homeHref}
             canDownload={false}

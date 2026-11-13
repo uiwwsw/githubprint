@@ -9,6 +9,7 @@ import { getRouteLocale, type LocaleRouteParams } from "./locale";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "@fontsource-variable/noto-serif-kr";
 import "../globals.css";
+import "../site.css";
 
 export const metadata: Metadata = getBaseMetadata();
 

@@ -6,6 +6,8 @@ import { PageEnterScrollTop } from "@/components/ui/page-enter-scroll-top";
 import { GitHubAuthStatus } from "@/components/ui/github-auth-status";
 import { GitHubAuthFeedback } from "@/components/ui/github-auth-feedback";
 import { LanguageToggle } from "@/components/ui/language-toggle";
+import { SiteHeader } from "@/components/ui/site-header";
+import { SiteFooter } from "@/components/ui/site-footer";
 import {
   buildGitHubLoginPath,
   getGitHubSession,
@@ -34,95 +36,100 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
   );
   const copy = dict.studio;
   const prefix = locale === "en" ? "/en" : "";
+  const proof = copy.proof;
+  const canSignIn = !session && hasGitHubOAuthConfig();
   return (
-    <main className="studio-home min-h-screen">
+    <main className="min-h-screen">
       <PageEnterScrollTop />
       <StructuredData data={structuredData} />
-      <div className="studio-container">
-        <nav className="studio-nav">
-          <Link href={`${prefix}/`} className="brand-wordmark">
-            <span className="brand-mark">G/</span>GitHubPrint
+      <div className="gp-container">
+        <SiteHeader locale={locale}>
+          <a className="gp-hide-narrow" href="#templates">
+            {copy.templates}
+          </a>
+          <Link className="gp-hide-narrow" href={`${prefix}/preview`}>
+            {copy.sampleTitle}
           </Link>
-          <div className="flex items-center gap-6">
-            <a
-              className="hidden text-sm text-neutral-500 sm:block"
-              href="#templates"
-            >
-              {copy.templates}
-            </a>
-            <LanguageToggle locale={locale} />
-          </div>
-        </nav>
+          <LanguageToggle locale={locale} />
+        </SiteHeader>
         <LocaleSuggestion locale={locale} />
-        <section className="studio-hero">
-          <div className="studio-hero-copy">
-            <p className="studio-eyebrow">
-              <span className="status-dot" />
-              {copy.eyebrow}
-            </p>
-            <h1>
-              {copy.titleTop}
-              <br />
-              <span>{copy.titleBottom}</span>
-            </h1>
-            <p className="studio-description">{copy.description}</p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+        <section className="gp-hero" aria-labelledby="hero-title">
+          <div className="gp-hero-copy">
+            <h1 id="hero-title">{copy.title}</h1>
+            <p className="gp-hero-lede">{copy.description}</p>
+            <div className="gp-hero-actions">
               {session ? (
-                <a className="studio-cta" href="#generator">
+                <a className="gp-button" href="#generator">
                   {locale === "ko" ? "내 문서 만들기" : "Create my document"}
-                  <span aria-hidden="true">↗</span>
                 </a>
               ) : null}
-              {!session && hasGitHubOAuthConfig() ? (
+              {canSignIn ? (
                 <a
-                  className="studio-cta"
+                  className="gp-button"
                   href={buildGitHubLoginPath(`${prefix}/#generator`)}
                 >
                   {dict.home.authSignIn}
-                  <span aria-hidden="true">↗</span>
                 </a>
               ) : null}
               <Link
                 className={
-                  session || hasGitHubOAuthConfig()
-                    ? "text-sm text-neutral-600 underline underline-offset-4"
-                    : "studio-cta"
+                  session || canSignIn ? "gp-text-link" : "gp-button"
                 }
                 href={`${prefix}/preview`}
               >
                 {copy.preview}
-                <span aria-hidden="true">↗</span>
               </Link>
             </div>
-            <p className="mt-5 text-xs tracking-wide text-neutral-500">
-              {copy.formats}
-            </p>
+            <p className="gp-hero-small">{copy.formats}</p>
           </div>
-          <div className="hero-paper-stage">
-            <div className="hero-paper-back" />
-            <TemplatePreview locale={locale} template="resume" hero />
-            <span className="paper-caption">01 — RESUME</span>
-          </div>
-        </section>
-        <div className="studio-steps">
-          {[
-            [copy.stepOne, copy.stepOneBody],
-            [copy.stepTwo, copy.stepTwoBody],
-            [copy.stepThree, copy.stepThreeBody],
-          ].map(([title, body], index) => (
-            <div key={title}>
-              <span className="step-index">0{index + 1}</span>
-              <div>
-                <h2>{title}</h2>
-                <p>{body}</p>
+          <figure className="gp-proof-stage" aria-label={proof.label}>
+            <div className="gp-sheet">
+              <div className="gp-sheet-head" aria-hidden="true">
+                <span>{proof.sheetHead}</span>
+                <span>{proof.sheetDate}</span>
+              </div>
+              <p className="gp-sheet-name">{proof.name}</p>
+              <p className="gp-sheet-role">{proof.role}</p>
+              <p className="gp-sheet-link">{proof.link}</p>
+              <div className="gp-sheet-rule" />
+              <div className="gp-mark">
+                <p className="gp-sheet-text">{proof.intro}</p>
+                <p className="gp-note">{proof.introNote}</p>
+              </div>
+              <p className="gp-sheet-label">{proof.projectsLabel}</p>
+              <div className="gp-mark">
+                {proof.projects.map(([name, body]) => (
+                  <div className="gp-sheet-project" key={name}>
+                    <strong>{name}</strong>
+                    <p>{body}</p>
+                  </div>
+                ))}
+                <p className="gp-note">{proof.projectsNote}</p>
+              </div>
+              <p className="gp-sheet-label">{proof.stackLabel}</p>
+              <div className="gp-mark">
+                <div className="gp-chips">
+                  {proof.stack.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </div>
+                <p className="gp-note">{proof.stackNote}</p>
+              </div>
+              <p className="gp-sheet-label">{proof.jobLabel}</p>
+              <div className="gp-mark">
+                <div className="gp-sheet-job">
+                  {proof.job}
+                  <span>{proof.jobDate}</span>
+                </div>
+                <p className="gp-note">{proof.jobNote}</p>
               </div>
             </div>
-          ))}
-        </div>
-        <div className="my-10">
-          <GitHubAuthFeedback locale={locale} />
-          <GitHubAuthStatus locale={locale} />
-        </div>
+          </figure>
+        </section>
+      </div>
+      <div className="gp-container">
+        <GitHubAuthFeedback locale={locale} />
+        <GitHubAuthStatus locale={locale} />
         {session ? (
           <SelfGenerator
             canReadPrivate={hasPrivateRepoPermission(session.scopes)}
@@ -136,91 +143,103 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
             username={session.user.login}
           />
         ) : null}
-        <section id="templates" className="studio-templates">
-          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-            <div>
-              <p className="studio-eyebrow">A FORMAT FOR EVERY STORY</p>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                {copy.templates}
-              </h2>
-            </div>
-            <p className="text-sm text-neutral-500">{copy.templateHint}</p>
+        <section className="gp-section" aria-labelledby="steps-title">
+          <div className="gp-section-head">
+            <h2 id="steps-title">{copy.stepsTitle}</h2>
           </div>
-          <div className="template-gallery">
+          <ol className="gp-steps mt-8">
+            {[
+              [copy.stepOne, copy.stepOneBody],
+              [copy.stepTwo, copy.stepTwoBody],
+              [copy.stepThree, copy.stepThreeBody],
+            ].map(([title, body]) => (
+              <li key={title}>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+        <section
+          id="templates"
+          className="gp-section"
+          aria-labelledby="templates-title"
+        >
+          <div className="gp-section-head">
+            <h2 id="templates-title">{copy.templateTitle}</h2>
+            <p>{copy.templateHint}</p>
+          </div>
+          <div className="gp-shelf">
             {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
-              (id, index) => (
+              (id) => (
                 <Link
-                  className="template-gallery-card"
+                  className="gp-shelf-item"
                   key={id}
                   href={getTemplateGuidePath(id, locale)}
-                  aria-label={`${dict.templateMeta[id].label} — ${guideCopy[locale].overview}`}
                 >
-                  <div
-                    className={`template-thumbnail template-thumbnail-${id}`}
-                  >
+                  <span className="gp-shelf-paper">
                     <TemplatePreview locale={locale} template={id} />
-                  </div>
-                  <div className="flex items-baseline justify-between pt-5">
-                    <h3>{dict.templateMeta[id].label}</h3>
-                    <span className="text-xs text-neutral-400">
-                      0{index + 1} ↗
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-neutral-500">
-                    {dict.templateMeta[id].description}
-                  </p>
+                  </span>
+                  <h3>{dict.templateMeta[id].label}</h3>
+                  <p>{dict.templateMeta[id].description}</p>
+                  <p className="gp-shelf-for">{copy.templateFor[id]}</p>
                 </Link>
               ),
             )}
           </div>
         </section>
-        <section
-          className="studio-export-formats"
-          aria-labelledby="formats-title"
-        >
-          <div>
-            <p className="studio-eyebrow">ONE DOCUMENT, THREE WAYS</p>
+        <section className="gp-section" aria-labelledby="ledger-title">
+          <div className="gp-section-head">
+            <h2 id="ledger-title">{copy.ledgerTitle}</h2>
+            <p>{copy.ledgerIntro}</p>
+          </div>
+          <div className="gp-ledger">
+            <div>
+              <h3>{copy.ledgerInTitle}</h3>
+              <ul>
+                {copy.ledgerIn.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="gp-ledger-out">
+              <h3>{copy.ledgerOutTitle}</h3>
+              <ul>
+                {copy.ledgerOut.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+              <p className="gp-ledger-note">{copy.ledgerNote}</p>
+            </div>
+          </div>
+        </section>
+        <section className="gp-section" aria-labelledby="formats-title">
+          <div className="gp-section-head">
             <h2 id="formats-title">{copy.formatTitle}</h2>
             <p>{copy.formatSubtitle}</p>
           </div>
-          <div className="studio-format-options">
+          <dl className="gp-formats">
             {[
-              {
-                name: "PDF",
-                use: copy.pdfUse,
-                description: copy.pdfDescription,
-                extension: ".pdf",
-              },
-              {
-                name: "Word",
-                use: copy.wordUse,
-                description: copy.wordDescription,
-                extension: ".docx",
-              },
-              {
-                name: "HTML",
-                use: copy.htmlUse,
-                description: copy.htmlDescription,
-                extension: ".html",
-              },
-            ].map((format) => (
-              <div key={format.name}>
-                <span className="format-file" aria-hidden="true">
-                  {format.extension}
-                </span>
-                <h3>
-                  {format.name}
-                  <span>{format.use}</span>
-                </h3>
-                <p>{format.description}</p>
+              ["PDF", ".pdf", copy.pdfUse, copy.pdfDescription],
+              ["Word", ".docx", copy.wordUse, copy.wordDescription],
+              ["HTML", ".html", copy.htmlUse, copy.htmlDescription],
+            ].map(([name, extension, use, description]) => (
+              <div key={name}>
+                <dt>
+                  {name}
+                  <span>{extension}</span>
+                </dt>
+                <dd>{use}</dd>
+                <dd>{description}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </section>
-        <section className="studio-faq" aria-labelledby="faq-title">
-          <p className="studio-eyebrow">BEFORE YOU START</p>
-          <h2 id="faq-title">{guideCopy[locale].faqTitle}</h2>
-          <div className="faq-list">
+        <section className="gp-section" aria-labelledby="faq-title">
+          <div className="gp-section-head">
+            <h2 id="faq-title">{guideCopy[locale].faqTitle}</h2>
+          </div>
+          <div className="gp-faq">
             {guideCopy[locale].faq.map(({ q, a }) => (
               <details key={q}>
                 <summary>{q}</summary>
@@ -229,15 +248,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
             ))}
           </div>
         </section>
-        <footer className="studio-footer">
-          <span className="font-semibold text-neutral-700">GitHubPrint</span>
-          <p>{copy.footer}</p>
-          <Link href={`${prefix}/showcase`}>
-            {locale === "ko"
-              ? "공개 이력서 사례 ↗"
-              : "Public resume showcase ↗"}
-          </Link>
-        </footer>
+        <SiteFooter locale={locale} />
       </div>
     </main>
   );

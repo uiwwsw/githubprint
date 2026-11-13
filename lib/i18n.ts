@@ -311,7 +311,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
       downloadPdf: "PDF 다운로드",
-      loadingEyebrow: "결과 미리보기",
+      loadingEyebrow: "문서를 만들고 있습니다",
       loadingMessage: "GitHub 정보를 바탕으로 문서 미리보기를 만드는 중입니다.",
       stateStatusLabel: "상태",
       stateStatusValue: "생성 불가",
@@ -570,7 +570,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
       downloadPdf: "Download PDF",
-      loadingEyebrow: "Result Preview",
+      loadingEyebrow: "Building your document",
       loadingMessage:
         "Reading GitHub data and generating the document preview.",
       stateStatusLabel: "Status",
