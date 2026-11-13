@@ -247,12 +247,12 @@ export function ResultActions({
   const feedback = (
     <>
       {status ? (
-        <p role="status" className="mt-3 text-sm leading-6 text-[#176b50]">
+        <p role="status" className="toolbar-status">
           {status}
         </p>
       ) : null}
       {error ? (
-        <p role="alert" className="mt-3 text-sm leading-6 text-red-700">
+        <p role="alert" className="toolbar-status">
           {error}
         </p>
       ) : null}
@@ -295,21 +295,26 @@ export function ResultActions({
               href={backHref}
               aria-label={dict.result.backToTemplate}
             >
-              ←
+              <svg
+                aria-hidden="true"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M11 3 5 9l6 6" />
+              </svg>
             </Link>
           ) : null}
-          <div className="min-w-0">
-            <p className="text-xs text-neutral-500">{copy.documentReady}</p>
-            <p className="font-semibold text-neutral-950">
-              {dict.templateMeta[template].label}{" "}
-              <span className="ml-1 text-xs font-normal text-neutral-500">
-                / A4
-              </span>
-            </p>
-          </div>
+          <p className="toolbar-title min-w-0">
+            {dict.templateMeta[template].label}
+            <span>A4</span>
+          </p>
           {dataMode === "private_enriched" ||
           resumeRepoVisibility === "private" ? (
-            <span className="rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-900">
+            <span className="toolbar-flag">
               {resumeRepoVisibility === "private"
                 ? locale === "ko"
                   ? "비공개 원본"
@@ -324,23 +329,21 @@ export function ResultActions({
         </div>
         <div className="flex gap-2">
           <Button
-            className="gap-2 rounded-lg bg-[#176b50] hover:bg-[#10503b]"
+            size="sm"
             disabled={!canDownload || !!busy}
             onClick={openDialog}
             data-usage-target="export_open"
             aria-haspopup="dialog"
           >
             {copy.saveShare}
-            <span aria-hidden="true">↗</span>
           </Button>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1 pt-3 text-xs text-neutral-500">
-        <label className="flex items-center gap-2">
+      <div className="toolbar-meta">
+        <label>
           {copy.layout}
           <select
             aria-label={copy.layout}
-            className="rounded-md border border-black/10 bg-white px-2 py-1.5 text-neutral-700"
             value={density}
             disabled={!!busy}
             onChange={(event) => {
@@ -360,7 +363,7 @@ export function ResultActions({
           />
         ) : null}
         {logoutHref ? (
-          <a href={logoutHref} className="underline underline-offset-4">
+          <a href={logoutHref} className="gp-text-link font-medium">
             {dict.home.authSignOut}
           </a>
         ) : null}
@@ -375,7 +378,6 @@ export function ResultActions({
       >
         <div className="export-dialog-heading">
           <div>
-            <p className="studio-eyebrow">SAVE YOUR DOCUMENT</p>
             <h2 id={dialogTitleId}>{copy.saveTitle}</h2>
             <p id={dialogDescriptionId}>{copy.saveIntro}</p>
           </div>
@@ -401,17 +403,13 @@ export function ResultActions({
                 format.id === "pdf" ? handlePdf() : handleFile(format.id)
               }
             >
-              <span className="export-format-top">
-                <strong>{format.name}</strong>
-                <span>{format.extension}</span>
-              </span>
+              <span className="export-format-name">{format.name}</span>
               <span className="export-format-use">{format.use}</span>
               <span className="export-format-description">
                 {format.description}
               </span>
               <span className="export-format-action">
                 {busy === format.id ? copy.pending : format.label}
-                <span aria-hidden="true">↓</span>
               </span>
             </button>
           ))}

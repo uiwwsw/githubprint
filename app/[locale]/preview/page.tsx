@@ -5,6 +5,7 @@ import {
   buildSampleResume,
   SAMPLE_DATE,
 } from "@/fixtures/sample-document";
+import { LanguageLinks, SiteHeader } from "@/components/ui/site-header";
 import { ResultActions } from "@/components/result/result-actions";
 import { RenderTemplate } from "@/components/result/render-template";
 import { buildPreviewMetadata } from "@/lib/seo";
@@ -37,31 +38,19 @@ export default async function PreviewPage({
   const dict = getDictionary(locale);
   const prefix = locale === "en" ? "/en" : "";
   return (
-    <main className="preview-workspace min-h-screen px-4 py-7 sm:px-8">
-      <div className="mx-auto max-w-[210mm]">
-        <nav className="screen-only mb-12 flex items-center justify-between">
-          <Link href={`${prefix}/`} className="brand-wordmark">
-            <span className="brand-mark">G/</span>GitHubPrint
-          </Link>
-          <Link
-            className="text-sm text-neutral-600"
-            href={`${locale === "ko" ? "/en" : ""}/preview?template=${template}`}
-          >
-            {locale === "ko" ? "English ↗" : "한국어 ↗"}
-          </Link>
-        </nav>
-        <header className="screen-only mb-7">
-          <p className="studio-eyebrow">DOCUMENT STUDIO</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-            {dict.studio.sampleTitle}
-          </h1>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-neutral-500">
-            {dict.studio.sampleSubtitle}
-          </p>
-          <nav
-            className="template-tabs mt-6"
-            aria-label={dict.studio.templates}
-          >
+    <main className="min-h-screen pb-16">
+      <div className="gp-container">
+        <SiteHeader locale={locale}>
+          <LanguageLinks
+            locale={locale}
+            koHref={`/preview?template=${template}`}
+            enHref={`/en/preview?template=${template}`}
+          />
+        </SiteHeader>
+        <header className="gp-page-head screen-only mx-auto max-w-[210mm]">
+          <h1>{dict.studio.sampleTitle}</h1>
+          <p>{dict.studio.sampleSubtitle}</p>
+          <nav className="gp-tabs" aria-label={dict.studio.templates}>
             {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
               (id) => (
                 <Link
@@ -92,7 +81,7 @@ export default async function PreviewPage({
               username: "example",
             }}
           />
-          <p className="screen-only sample-notice">{dict.studio.example}</p>
+          <p className="screen-only gp-sample-note">{dict.studio.example}</p>
           {template === "resume" ? (
             <RenderTemplate
               template="resume"

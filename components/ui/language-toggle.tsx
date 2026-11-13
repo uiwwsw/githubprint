@@ -46,30 +46,20 @@ export function LanguageToggle({
   return (
     <div
       aria-label={dict.language.switchLabel}
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 p-1 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)]",
-        className,
-      )}
+      className={cn("gp-lang", className)}
       role="group"
     >
-      {(["ko", "en"] as Locale[]).map((option) => {
-        const active = option === locale;
-        return (
-          <button
-            className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-medium transition",
-              active
-                ? "bg-neutral-950 text-white"
-                : "text-neutral-600 hover:bg-black/[0.04]",
-            )}
-            key={option}
-            onClick={() => handleChange(option)}
-            type="button"
-          >
-            {dict.language[option]}
-          </button>
-        );
-      })}
+      {(["ko", "en"] as Locale[]).map((option) => (
+        <button
+          aria-pressed={option === locale}
+          key={option}
+          lang={option}
+          onClick={() => handleChange(option)}
+          type="button"
+        >
+          {option === "ko" ? "한국어" : "English"}
+        </button>
+      ))}
     </div>
   );
 }

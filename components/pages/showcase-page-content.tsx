@@ -12,6 +12,7 @@ import {
 } from "@/lib/showcase";
 import { getPublicShowcaseResumeDocument } from "@/lib/showcase-resume";
 import type { Locale } from "@/lib/schemas";
+import { LanguageLinks, SiteHeader } from "@/components/ui/site-header";
 import { StructuredData } from "@/components/seo/structured-data";
 
 function ExternalLink({
@@ -23,7 +24,7 @@ function ExternalLink({
 }) {
   return (
     <a
-      className="inline-flex h-11 w-full items-center justify-center rounded-full border border-black/[0.08] bg-white/85 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white sm:w-auto"
+      className="gp-text-link"
       href={href}
       rel="noreferrer"
       target="_blank"
@@ -97,53 +98,21 @@ export async function ShowcasePageContent({
         };
 
   return (
-    <main className="min-h-screen px-3 py-4 sm:px-6 sm:py-8 lg:px-10">
+    <main className="min-h-screen pb-16">
       <StructuredData data={structuredData} />
 
-      <div className="mx-auto max-w-[1200px] space-y-5">
-        <div className="screen-only flex flex-col gap-4 rounded-[1.4rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 space-y-2">
-              <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-                {copy.publicSample}
-              </p>
-              <p className="break-words font-serif text-3xl text-neutral-950">
-                {displayName}
-              </p>
-            </div>
-            <div className="inline-flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] bg-white/80 p-1 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)]">
-              <Link
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                  locale === "ko"
-                    ? "bg-neutral-950 text-white"
-                    : "text-neutral-600 hover:bg-black/[0.04]"
-                }`}
-                href={getShowcasePath(slug, "ko")}
-              >
-                KO
-              </Link>
-              <Link
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                  locale === "en"
-                    ? "bg-neutral-950 text-white"
-                    : "text-neutral-600 hover:bg-black/[0.04]"
-                }`}
-                href={getShowcasePath(slug, "en")}
-              >
-                EN
-              </Link>
-            </div>
-          </div>
-          <p className="text-pretty text-sm leading-7 text-neutral-600">
-            {copy.pageIntro}
-          </p>
-          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
-            <Link
-              className="inline-flex h-11 w-full items-center justify-center rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-[0_16px_40px_-24px_rgba(0,0,0,0.75)] transition hover:bg-neutral-800 sm:w-auto"
-              href={homePath}
-            >
-              {copy.openHome}
-            </Link>
+      <div className="gp-container space-y-4">
+        <SiteHeader locale={locale}>
+          <LanguageLinks
+            locale={locale}
+            koHref={getShowcasePath(slug, "ko")}
+            enHref={getShowcasePath(slug, "en")}
+          />
+        </SiteHeader>
+        <header className="gp-page-head screen-only mx-auto max-w-[210mm]">
+          <p className="gp-page-title break-words">{displayName}</p>
+          <p>{copy.pageIntro}</p>
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm">
             {canOpenSourceRepo ? (
               <ExternalLink href={showcase.resumeRepoUrl}>
                 {copy.openRepo}
@@ -152,8 +121,11 @@ export async function ShowcasePageContent({
             <ExternalLink href={`https://github.com/${showcase.username}`}>
               {copy.openGithub}
             </ExternalLink>
+            <Link className="gp-text-link" href={homePath}>
+              {copy.openHome}
+            </Link>
           </div>
-        </div>
+        </header>
 
         {resume ? (
           <div className="space-y-6">
@@ -180,17 +152,14 @@ export async function ShowcasePageContent({
             />
           </div>
         ) : (
-          <section className="rounded-[1.4rem] border border-black/[0.08] bg-white/[0.72] p-4 shadow-[0_24px_64px_-44px_rgba(0,0,0,0.45)] backdrop-blur sm:rounded-[1.8rem] sm:p-6">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-              {copy.publicSample}
-            </p>
-            <h1 className="mt-3 break-words font-serif text-3xl text-neutral-950">
+          <section className="gp-panel mx-auto max-w-[210mm]">
+            <h1 className="break-words text-2xl font-extrabold tracking-[-0.03em] text-ink">
               {copy.fallbackTitle}
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-neutral-600">
+            <p className="mt-3 max-w-3xl text-[15px] leading-7 text-ink-soft">
               {copy.fallbackBody}
             </p>
-            <div className="mt-6 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm">
               {canOpenSourceRepo ? (
                 <ExternalLink href={showcase.resumeRepoUrl}>
                   {copy.openRepo}

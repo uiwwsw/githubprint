@@ -48,13 +48,10 @@ export function ResumeResultState({
     >
       <div className="space-y-6">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.24em] text-neutral-400">
-            Resume
-          </p>
-          <h1 className="mt-3 font-serif text-4xl leading-tight text-neutral-950">
+          <h1 className="text-[32px] font-extrabold leading-tight tracking-[-0.035em] text-ink">
             {title}
           </h1>
-          <p className="mt-4 max-w-3xl text-[15px] leading-7 text-neutral-700">
+          <p className="mt-4 max-w-3xl text-[15px] leading-7 text-ink">
             {message}
           </p>
         </div>
@@ -74,7 +71,7 @@ export function ResumeResultState({
 
         <div className="screen-only flex gap-3">
           <Link
-            className="inline-flex h-11 items-center justify-center rounded-full border border-black/[0.08] bg-white/80 px-5 text-sm font-medium text-neutral-900 transition hover:bg-white"
+className="gp-button gp-button-quiet"
             href={homeHref}
           >
             {dict.result.backHome}

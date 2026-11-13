@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { TemplatePreview } from "@/components/home/template-preview";
+import { LanguageLinks, SiteHeader } from "@/components/ui/site-header";
+import { SiteFooter } from "@/components/ui/site-footer";
 import { StructuredData } from "@/components/seo/structured-data";
 import { buildTemplateMetadata, buildTemplateStructuredData } from "@/lib/seo";
 import { getDictionary } from "@/lib/i18n";
@@ -41,75 +43,62 @@ export default async function TemplateGuidePage({ params }: Props) {
   const dict = getDictionary(locale);
   const prefix = locale === "en" ? "/en" : "";
   return (
-    <main className="studio-home guide-page">
+    <main className="min-h-screen">
       <StructuredData data={buildTemplateStructuredData(locale, template)} />
-      <div className="studio-container">
-        <nav className="studio-nav" aria-label={copy.home}>
-          <Link href={prefix || "/"} className="brand-wordmark">
-            <span className="brand-mark">G/</span>GitHubPrint
-          </Link>
-          <Link
-            className="guide-language"
-            href={getTemplateGuidePath(template, locale === "ko" ? "en" : "ko")}
-            hrefLang={locale === "ko" ? "en" : "ko"}
-          >
-            {locale === "ko" ? "English ↗" : "한국어 ↗"}
-          </Link>
-        </nav>
+      <div className="gp-container">
+        <SiteHeader locale={locale} label={copy.home}>
+          <LanguageLinks
+            locale={locale}
+            koHref={getTemplateGuidePath(template, "ko")}
+            enHref={getTemplateGuidePath(template, "en")}
+          />
+        </SiteHeader>
         <nav
-          className="guide-breadcrumb"
+          className="gp-breadcrumb"
           aria-label={locale === "ko" ? "현재 위치" : "Breadcrumb"}
         >
           <Link href={prefix || "/"}>{copy.home}</Link>
           <span aria-hidden="true">/</span>
           <span aria-current="page">{dict.templateMeta[template].label}</span>
         </nav>
-        <header className="guide-hero">
+        <header className="gp-guide-hero">
           <div>
-            <p className="studio-eyebrow">
-              {copy.overview} / {dict.templateMeta[template].label}
-            </p>
             <h1>{guide.title}</h1>
-            <p className="guide-intro">{guide.intro}</p>
-            <div className="guide-actions">
+            <p className="gp-hero-lede">{guide.intro}</p>
+            <div className="gp-hero-actions">
               <Link
-                className="studio-cta"
+                className="gp-button"
                 href={`${prefix}/preview?template=${template}`}
               >
                 {copy.preview}
-                <span aria-hidden="true">↗</span>
               </Link>
-              <Link className="guide-secondary" href={prefix || "/"}>
-                {copy.start} →
+              <Link className="gp-text-link" href={`${prefix}/#generator`}>
+                {copy.start}
               </Link>
             </div>
-            <p className="guide-formats">
-              A4 · PDF · DOCX ·{" "}
-              {locale === "ko" ? "한국어 / 영어" : "Korean / English"}
+            <p className="gp-hero-small">
+              {locale === "ko"
+                ? "A4 크기로 한국어와 영어 모두 만들 수 있고, PDF·Word·HTML로 저장됩니다."
+                : "A4, in Korean or English, saved as PDF, Word or HTML."}
             </p>
           </div>
-          <div className={`guide-paper template-thumbnail-${template}`}>
-            <TemplatePreview locale={locale} template={template} />
-          </div>
+          <TemplatePreview locale={locale} template={template} />
         </header>
-        <article className="guide-content">
-          <section className="guide-audience">
+        <article className="gp-guide-body">
+          <section>
             <h2>{copy.audience}</h2>
             <p>{guide.audience}</p>
           </section>
           <section>
             <h2>{copy.structure}</h2>
-            <div className="guide-sections">
-              {guide.sections.map(({ title, body }, index) => (
-                <section key={title}>
-                  <span className="step-index">0{index + 1}</span>
-                  <div>
-                    <h3>{title}</h3>
-                    <p>{body}</p>
-                  </div>
-                </section>
+            <ol className="gp-guide-parts">
+              {guide.sections.map(({ title, body }) => (
+                <li key={title}>
+                  <h3>{title}</h3>
+                  <p>{body}</p>
+                </li>
               ))}
-            </div>
+            </ol>
           </section>
           <section>
             <h2>{copy.preparation}</h2>
@@ -118,32 +107,26 @@ export default async function TemplateGuidePage({ params }: Props) {
           <section>
             <h2>{copy.exports}</h2>
             <p>{copy.exportBody}</p>
-            <Link
-              className="guide-secondary"
-              href={`${prefix}/preview?template=${template}`}
-            >
-              {copy.preview} →
-            </Link>
           </section>
         </article>
-        <aside className="guide-related" aria-labelledby="related-title">
-          <h2 id="related-title">{copy.related}</h2>
-          <div>
+        <section
+          className="gp-section"
+          aria-labelledby="related-title"
+          style={{ borderTop: 0 }}
+        >
+          <div className="gp-section-head">
+            <h2 id="related-title">{copy.related}</h2>
+          </div>
+          <div className="gp-related">
             {TEMPLATE_IDS.filter((id) => id !== template).map((id) => (
               <Link key={id} href={getTemplateGuidePath(id, locale)}>
-                <strong>{dict.templateMeta[id].label} ↗</strong>
+                <strong>{dict.templateMeta[id].label}</strong>
                 <span>{getTemplateGuide(id, locale).title}</span>
               </Link>
             ))}
           </div>
-        </aside>
-        <footer className="studio-footer">
-          <Link href={prefix || "/"}>GitHubPrint</Link>
-          <p>{dict.studio.footer}</p>
-          <Link href={`${prefix}/showcase`}>
-            {locale === "ko" ? "공개 이력서 사례" : "Public resume showcase"}
-          </Link>
-        </footer>
+        </section>
+        <SiteFooter locale={locale} />
       </div>
     </main>
   );
