@@ -32,13 +32,10 @@ for (const locale of ["ko", "en"] as const) {
           /상위\s*\d|Top\s*\d+%|비교 집단|Peer benchmark|\d+\/100/,
         );
       }
-      if (template === "insight") {
-        await expect(page.locator("[data-evidence-review]")).toContainText(
-          locale === "ko" ? "검토한 공개 프로젝트" : "reviewed public",
-        );
-        await expect(
-          page.locator("[data-evidence-review] a").first(),
-        ).toHaveAttribute("href", /^https:\/\//);
+      if (template !== "resume") {
+        const repositories = page.locator(".repository-entries a");
+        await expect(repositories).toHaveText(["githubprint-web", "proto-kit", "doc-polish"]);
+        await expect(repositories.first()).toHaveAttribute("href", "https://github.com/example/githubprint-web");
       }
       const expectedText = await page
         .locator("[data-document]")
@@ -93,8 +90,10 @@ for (const locale of ["ko", "en"] as const) {
       expect(xml).toContain("w:keepNext");
       expect(xml).toContain("w:widowControl");
       // A text-only rebuild would pass content checks but lose the template.
-      expect((xml.match(/<w:tbl>/g) ?? []).length).toBeGreaterThan(2);
-      expect(xml).toContain("w:shd");
+      if (template !== "brief") {
+        expect((xml.match(/<w:tbl>/g) ?? []).length).toBeGreaterThan(0);
+        expect(xml).toContain("w:shd");
+      }
       const accent =
         template === "profile"
           ? "365C82"
@@ -140,18 +139,8 @@ for (const locale of ["ko", "en"] as const) {
         printBackground: true,
         tagged: true,
       });
-      if (template === "brief") {
-        // The fixed example is a concise introduction; its notes must not spill onto page two.
-        expect(await page.locator(".document-project").count()).toBe(2);
-        expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(
-          1,
-        );
-      }
-      if (template === "insight") {
-        // Named introduction evidence must not leave only the source notes on a fourth page.
-        expect(
-          (pdf.toString("latin1").match(/\/Type\s*\/Page\b/g) ?? []).length,
-        ).toBeLessThanOrEqual(3);
+      if (template !== "resume") {
+        expect(pdf.toString("latin1").match(/\/Type\s*\/Page\b/g)).toHaveLength(1);
       }
       await page.screenshot({
         path: path.join(output, `${filename}-screen.png`),

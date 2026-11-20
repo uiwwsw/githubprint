@@ -19,7 +19,6 @@
     <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs" />
     <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" />
     <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" />
-    <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-optional-111111" />
     <img alt="GitHub API" src="https://img.shields.io/badge/GitHub_API-public_data-181717?logo=github" />
     <img alt="Locale" src="https://img.shields.io/badge/Locale-KO%20%2F%20EN-555555" />
   </p>
@@ -29,49 +28,27 @@
 
 ### Overview
 
-GitHubPrint turns GitHub evidence into a readable developer document for sharing with recruiters, collaborators, or clients.
+GitHubPrint makes two documents from your signed-in GitHub account.
 
-- Input: GitHub profile URL, repository URL, or username
-- Output: A4 PDF for delivery, editable Word for revision, and offline HTML for reading
-- Templates: `brief`, `profile`, `insight`, `resume`
-- Analysis: OpenAI when available, schema-validated fallback otherwise
-- Locales: Korean and English routes (`/`, `/result`, `/en`, `/en/result`)
-
-Each template serves a different reading task: Brief introduces two selected projects, Profile puts project case studies first, Insight separates observed patterns from project evidence, and Resume preserves authored experience and section order. PDF, offline HTML, and editable Word capture the selected template's layout, typography, and colors. Word pagination can vary with the editor's font metrics.
-
-Automatic introductions cite the repositories and technologies behind each description. A specialty needs supporting implementation signals in at least two distinct, non-fork repositories; topic labels or popularity alone are insufficient. Work-pattern descriptions refer to actual README, project-link, test, or workspace evidence. Both AI and fallback output preserve these grounded identity fields, while authored Resume text remains under the author's control. Wording and evidence thresholds live in `data/templates/introductions.json`.
+- **Repository list** shows repository names, GitHub descriptions, and links. It includes up to five recent public repositories and, if you choose, up to three private repositories. Brief, Profile, and Insight are three designs for the same list.
+- **Resume only** formats the resume you wrote in the root `resume.yaml` of your `resume` repository. See the [setup guide](./docs/resume-template.md).
+- Both modes support Korean and English and export A4 PDF, editable Word, or offline HTML.
 
 ### Scope
 
-GitHubPrint defaults to public GitHub information:
-
-- profile metadata
-- public repositories
-- README content
-- topics, stars, update history, and homepage links
-- selected root files and recent commit messages
-
-GitHubPrint does not assert:
-
-- career tenure
-- leadership
-- collaboration quality
-- business impact
-- anything not visible from public GitHub evidence
+Repository lists use public GitHub profile and repository metadata. GitHubPrint reads selected private repository metadata only after you enable private access and pick repositories. An authored resume can also be stored in a private `resume` repository. See [private data choices](./docs/private-data.md).
 
 Current product limits:
 
 - individual developer accounts only; organization accounts are not supported
 - result pages are query-driven and intentionally not indexed
 - local development is more reliable with `GITHUB_TOKEN`
-- signed-in self mode applies only when the logged-in user generates their own profile
+- personal documents require sign-in to your own GitHub account
 
 ### Features
 
-- Three inference templates plus one `resume` repo-driven template
-- Source-linked review of READMEs, project links, test setups, and profile pins; no peer rankings or ability scores
+- Three repository list designs and one authored resume template
 - Server-side GitHub URL normalization and public data collection
-- AI analysis with a deterministic fallback path
 - Print-friendly result pages with browser PDF export
 - Editable Word / Google Docs-compatible `.docx` exports for all four templates, with standard fonts and no font embedding
 - Responsive, offline HTML files preserving the template markup, fonts, photos, cards, and A4 print styles
@@ -84,45 +61,23 @@ Current product limits:
 
 ### 개요
 
-GitHubPrint는 공개 GitHub 정보, 또는 로그인한 본인 계정의 승인된 GitHub 데이터를 바탕으로 채용 담당자, 협업자, 클라이언트에게 전달할 수 있는 개발자 문서를 만듭니다.
+GitHubPrint에서 본인 GitHub 계정으로 문서 두 종류를 만들 수 있습니다.
 
-- 입력: GitHub 프로필 URL, 저장소 URL, 또는 사용자 이름(username)
-- 출력: 제출용 A4 PDF, 편집용 Word, 오프라인 읽기용 HTML
-- 템플릿: `brief`, `profile`, `insight`, `resume`
-- 분석: OpenAI 사용 가능 시 AI 분석, 불가 시 규칙 기반 대체 분석
-- 언어 경로: `/`, `/result`, `/en`, `/en/result`
-
-### 범위
-
-GitHubPrint는 기본적으로 공개 GitHub 정보를 사용합니다:
-
-- 프로필 메타데이터
-- 공개 저장소
-- README 내용
-- topic, star 수, 최근 업데이트, 홈페이지 링크
-- 일부 루트 파일과 최근 커밋 메시지
-
-GitHubPrint는 다음 항목을 단정하지 않습니다:
-
-- 경력 연차
-- 리더십
-- 협업 능력
-- 비즈니스 성과
-- 공개 GitHub 근거로 확인할 수 없는 내용
+- **저장소 목록**은 저장소 이름, GitHub 설명, 링크를 담습니다. 최근 공개 저장소는 최대 5개까지 표시하고, 직접 고른 비공개 저장소를 최대 3개 추가할 수 있습니다. Brief, Profile, Insight 디자인은 같은 목록을 사용합니다.
+- **이력서 전용**은 `resume` 저장소 루트에 직접 작성한 `resume.yaml`을 문서로 만듭니다. [이력서 작성 방법](./docs/resume-template.md)을 참고하세요.
+- 두 모드 모두 한국어와 영어를 지원하며, PDF, Word, HTML로 저장할 수 있습니다.
 
 현재 제품 제약:
 
 - 개인 개발자 계정만 지원하며, 조직 계정은 지원하지 않습니다
 - 결과 페이지는 쿼리 기반 경로이며 검색 인덱싱 대상이 아닙니다
 - 로컬 개발은 `GITHUB_TOKEN`이 있을 때 더 안정적입니다
-- signed-in self mode는 로그인한 사용자가 본인 프로필을 생성할 때만 적용됩니다
+- 개인 문서는 본인 GitHub 계정으로 로그인한 뒤 만들 수 있습니다
 
 ### 주요 기능
 
-- 같은 분석 데이터를 쓰는 세 가지 추론형 템플릿과, `resume` 레포 기반 이력서 템플릿 제공
-- README, 프로젝트 링크, 테스트 구성, 프로필 고정 여부를 출처와 함께 보여주는 자료 목록 · 순위나 능력 점수 없음
+- 저장소 목록 디자인 3개와 직접 작성한 이력서용 템플릿
 - 서버 측 GitHub URL 정규화 및 공개 데이터 수집
-- AI 분석과 규칙 기반 fallback 경로
 - 인쇄 친화 결과 페이지와 브라우저 PDF 저장
 - 모든 템플릿의 편집 가능한 Word / Google Docs 호환 `.docx` 내보내기와 한글 글꼴 포함
 - 템플릿의 글꼴·사진·카드·모바일 및 인쇄 레이아웃을 보존하는 오프라인 HTML 내보내기
@@ -139,9 +94,9 @@ GitHubPrint는 다음 항목을 단정하지 않습니다:
 | `app/result/page.tsx` / `app/en/result/page.tsx` | Localized result routes                                                           |
 | `components/templates/`                          | Document templates for `brief`, `profile`, `insight`, and `resume`                |
 | `lib/resume.ts` / `lib/resume-source.ts`         | Resume schema parsing, normalization, and GitHub-backed activation checks         |
-| `lib/github.ts`                                  | GitHub collection, caching, fixture mode, and representative repository selection |
+| `lib/github.ts`                                  | Public and selected private repository metadata, resume sources, and fixtures     |
 | `lib/repo-identity.ts`                           | Contributor-editable repository identity inference driven by JSON rules           |
-| `lib/analyze.ts`                                 | AI analysis and fallback orchestration                                            |
+| `lib/analyze.ts`                                 | Legacy analysis and regression tooling                                           |
 | `lib/profile-features.ts`                        | Feature extraction from raw GitHub source data                                    |
 | `data/signals/`                                  | Signal definitions for languages, topics, files, and commit patterns              |
 | `data/repo-identity/`                            | JSON rules for contributor-editable stack, framework, and project-type inference  |
@@ -196,8 +151,8 @@ Repository identity inference is intentionally data-driven.
 | `GITHUB_CLIENT_ID`                    | Optional    | Enables GitHub sign-in; private access is an optional upgrade |
 | `GITHUB_CLIENT_SECRET`                | Optional    | Enables GitHub sign-in; private access is an optional upgrade |
 | `GITHUB_SESSION_SECRET`               | Optional    | Encrypts the server-side GitHub session cookie              |
-| `OPENAI_API_KEY`                      | Optional    | Enables AI analysis; fallback still works without it        |
-| `OPENAI_MODEL`                        | Optional    | Overrides the default model, currently `gpt-5-mini`         |
+| `OPENAI_API_KEY`                      | Optional    | Used by the legacy analysis module                          |
+| `OPENAI_MODEL`                        | Optional    | Overrides the model used by the legacy analysis module      |
 | `NEXT_PUBLIC_SITE_URL`                | Optional    | Canonical origin for metadata and Open Graph tags           |
 | `GITHUBPRINT_USE_FIXTURE`             | Optional    | Enables local fixture mode for UI work                      |
 | `GITHUBPRINT_CAPTURE_INSIGHTS`        | Optional    | Captures internal scoring snapshots for tuning              |

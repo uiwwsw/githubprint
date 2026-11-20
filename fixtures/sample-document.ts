@@ -1,53 +1,27 @@
 import { mockGitHubProfile } from "@/fixtures/mock-profile";
-import { buildEvidenceReview } from "@/lib/evidence-review";
-import { profileEngineConfig } from "@/lib/data-loader";
-import { buildRuleBasedAnalysis } from "@/lib/narrative-writer";
-import { extractProfileFeatures } from "@/lib/profile-features";
-import { scoreProfile } from "@/lib/rule-engine";
 import type { Locale } from "@/lib/schemas";
 import type { ResumeDocumentData, ResumeEntry } from "@/lib/resume";
 
 export const SAMPLE_DATE = "2026-09-01T00:00:00.000Z";
-export function buildSampleAnalysis(locale: Locale) {
-  const source = structuredClone(mockGitHubProfile);
-  source.account.name = locale === "ko" ? "김하늘" : "Alex Morgan";
-  source.account.avatarUrl =
-    "data:image/svg+xml," +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" rx="20" fill="#e4eee8"/><circle cx="50" cy="37" r="16" fill="#5b846f"/><path d="M20 85c0-20 12-31 30-31s30 11 30 31" fill="#5b846f"/></svg>',
-    );
-  source.account.username = "example-developer";
-  source.activity.note =
-    locale === "ko"
-      ? "최근 프로젝트에서 인터페이스 구현과 문서화 작업이 함께 확인됩니다."
-      : "Recent projects include interface development and documentation.";
-  if (locale === "en") {
-    const descriptions: Record<string, string> = {
-      "githubprint-web":
-        "A Next.js app that turns GitHub profiles into shareable developer documents",
-      "proto-kit": "A UI prototyping kit for testing product ideas",
-      "doc-polish": "Markdown tooling for clearer product documentation",
-    };
-    for (const repo of [...source.repos, ...source.representativeRepos]) {
-      repo.description = descriptions[repo.name] ?? repo.description;
-    }
-    source.evidenceSignals = [
-      "The primary languages are TypeScript, MDX, and CSS.",
-      "Selected repositories include documented READMEs.",
-      "Some selected projects link to a demo or a homepage.",
-    ];
-  }
-  const features = extractProfileFeatures(source, profileEngineConfig);
-  const scoring = scoreProfile(source, features, profileEngineConfig, locale);
+export function buildSampleRepositoryDocument(locale: Locale) {
+  const descriptions: Record<string, string> = {
+    "githubprint-web": "A Next.js app that turns GitHub repositories into shareable documents",
+    "proto-kit": "A UI prototyping kit for testing product ideas",
+    "doc-polish": "Markdown tooling for product documentation",
+  };
   return {
-    analysis: buildRuleBasedAnalysis(
-      source,
-      scoring,
-      profileEngineConfig,
-      locale,
-    ),
-    evidenceReview: buildEvidenceReview(source, locale),
-    mode: "fallback" as const,
+    name: locale === "ko" ? "김하늘" : "Alex Morgan",
+    avatarUrl:
+      "data:image/svg+xml," +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" rx="20" fill="#e4eee8"/><circle cx="50" cy="37" r="16" fill="#5b846f"/><path d="M20 85c0-20 12-31 30-31s30 11 30 31" fill="#5b846f"/></svg>',
+      ),
+    repositories: mockGitHubProfile.representativeRepos.map((repo) => ({
+      name: repo.name,
+      description: locale === "en" ? descriptions[repo.name] ?? repo.description : repo.description,
+      repoUrl: `https://github.com/example/${repo.name}`,
+      visibility: repo.visibility,
+    })),
   };
 }
 

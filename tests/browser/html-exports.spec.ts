@@ -328,6 +328,8 @@ test("document outline navigates to the heading and closes, while private result
   page,
 }) => {
   await page.goto("/preview?template=profile");
+  await expect(page.locator(".document-outline")).toHaveCount(0);
+  await page.goto("/preview?template=resume");
   await page.locator(".document-outline summary").click();
   const link = page
     .getByRole("navigation", { name: "문서 목차" })

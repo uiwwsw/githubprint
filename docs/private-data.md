@@ -1,26 +1,23 @@
 # Private data choices
 
-Private work has two separate uses: supplementing public GitHub evidence, and storing an authored resume without publishing its source. Signing in alone does not opt into either use.
+GitHubPrint uses private data when you select private repositories for a document or open an authored resume stored in a private repository.
 
-| Template / choice | Read | Included in PDF, Word, and HTML |
+| Choice | Read | Included in PDF, Word, and HTML |
 | --- | --- | --- |
-| Brief, Profile, Insight: Public only (default) | Public profile and public owned repositories | Public evidence only |
-| Analysis: Summarize private work | Public sources plus up to three explicitly selected owned private repositories | Selected-work counts, recognized technology labels, documentation/testing/automation signals; no private names, descriptions, URLs, README text, commit text, or arbitrary topics |
-| Analysis: Private details | The same selected sources | Selected private projects labeled Private, including names, descriptions, and links |
-| Resume: Public source (default) | Public `resume` repository, locale manifest, referenced Markdown and image assets | Authored content plus public linked-project metadata |
-| Resume: Allow private source | The owner's `resume` repository, including when private; referenced source files only | Authored content, including contact details and links. Private storage does **not** anonymize authored content |
-| Resume: Enrich linked private projects | Only owner-qualified `repo` fields explicitly referenced in the selected manifest, up to 30 unique missing references | Verified private repository descriptions, technology metadata, and links labeled Private. Authored prose is preserved |
+| Repository list: Public only (default) | Public owned repository metadata | Up to five repository names, descriptions, and links |
+| Repository list: Include private repositories | Public metadata and metadata for up to three selected, owned private repositories | Public entries and the selected private entries, marked Private |
+| Resume only | The owner's `resume` repository and referenced files | Authored content and public linked-project metadata |
 
-Use anonymous summaries when public activity understates private implementation work; use details for projects the author can disclose. Insight evidence reviews always use public evidence. Private work is not a basis for inventing career history, collaboration quality, or business outcomes. Technology combinations can still reveal the nature of a project; anonymous aggregates need review before sharing.
+A private resume can include authored contact details, career history, and links in its saved files.
 
 ## Access and isolation
 
 - Ordinary OAuth sign-in requests `read:user`. Private access is an explicit `repo` upgrade. `public_repo` never grants private access. GitHub's OAuth `repo` scope includes read and write access; the UI explains that GitHubPrint only makes read requests. GitHub does not provide a read-only equivalent OAuth scope. [GitHub scope documentation](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps)
-- An explicitly opened private repository picker loads only owned repository names and archived status. Analysis reads contents only after selection. Resume never uses this all-repository picker.
+- An explicitly opened private repository picker loads only owned repository names and archived status. The result reads repository metadata only for selected private entries. Resume uses its own source lookup.
 - Home rendering does not read resume manifests or private repositories. Public mode remains public even with an older broad-scope token. Account-wide private contributions and private profile fields are not requested.
-- Authenticated source requests use `no-store`. Private analyses bypass external AI, shared analysis caches, and learning capture. Anonymous mode removes raw private repositories before narrative generation and browser serialization; the project evidence review runs on a public-only source.
+- Authenticated source requests use `no-store`. Repository documents are rendered from GitHub metadata without external AI or learning capture.
 - Configuration POSTs require authentication, same-origin requests, schema validation, and permission checks. Result URLs contain an AES-GCM encrypted configuration, bound to the account and template, expiring after 24 hours. They contain no plaintext selected repository names or OAuth credentials. They do not grant access without the owner's authenticated session.
-- The result, legacy DOCX endpoint, and resume image endpoint resolve the same configuration. Without it, they default to public access. Old `private=1` links require a new explicit selection rather than silently enabling broad access.
+- The result, legacy DOCX endpoint, and resume image endpoint resolve the same configuration. Without it, they default to public access. Old `private=1` links and anonymous-summary configurations prompt users to choose sources again.
 - A refused OAuth upgrade preserves the existing session. Permission choices restore only during an explicit, ten-minute OAuth round trip; older persistent private-toggle preferences are ignored.
 - Local resume source overrides require an explicit environment path in development; adjacent folders are never read automatically.
 - The curated public showcase remains a separate publishing route with its existing masking policy. It does not inherit a user's private configuration.
@@ -33,7 +30,7 @@ Use anonymous summaries when public activity understates private implementation 
 
 ## Resume source checks and access recovery
 
-Resume starts with a compact public/private choice for the `resume` repository. Optional linked-project enrichment is collapsed under “Add project details” and stays off by default. Expanding or collapsing it does not change the setting; an enabled setting remains visible in the summary. The source storage choice never enables project enrichment on its own.
+The source check runs when the user selects Resume only. It can read a private `resume` source when the session already has private access or when the user connects it from the source status.
 
 The generator checks `resume.yaml` and its referenced authored content through the authenticated, same-origin `POST /api/resume-readiness` endpoint. The request specifies public or authorized source access; public mode never probes a private source, and the check never enriches linked private projects. Responses contain readiness metadata rather than the document or tokens and use `private, no-store`.
 

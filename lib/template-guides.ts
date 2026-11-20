@@ -1,3 +1,4 @@
+import { getDictionary } from "@/lib/i18n";
 import type { Locale, TemplateId } from "@/lib/schemas";
 
 export const TEMPLATE_IDS: TemplateId[] = [
@@ -21,86 +22,43 @@ type Guide = {
   preparation: string;
 };
 
+function repositoryGuide(id: Exclude<TemplateId, "resume">, locale: Locale): Guide {
+  const { label, shortLabel, description } = getDictionary(locale).templateMeta[id];
+  if (locale === "ko") {
+    return {
+      title: `GitHub 저장소 목록 · ${label}`,
+      description: `${description} PDF, Word, HTML로 저장할 수 있습니다.`,
+      ogTitle: `GitHub 저장소 목록\n${label} 디자인`,
+      intro: description,
+      audience: "GitHub의 프로젝트를 골라 한 문서로 공유할 때 쓸 수 있습니다.",
+      sections: [
+        { title: "GitHub 프로필", body: "계정 이름과 GitHub 프로필 링크가 상단에 들어갑니다." },
+        { title: shortLabel, body: description },
+        { title: "저장소 정보", body: "각 저장소의 이름, GitHub에 등록한 설명, 링크를 표시합니다." },
+      ],
+      preparation: "GitHub로 로그인한 뒤 저장소 목록을 고르세요. 공개 범위와 디자인을 선택하고 미리보기를 엽니다.",
+    };
+  }
+  return {
+    title: `GitHub Repository List · ${label}`,
+    description: `${description} Save it as PDF, Word, or HTML.`,
+    ogTitle: `GitHub repository list\n${label} design`,
+    intro: description,
+    audience: "Use this layout to share selected GitHub projects in a single document.",
+    sections: [
+      { title: "GitHub profile", body: "Your account name and a link to your GitHub profile appear at the top." },
+      { title: shortLabel, body: description },
+      { title: "Repository details", body: "Each repository shows its name, GitHub description, and link." },
+    ],
+    preparation: "Sign in with GitHub, choose Repository list, then select the visibility and design.",
+  };
+}
+
 const guides: Record<Locale, Record<TemplateId, Guide>> = {
   ko: {
-    brief: {
-      title: "GitHub 개발자 소개서 PDF·Word 템플릿 — Brief",
-      description:
-        "GitHub 프로젝트와 기술 스택을 짧은 개발자 소개서로 정리하세요. Brief의 구성과 활용법을 확인하고 한국어·영어 PDF 및 Word 예시를 내려받을 수 있습니다.",
-      ogTitle: "핵심만 담은\nGitHub 개발자 소개서",
-      intro:
-        "처음 만나는 동료에게 GitHub 링크만 전달하면 무엇부터 봐야 할지 알기 어렵습니다. Brief는 계정의 핵심 기술, 확인 가능한 활동, 대표 프로젝트를 먼저 읽을 수 있도록 정리하는 개발자 소개서입니다.",
-      audience:
-        "네트워킹, 협업 제안, 첫 미팅 전에 작업의 개요를 빠르게 공유할 때 적합합니다. 자세한 경력 이력보다 현재 공개된 작업의 방향을 소개하는 데 초점을 둡니다.",
-      sections: [
-        {
-          title: "프로필과 핵심 기술",
-          body: "GitHub 프로필과 대표 저장소에서 확인한 기술을 문서 앞부분에 배치합니다. 짧은 요약으로 전체 방향을 소개하고, 뒤에 나오는 프로젝트를 읽을 수 있는 맥락을 제공합니다.",
-        },
-        {
-          title: "대표 프로젝트와 확인된 특징",
-          body: "저장소 설명, README, 기술 구성과 링크를 모아 작업을 살펴볼 출발점을 만듭니다. 결과물의 근거를 직접 확인할 수 있도록 저장소와 서비스 링크를 함께 전달합니다.",
-        },
-        {
-          title: "최근 활동과 자료 범위",
-          body: "최근 활동과 사용한 자료 범위를 짧게 정리합니다. 프로젝트별 근거 자료와 작업 패턴 분석은 Insight에서 살펴볼 수 있습니다.",
-        },
-      ],
-      preparation:
-        "GitHub 계정으로 로그인한 뒤 Brief를 선택하세요. 별도의 resume 저장소는 필요하지 않습니다. 짧은 소개를 위한 구성이지만 데이터 분량에 따라 여러 페이지가 될 수 있으므로 저장 전 미리보기를 확인하세요.",
-    },
-    profile: {
-      title: "GitHub 개발자 포트폴리오 PDF·Word 템플릿 — Profile",
-      description:
-        "대표 프로젝트, 기술 스택, 작업 특징을 담은 GitHub 포트폴리오를 만드세요. Profile 템플릿을 미리 보고 A4 PDF와 편집 가능한 Word 문서로 저장할 수 있습니다.",
-      ogTitle: "프로젝트로 설명하는\n개발자 포트폴리오",
-      intro:
-        "Profile은 여러 저장소에 흩어진 프로젝트와 기술을 하나의 개발자 포트폴리오로 연결합니다. 짧은 소개보다 넓은 범위의 작업을 보여주고 싶을 때 사용할 수 있는 기본 문서 형식입니다.",
-      audience:
-        "포트폴리오 첨부 자료, 협업 검토 자료, 개발자로서의 작업 방향을 정리하는 문서에 적합합니다. 직접 작성한 경력을 중심으로 보여주고 싶다면 Resume 템플릿을 함께 살펴보세요.",
-      sections: [
-        {
-          title: "작업 방향을 설명하는 프로필",
-          body: "소개, 핵심 기술과 작업 특징을 함께 읽을 수 있게 구성합니다. 공개된 저장소에서 어떤 개발 활동이 반복되는지 살피되, 관찰 가능한 사실과 해석을 구분합니다.",
-        },
-        {
-          title: "대표 프로젝트를 읽는 근거",
-          body: "프로젝트 설명과 기술 구성, README나 서비스 링크 등 확인 가능한 자료를 함께 제공합니다. 문서의 설명을 읽은 사람이 실제 코드와 결과물로 이동할 수 있습니다.",
-        },
-        {
-          title: "사용 기술과 작업 특징",
-          body: "사용 기술과 프로젝트에서 확인되는 특징을 간결하게 정리합니다. 프로젝트 설명을 먼저 읽고, 구현한 코드와 결과물로 자연스럽게 이어갈 수 있습니다.",
-        },
-      ],
-      preparation:
-        "GitHub 로그인 후 Profile을 선택합니다. 최신 README와 정확한 저장소 설명, 접근 가능한 프로젝트 링크가 있으면 작업을 이해할 근거가 더 분명해집니다. 생성 후 설명과 원본 링크가 의도에 맞는지 확인하세요.",
-    },
-    insight: {
-      title: "GitHub 개발 활동 분석 리포트 PDF·Word — Insight",
-      description:
-        "GitHub 프로젝트의 반복 패턴과 기술 방향을 근거와 함께 읽어보세요. Insight 개발 활동 리포트의 구성, 해석 범위, PDF·Word 예시를 확인할 수 있습니다.",
-      ogTitle: "근거와 함께 읽는\nGitHub 활동 리포트",
-      intro:
-        "Insight는 프로젝트를 나열하는 데서 한 걸음 더 나아가, 공개 기록에서 반복되는 개발 방향과 작업 패턴을 설명하는 리포트입니다. 관찰된 사실과 해석의 근거를 함께 읽을 수 있도록 구성합니다.",
-      audience:
-        "내 GitHub가 어떤 개발자로 읽히는지 점검하거나 프로젝트 기록을 정리할 때 유용합니다. 기술 방향에 대한 참고 자료이며, 채용 평가 점수나 업무 성과를 증명하는 자료는 아닙니다.",
-      sections: [
-        {
-          title: "핵심 해석과 반복되는 패턴",
-          body: "대표 프로젝트에서 반복되는 기술과 구현 영역을 연결합니다. 프로젝트의 설명, README, 기술 구성에 나타난 신호를 바탕으로 문서의 해석이 어디에서 나왔는지 보여줍니다.",
-        },
-        {
-          title: "프로젝트별 읽기",
-          body: "각 프로젝트가 전체 활동에서 어떤 특징을 보여주는지 설명합니다. 단순히 사용하는 언어를 세는 대신, 확인 가능한 결과물과 문서화 흔적을 함께 살펴볼 수 있습니다.",
-        },
-        {
-          title: "프로젝트를 뒷받침하는 자료",
-          body: "선정된 공개 프로젝트에서 README, 등록된 웹 링크, 테스트 구성, 프로필 고정 여부를 확인합니다. 각 항목의 프로젝트 수와 출처를 보여 주며, 발견하지 못한 자료를 보완하는 방법도 안내합니다. 조회 범위를 명시하고 순위나 능력 점수는 매기지 않습니다.",
-        },
-      ],
-      preparation:
-        "GitHub 로그인 후 Insight를 선택하세요. 결과를 읽을 때는 근거 링크를 함께 확인하고, 공개하지 않은 작업이 리포트에 반영되지 않을 수 있다는 점을 고려하세요. 저장할 파일에도 해석의 한계가 함께 담깁니다.",
-    },
+    brief: repositoryGuide("brief", "ko"),
+    profile: repositoryGuide("profile", "ko"),
+    insight: repositoryGuide("insight", "ko"),
     resume: {
       title: "GitHub 이력서 PDF·Word 템플릿 — Resume",
       description:
@@ -129,84 +87,9 @@ const guides: Record<Locale, Record<TemplateId, Guide>> = {
     },
   },
   en: {
-    brief: {
-      title: "GitHub Developer Brief Template for PDF & Word",
-      description:
-        "Turn GitHub projects and technical skills into a concise developer introduction. Explore the Brief template and download editable Word and A4 PDF examples.",
-      ogTitle: "A concise introduction\nto your GitHub work",
-      intro:
-        "A GitHub profile link does not always tell a new collaborator where to start. Brief organizes your core technologies, observable activity, and selected projects into a developer introduction that is easy to scan.",
-      audience:
-        "Use it before a first meeting, in a collaboration proposal, or as supporting material when networking. It introduces the direction of your visible work rather than providing a complete employment history.",
-      sections: [
-        {
-          title: "Profile and core technologies",
-          body: "The opening combines a short summary with technologies found in the account and selected repositories. This gives the reader context before they move into individual projects.",
-        },
-        {
-          title: "Selected projects with evidence",
-          body: "Repository descriptions, README information, technical details, and product links provide starting points for exploring the work. Readers can follow the original sources rather than relying only on the generated description.",
-        },
-        {
-          title: "Recent activity and sources",
-          body: "Recent activity and source coverage provide concise context. Choose Insight for project evidence and work-pattern analysis.",
-        },
-      ],
-      preparation:
-        "Sign in with GitHub and choose Brief; a separate resume repository is not required. Although the structure is concise, the number of pages depends on the amount of content. Review the document and its source links before exporting.",
-    },
-    profile: {
-      title: "GitHub Developer Portfolio Template for PDF & Word",
-      description:
-        "Build a developer portfolio from GitHub projects, technical skills, and working patterns. Preview the Profile template and export it as an A4 PDF or editable Word document.",
-      ogTitle: "A developer portfolio\nbuilt around your projects",
-      intro:
-        "Profile brings projects and technologies spread across repositories into one developer portfolio. It is the general-purpose format for showing a broader body of work than a short introduction can cover.",
-      audience:
-        "Use it as a portfolio attachment, a collaboration reference, or a way to review the direction of your technical work. Choose Resume instead when you need to present an employment history that you have written yourself.",
-      sections: [
-        {
-          title: "A profile with technical context",
-          body: "The introduction connects core technologies with observable working patterns. It explains what recurs across public repositories while keeping evidence distinct from interpretation.",
-        },
-        {
-          title: "Projects readers can explore",
-          body: "Selected projects include descriptions, technologies, and available repository or product links. The document gives readers a route from a high-level overview to the actual code and output.",
-        },
-        {
-          title: "Technologies and work patterns",
-          body: "Technologies and observable project features are summarized concisely. Start with the project descriptions, then follow the links to inspect the code and output.",
-        },
-      ],
-      preparation:
-        "Sign in with GitHub and select Profile. Clear repository descriptions, current READMEs, and accessible project links make the available evidence easier to interpret. Review the generated wording and original sources before sharing.",
-    },
-    insight: {
-      title: "GitHub Activity Analysis Report for PDF & Word",
-      description:
-        "Explore recurring technologies and project patterns with the Insight GitHub report. Review the evidence, interpretation limits, and downloadable PDF and Word examples.",
-      ogTitle: "Understand the patterns\nin your GitHub work",
-      intro:
-        "Insight goes beyond listing repositories to explain recurring development patterns in public GitHub records. It presents the interpretation alongside the evidence used to form it, so you can understand how the account is being read.",
-      audience:
-        "Use the report to reflect on your technical direction or improve the way you document projects. It is supporting context, not a hiring score or proof of performance in a workplace.",
-      sections: [
-        {
-          title: "Core interpretation and recurring patterns",
-          body: "The report connects technologies and implementation areas that recur across selected projects. Repository descriptions, READMEs, and technical signals explain where each interpretation comes from.",
-        },
-        {
-          title: "A reading of individual projects",
-          body: "Each project is considered in the context of the wider body of work. Available output and documentation provide more context than a simple count of programming languages.",
-        },
-        {
-          title: "Evidence behind the projects",
-          body: "The review lists READMEs, registered web links, test setups, and profile pins found in selected public projects. Each item shows project counts and sources, with practical suggestions for material not observed. The fetched scope is explicit; there are no rankings or ability scores.",
-        },
-      ],
-      preparation:
-        "Sign in with GitHub and choose Insight. Read the linked evidence with the narrative, and remember that work you have not made available may be missing from the picture. Interpretation limits remain part of the exported document.",
-    },
+    brief: repositoryGuide("brief", "en"),
+    profile: repositoryGuide("profile", "en"),
+    insight: repositoryGuide("insight", "en"),
     resume: {
       title: "GitHub Resume Template for PDF & Editable Word",
       description:
@@ -256,11 +139,11 @@ export const guideCopy = {
     faq: [
       {
         q: "GitHubPrint로 어떤 문서를 만들 수 있나요?",
-        a: "개발자 소개서 Brief, 포트폴리오 Profile, 개발 활동 리포트 Insight, 직접 작성한 이력서 Resume를 만들 수 있습니다. 네 가지 템플릿 모두 한국어·영어와 PDF·Word·HTML 내보내기를 지원합니다.",
+        a: "저장소 목록이나 직접 작성한 이력서를 만들 수 있습니다. 저장소 목록에는 Brief, Profile, Insight 디자인이 있으며, 모든 문서를 PDF, Word, HTML로 저장할 수 있습니다.",
       },
       {
         q: "모든 템플릿에 resume 저장소가 필요한가요?",
-        a: "Resume 템플릿에만 resume 저장소와 resume.yaml이 필요합니다. Brief, Profile, Insight는 GitHub 프로필과 프로젝트 정보를 바탕으로 문서를 구성합니다.",
+        a: "이력서 전용 모드에서 resume 저장소의 resume.yaml을 사용합니다. 저장소 목록은 로그인한 뒤 바로 만들 수 있습니다.",
       },
       {
         q: "로그인 없이 예시 파일을 받아볼 수 있나요?",
@@ -292,11 +175,11 @@ export const guideCopy = {
     faq: [
       {
         q: "What can I create with GitHubPrint?",
-        a: "Create a Brief introduction, a Profile portfolio, an Insight activity report, or an authored Resume. All four formats support Korean and English, with PDF, editable Word, and portable HTML exports.",
+        a: "Create a repository list or format a resume you wrote. The list comes in Brief, Profile, and Insight designs. Both document types can be saved as PDF, Word, or HTML.",
       },
       {
         q: "Does every template require a resume repository?",
-        a: "Only Resume requires a resume repository and resume.yaml. Brief, Profile, and Insight use your GitHub profile and project information to compose the document.",
+        a: "Resume mode uses a resume.yaml file in your resume repository. You can make a repository list as soon as you sign in.",
       },
       {
         q: "Can I download examples without signing in?",

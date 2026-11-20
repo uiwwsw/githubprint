@@ -140,6 +140,15 @@ export type GitHubRepoSnapshot = {
   visibility: "private" | "public";
 };
 
+export type RepositoryDocumentEntry = {
+  name: string;
+  description: string | null;
+  repoUrl: string;
+  visibility: "public" | "private";
+};
+
+const PUBLIC_DOCUMENT_REPO_LIMIT = 5;
+
 export type GitHubSourceData = {
   account: {
     avatarUrl: string;
@@ -1009,6 +1018,59 @@ async function fetchSelectedPrivateRepos(
       return repo;
     }),
   );
+}
+
+/** Repository documents use GitHub metadata and read only explicitly selected private entries. */
+export async function getRepositoryDocumentEntries(
+  username: string,
+  authContext: GitHubSourceAuthContext,
+  privateRepoNames: string[],
+): Promise<RepositoryDocumentEntry[]> {
+  if (!isSignedInViewerForUsername(username, authContext))
+    throw new DocumentConfigurationError();
+
+  if (
+    !privateRepoNames.length &&
+    process.env.NODE_ENV !== "production" &&
+    readEnv("GITHUBPRINT_USE_FIXTURE", "GITFOLIO_USE_FIXTURE") === "1"
+  ) {
+    return mockGitHubProfile.representativeRepos
+      .filter((repo) => repo.visibility === "public")
+      .map(({ name, description, repoUrl, visibility }) => ({
+        name,
+        description,
+        repoUrl,
+        visibility,
+      }));
+  }
+
+  const { accessToken } = authContext;
+  const [publicRepos, privateRepos] = await Promise.all([
+    githubJsonPaginated<GitHubRepoResponse>(getPublicRepoListPath(username), {
+      accessToken,
+      disableCache: true,
+    }),
+    fetchSelectedPrivateRepos(username, privateRepoNames, authContext),
+  ]);
+  const selectedPublicRepos = publicRepos
+    .filter(
+      (repo) =>
+        !repo.private &&
+        !repo.fork &&
+        !repo.archived &&
+        repo.name.toLowerCase() !== "resume",
+    )
+    .slice(0, PUBLIC_DOCUMENT_REPO_LIMIT);
+
+  return [
+    ...selectedPublicRepos,
+    ...privateRepos,
+  ].map((repo) => ({
+    name: repo.name,
+    description: repo.description,
+    repoUrl: repo.html_url,
+    visibility: repo.private ? "private" : "public",
+  }));
 }
 
 export async function getResumeRepoLookup(

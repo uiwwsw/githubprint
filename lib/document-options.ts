@@ -5,7 +5,7 @@ export const MAX_PRIVATE_REPOS = 3;
 export const documentOptionsSchema = z
   .object({
     template: z.enum(["brief", "profile", "insight", "resume"]),
-    analysisScope: z.enum(["public", "private-summary", "private-details"]),
+    analysisScope: z.enum(["public", "private-details"]),
     privateRepos: z
       .array(
         z

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  buildSampleAnalysis,
+  buildSampleRepositoryDocument,
   buildSampleResume,
   SAMPLE_DATE,
 } from "@/fixtures/sample-document";
@@ -92,12 +92,11 @@ export default async function PreviewPage({
             />
           ) : (
             <RenderTemplate
+              {...buildSampleRepositoryDocument(locale)}
               template={template}
               locale={locale}
-              analysisResult={buildSampleAnalysis(locale)}
               generatedAt={SAMPLE_DATE}
               profileUrl="https://github.com/example"
-              dataMode="public"
             />
           )}
         </div>

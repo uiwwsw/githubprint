@@ -566,6 +566,8 @@ select {
 .document-page[data-template="profile"] .document-project:first-child h3 { font-size: 27px; }
 .document-page[data-template="profile"] .document-project:first-child .document-chips span { background: white; border-color: #dce3e8; }
 .document-page[data-template="profile"] .document-identity h1 { font-size: 52px; }
+.repository-entries .document-project h3 a { color: var(--document-accent); text-decoration: underline; text-underline-offset: 3px; }
+.document-page[data-template="insight"] .repository-entries .document-project { margin-block: 10px; padding: 14px 16px; border: 0; border-inline-start: 2px solid var(--document-accent); background: var(--document-tint); }
 .document-page[data-template="insight"] .document-identity { border-bottom-width: 3px; }
 .document-page[data-template="insight"] .document-avatar { border-radius: 10px; }
 .document-page[data-template="insight"] .document-facts { padding: 16px 0; border-bottom: 1px solid #dce3df; }

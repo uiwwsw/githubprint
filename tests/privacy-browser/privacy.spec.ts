@@ -134,7 +134,7 @@ async function checkExports(
 }
 
 for (const locale of ["ko", "en"] as const) {
-  test(`${locale}: ordinary login and switching templates keep private access optional`, async ({
+  test(`${locale}: repository mode defaults to public and resume mode hides repository settings`, async ({
     page,
     context,
   }) => {
@@ -147,6 +147,9 @@ for (const locale of ["ko", "en"] as const) {
     await page.goto(locale === "en" ? "/en" : "/");
     const generator = page.locator("#generator");
     await expect(generator).toBeVisible();
+    await expect(generator.getByRole("button", {
+      name: /^(저장소 목록|Repository list)/,
+    })).toHaveAttribute("aria-pressed", "true");
     await generator.getByRole("button", { name: /^Profile/ }).click();
     await expect(
       generator.locator('input[name="analysis-scope"]').first(),
@@ -160,7 +163,9 @@ for (const locale of ["ko", "en"] as const) {
         name: getDictionary(locale).home.submit,
       }),
     ).toBeDisabled();
-    await generator.getByRole("button", { name: /^Resume/ }).click();
+    await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
+    await expect(generator.locator('input[name="analysis-scope"]')).toHaveCount(0);
+    await expect(generator.getByRole("button", { name: /^Profile/ })).toHaveCount(0);
     await expect(
       generator.getByRole("button", {
         name: getDictionary(locale).home.submit,
@@ -182,11 +187,10 @@ for (const locale of ["ko", "en"] as const) {
   });
 
   for (const variant of [
-    "brief-summary",
+    "brief-public",
     "profile-details",
-    "insight-summary",
+    "insight-details",
     "resume-source",
-    "resume-enriched",
   ] as const) {
     test(`${locale} ${variant}: scope survives preview and all file exports`, async ({
       page,
@@ -200,24 +204,18 @@ for (const locale of ["ko", "en"] as const) {
       const generator = page.locator("#generator");
       const template = variant.split("-")[0];
       const resume = template === "resume";
-      await generator
-        .getByRole("button", {
-          name: new RegExp(`^${template[0].toUpperCase()}${template.slice(1)}`),
-        })
-        .click();
       if (resume) {
-        if (variant === "resume-enriched") {
-          await generator.locator(".generator-extra summary").click();
-          await generator.getByRole("checkbox").check();
-        }
+        await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
       } else {
-        await generator
-          .locator('input[name="analysis-scope"]')
-          .nth(variant.endsWith("details") ? 2 : 1)
-          .check();
-        await generator
-          .getByRole("checkbox", { name: "private-atlas", exact: true })
-          .check();
+        if (variant.endsWith("details")) {
+          await generator.locator('input[name="analysis-scope"]').nth(1).check();
+          await generator.getByRole("checkbox", { name: "private-atlas", exact: true }).check();
+        }
+        const design = generator.getByRole("button", { name: new RegExp(`^${template[0].toUpperCase()}${template.slice(1)}`) });
+        await design.click();
+        await expect(design).toHaveAttribute("aria-pressed", "true");
+        if (variant.endsWith("details"))
+          await expect(generator.getByRole("checkbox", { name: "private-atlas", exact: true })).toBeChecked();
       }
       await generator.screenshot({
         path: path.join(output, `generator-${locale}-${variant}.png`),
@@ -225,7 +223,12 @@ for (const locale of ["ko", "en"] as const) {
       await generator
         .getByRole("button", { name: getDictionary(locale).home.submit })
         .click();
-      await expect(page.locator("[data-document]")).toBeVisible();
+      const document = page.locator("[data-document]");
+      await expect(document).toHaveAttribute("data-template", template);
+      if (!resume) {
+        await expect(document.getByRole("link", { name: "public-project" })).toBeVisible();
+        await expect(document.getByRole("link", { name: "resume", exact: true })).toHaveCount(0);
+      }
       expect(page.url()).toContain("config=");
       expect(page.url()).not.toContain("private-atlas");
       if (resume)
@@ -236,7 +239,7 @@ for (const locale of ["ko", "en"] as const) {
         page,
         locale,
         `${locale}-${variant}`,
-        variant === "profile-details" || variant === "resume-enriched",
+        variant.endsWith("details"),
         resume,
       );
       expect(errors).toEqual([]);
@@ -274,7 +277,7 @@ for (const locale of ["ko", "en"] as const) {
     const home = locale === "en" ? "/en/" : "/";
     await page.goto(home);
     const generator = page.locator("#generator");
-    await generator.getByRole("button", { name: /^Resume/ }).click();
+    await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
     await page.evaluate(() =>
       sessionStorage.setItem(
         "githubprint:pending-configuration:privacy-fixture",
@@ -301,7 +304,7 @@ for (const locale of ["ko", "en"] as const) {
       generator.getByRole("link", { name: /다시 연결|Reconnect/ }),
     ).toHaveCount(0);
     await expect(
-      generator.getByRole("button", { name: /resume.yaml/ }),
+      generator.getByRole("button", { name: /resume.yaml 준비|How to prepare resume.yaml/ }),
     ).toHaveCount(0);
     await expect(
       generator.getByRole("button", {
@@ -339,14 +342,14 @@ for (const locale of ["ko", "en"] as const) {
     );
     await page.goto(locale === "en" ? "/en" : "/");
     const generator = page.locator("#generator");
-    await generator.getByRole("button", { name: /^Resume/ }).click();
+    await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
     await expect(
       generator.getByText("resume.yaml: basics.name is required"),
     ).toBeVisible();
     await expect(
       generator.getByRole("link", { name: /다시 연결|Reconnect/ }),
     ).toHaveCount(0);
-    await generator.getByRole("button", { name: /resume.yaml/ }).click();
+    await generator.getByRole("button", { name: /resume.yaml 준비|How to prepare resume.yaml/ }).click();
     await expect(page.locator("#resume-setup-guide")).toBeInViewport();
     repaired = true;
     await generator
@@ -381,7 +384,7 @@ test("revoked sign-in offers an appropriate reconnect action, and cancellation i
     page.getByRole("alert").filter({ hasText: "권한 연결을 취소" }),
   ).toBeVisible();
   const generator = page.locator("#generator");
-  await generator.getByRole("button", { name: /^Resume/ }).click();
+  await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
   await expect(
     generator.getByRole("link", { name: "GitHub 연결 다시 하기" }),
   ).toHaveAttribute("href", /access=public/);
@@ -434,45 +437,29 @@ for (const locale of ["ko", "en"] as const) {
 }
 
 for (const locale of ["ko", "en"] as const) {
-  test(`${locale}: Resume keeps project enrichment optional and the main action close to the source`, async ({
+  test(`${locale}: missing resume shows setup instructions and returns to the repository list`, async ({
     page,
     context,
   }) => {
     await signIn(context);
+    await page.route("**/api/resume-readiness", (route) =>
+      route.fulfill({ json: { state: "missing_repo" } }),
+    );
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(locale === "ko" ? "/" : "/en");
     const generator = page.locator("#generator");
-    await generator.getByRole("button", { name: /^Resume/ }).click();
-    const extra = generator.locator(".generator-extra");
-    await expect(extra).not.toHaveAttribute("open");
-    await expect(
-      generator.getByRole("button", {
-        name: getDictionary(locale).home.submit,
-      }),
-    ).toBeEnabled();
-    await expect(
-      extra.getByRole("checkbox", { includeHidden: true }),
-    ).not.toBeChecked();
-    const source = await generator
-      .locator(".resume-source-picker")
-      .boundingBox();
-    const action = await generator
-      .getByRole("button", { name: getDictionary(locale).home.submit })
-      .boundingBox();
-    expect(action!.y - source!.y).toBeLessThan(500);
-    await extra.locator("summary").click();
-    await expect(extra.getByRole("checkbox")).toBeVisible();
-    await extra.getByRole("checkbox").check();
-    await expect(extra.locator("summary")).toContainText(
-      locale === "ko" ? "사용 중" : "On",
-    );
-    await extra.locator("summary").click();
-    await expect(extra).not.toHaveAttribute("open");
-    await expect(
-      extra.getByRole("checkbox", { includeHidden: true }),
-    ).toBeChecked();
+    await generator.getByRole("button", { name: /^(이력서 전용|Resume only)/ }).click();
+    await expect(generator.locator(".resume-source-picker")).toContainText("resume.yaml");
+    await expect(generator.getByRole("button", { name: getDictionary(locale).home.submit })).toBeDisabled();
+    await expect(generator.getByRole("button", { name: /resume.yaml 준비|How to prepare resume.yaml/ })).toBeVisible();
     await generator.screenshot({
-      path: path.join(output, `resume-simple-${locale}.png`),
+      path: path.join(output, `resume-setup-${locale}.png`),
+    });
+    await generator.getByRole("button", { name: /저장소 목록 만들기|Make a repository list/ }).click();
+    await expect(generator.locator('input[name="analysis-scope"]').first()).toBeChecked();
+    await expect(generator.getByRole("button", { name: getDictionary(locale).home.submit })).toBeEnabled();
+    await generator.screenshot({
+      path: path.join(output, `repository-fallback-${locale}.png`),
     });
   });
 }
