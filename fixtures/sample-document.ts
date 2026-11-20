@@ -88,6 +88,7 @@ export function buildSampleResume(locale: Locale): ResumeDocumentData {
         "2025-03",
         "2025-09",
       ),
+      experienceId: "example-studio",
       tech: ["React", "Storybook", "CSS"],
       projectLabels: [],
       repoVerified: false,
@@ -107,19 +108,22 @@ export function buildSampleResume(locale: Locale): ResumeDocumentData {
       ? "복잡한 정보를 명확한 인터페이스로 정리하는 프론트엔드 개발자입니다. TypeScript와 React로 제품을 만들며 접근성, 재사용 가능한 컴포넌트, 문서화에 관심을 두고 있습니다."
       : "Frontend developer focused on making complex information clear. I build products with TypeScript and React, with an interest in accessibility, reusable components, and documentation.",
     experience: [
-      entry(
-        ko ? "스튜디오 예시" : "Example Studio",
-        ko ? "프론트엔드 개발자" : "Frontend Developer",
-        [
-          ko
-            ? "제품 대시보드의 검색과 필터 흐름을 구현하고 로딩·빈 화면·오류 상태를 정리했습니다."
-            : "Implemented search and filtering for a product dashboard, including loading, empty, and error states.",
-          ko
-            ? "디자인 토큰과 공통 컴포넌트를 문서화하여 화면 간 일관성을 유지했습니다."
-            : "Documented design tokens and shared components to maintain consistency across screens.",
-        ],
-        "2024-03",
-      ),
+      {
+        ...entry(
+          ko ? "스튜디오 예시" : "Example Studio",
+          ko ? "프론트엔드 개발자" : "Frontend Developer",
+          [
+            ko
+              ? "제품 대시보드의 검색과 필터 흐름을 구현하고 로딩·빈 화면·오류 상태를 정리했습니다."
+              : "Implemented search and filtering for a product dashboard, including loading, empty, and error states.",
+            ko
+              ? "디자인 토큰과 공통 컴포넌트를 문서화하여 화면 간 일관성을 유지했습니다."
+              : "Documented design tokens and shared components to maintain consistency across screens.",
+          ],
+          "2024-03",
+        ),
+        id: "example-studio",
+      },
     ],
     projects,
     allProjects: projects,

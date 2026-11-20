@@ -39,6 +39,14 @@ for (const locale of ["ko", "en"] as const) {
         await expect(page.locator(".document-project").first()).toContainText(
           locale === "ko" ? "주 언어 TypeScript · 스타 42 · 포크 2" : "Primary language TypeScript · Stars 42 · Forks 2",
         );
+      } else {
+        const company = page.locator(".resume-company");
+        await expect(company.getByRole("heading", { level: 3 })).toHaveText(
+          locale === "ko" ? "스튜디오 예시" : "Example Studio",
+        );
+        await expect(company.getByRole("heading", { level: 4 })).toHaveText("Component Notes");
+        await expect(page.getByRole("heading", { name: "Component Notes", exact: true })).toHaveCount(1);
+        await expect(company.getByRole("heading", { name: "GitHubPrint", exact: true })).toHaveCount(0);
       }
       const expectedText = await page
         .locator("[data-document]")
@@ -82,6 +90,14 @@ for (const locale of ["ko", "en"] as const) {
         expect(text, `Missing preview text: ${expected}`).toContain(
           plain(expected),
         );
+      if (template === "resume") {
+        const company = plain(locale === "ko" ? "스튜디오 예시" : "Example Studio");
+        const standalone = plain(locale === "ko" ? "대표 프로젝트" : "Selected Projects");
+        const project = plain("Component Notes");
+        expect(text.match(new RegExp(project, "g"))).toHaveLength(1);
+        expect(text.indexOf(company)).toBeLessThan(text.indexOf(project));
+        expect(text.indexOf(project)).toBeLessThan(text.indexOf(standalone));
+      }
       expect(xml).toContain('w:w="11906"');
       expect(xml).toContain('w:h="16838"');
       expect(xml).toContain('w:pStyle w:val="Title"');

@@ -32,7 +32,7 @@ function buildMaskedExperience(locale: Locale): ResumeEntry {
 function detachProjectFromExperience(project: ResumeProject): ResumeProject {
   return {
     ...project,
-    linkedExperienceTitle: undefined,
+    experienceId: undefined,
   };
 }
 
