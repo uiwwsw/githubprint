@@ -72,9 +72,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
                 </a>
               ) : null}
               <Link
-                className={
-                  session || canSignIn ? "gp-text-link" : "gp-button"
-                }
+                className={session || canSignIn ? "gp-text-link" : "gp-button"}
                 href={`${prefix}/preview`}
               >
                 {copy.preview}
@@ -139,6 +137,7 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
               "private",
             )}
             initialTemplate={storedTemplate ?? DEFAULT_SELF_GENERATOR_TEMPLATE}
+            autoPickResume={!storedTemplate}
             locale={locale}
             username={session.user.login}
           />

@@ -23,6 +23,7 @@ export function SelfGenerator({
   canReadPrivate,
   initialTemplate,
   initialOptions,
+  autoPickResume = false,
   resumeOnly = false,
   locale,
   privateLoginHref,
@@ -32,6 +33,8 @@ export function SelfGenerator({
   canReadPrivate: boolean;
   initialTemplate: TemplateId;
   initialOptions?: DocumentOptions;
+  /** No saved template choice: open Resume when a resume repository is ready. */
+  autoPickResume?: boolean;
   resumeOnly?: boolean;
   locale: Locale;
   privateLoginHref: string;
@@ -142,6 +145,34 @@ export function SelfGenerator({
         .getElementById("resume-setup-guide")
         ?.scrollIntoView({ block: "start", behavior: "smooth" });
   }, [showGuide, resume]);
+
+  useEffect(() => {
+    // The service's first choice is the user's own resume; other templates are the fallback.
+    if (!autoPickResume || resumeOnly) return;
+    const controller = new AbortController();
+    fetch("/api/resume-readiness", {
+      method: "POST",
+      cache: "no-store",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: autoResumeSource, locale }),
+      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20_000)]),
+    })
+      .then((response) => response.json())
+      .then((result) => {
+        if (!controller.signal.aborted && result.state === "ready")
+          setOptions((current) =>
+            current.template === initialTemplate
+              ? { ...current, template: "resume" }
+              : current,
+          );
+      })
+      .catch(() => {
+        /* Keep the default template when the probe fails. */
+      });
+    return () => controller.abort();
+    // Run once per page load; later template changes are the user's choice.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function rememberSelection() {
     try {
@@ -536,11 +567,15 @@ export function SelfGenerator({
                     {t("비공개 저장소 접근 연결", "Connect private access")}
                   </a>
                 ) : null}
-                {sourceState === "missing_repo" && !resumeOnly ? (
+                {sourceState === "missing_repo" ? (
                   <button
                     type="button"
                     className="underline underline-offset-4"
-                    onClick={() => selectTemplate("brief")}
+                    onClick={() => {
+                      if (!resumeOnly) return selectTemplate("brief");
+                      selectTemplate("brief");
+                      window.location.assign(`${ko ? "" : "/en"}/#generator`);
+                    }}
                   >
                     {t(
                       "이력서 없이 간단히 만들기",
