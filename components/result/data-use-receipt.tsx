@@ -28,8 +28,8 @@ export function DataUseReceipt({
           ? "공개 프로필과 공개 저장소만 사용했습니다. 비공개 저장소는 읽지 않았습니다."
           : "Used only your public profile and public repositories. Private repositories were not read."
         : ko
-          ? `공개 저장소와 선택한 비공개 저장소 ${privateCount}개의 이름, 설명, 링크를 넣었습니다.`
-          : `Included names, descriptions, and links for public repositories and ${privateCount} selected private repositories.`;
+          ? `공개 저장소와 선택한 비공개 저장소 ${privateCount}개의 GitHub 정보를 넣었습니다.`
+          : `Included GitHub information for public repositories and ${privateCount} selected private repositories.`;
   return (
     <section
       className="gp-notice screen-only mx-auto max-w-[210mm]"

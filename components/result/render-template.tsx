@@ -5,6 +5,7 @@ import type { RepositoryDocumentEntry } from "@/lib/github";
 import { getDictionary } from "@/lib/i18n";
 import type { ResumeDocumentData } from "@/lib/resume";
 import type { Locale, TemplateId } from "@/lib/schemas";
+import { formatNumber } from "@/lib/utils";
 
 type SharedTemplateProps = {
   avatarUrl?: string;
@@ -94,6 +95,13 @@ function RepositoryDocument({
                 {repo.description?.trim() ? (
                   <p className="mt-1 break-words">{repo.description.trim()}</p>
                 ) : null}
+                <p className="mt-2 text-xs font-medium text-neutral-600">
+                  {[
+                    repo.language && `${ko ? "주 언어" : "Primary language"} ${repo.language}`,
+                    `${ko ? "스타" : "Stars"} ${formatNumber(repo.stars, locale)}`,
+                    `${ko ? "포크" : "Forks"} ${formatNumber(repo.forks, locale)}`,
+                  ].filter(Boolean).join(" · ")}
+                </p>
               </article>
             ))}
           </div>

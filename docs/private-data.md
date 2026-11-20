@@ -4,7 +4,7 @@ GitHubPrint uses private data when you select private repositories for a documen
 
 | Choice | Read | Included in PDF, Word, and HTML |
 | --- | --- | --- |
-| Repository list: Public only (default) | Public owned repository metadata | Up to five repository names, descriptions, and links |
+| Repository list: Public only (default) | Public owned repository metadata | Names, descriptions, links, primary languages, and star and fork counts for up to five repositories |
 | Repository list: Include private repositories | Public metadata and metadata for up to three selected, owned private repositories | Public entries and the selected private entries, marked Private |
 | Resume only | The owner's `resume` repository and referenced files | Authored content and public linked-project metadata |
 

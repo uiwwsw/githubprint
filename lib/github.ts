@@ -145,6 +145,9 @@ export type RepositoryDocumentEntry = {
   description: string | null;
   repoUrl: string;
   visibility: "public" | "private";
+  language: string | null;
+  stars: number;
+  forks: number;
 };
 
 const PUBLIC_DOCUMENT_REPO_LIMIT = 5;
@@ -1036,11 +1039,14 @@ export async function getRepositoryDocumentEntries(
   ) {
     return mockGitHubProfile.representativeRepos
       .filter((repo) => repo.visibility === "public")
-      .map(({ name, description, repoUrl, visibility }) => ({
+      .map(({ name, description, repoUrl, visibility, language, stars, forks }) => ({
         name,
         description,
         repoUrl,
         visibility,
+        language,
+        stars,
+        forks,
       }));
   }
 
@@ -1070,6 +1076,9 @@ export async function getRepositoryDocumentEntries(
     description: repo.description,
     repoUrl: repo.html_url,
     visibility: repo.private ? "private" : "public",
+    language: repo.language,
+    stars: repo.stargazers_count,
+    forks: repo.forks_count,
   }));
 }
 

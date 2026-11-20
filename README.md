@@ -30,7 +30,7 @@
 
 GitHubPrint makes two documents from your signed-in GitHub account.
 
-- **Repository list** shows repository names, GitHub descriptions, and links. It includes up to five recent public repositories and, if you choose, up to three private repositories. Brief, Profile, and Insight are three designs for the same list.
+- **Repository list** shows names, descriptions, links, primary languages, and star and fork counts from GitHub. It includes up to five recent public repositories and, if you choose, up to three private repositories. Brief, Profile, and Insight are three designs for the same list.
 - **Resume only** formats the resume you wrote in the root `resume.yaml` of your `resume` repository. See the [setup guide](./docs/resume-template.md).
 - Both modes support Korean and English and export A4 PDF, editable Word, or offline HTML.
 
@@ -63,7 +63,7 @@ Current product limits:
 
 GitHubPrint에서 본인 GitHub 계정으로 문서 두 종류를 만들 수 있습니다.
 
-- **저장소 목록**은 저장소 이름, GitHub 설명, 링크를 담습니다. 최근 공개 저장소는 최대 5개까지 표시하고, 직접 고른 비공개 저장소를 최대 3개 추가할 수 있습니다. Brief, Profile, Insight 디자인은 같은 목록을 사용합니다.
+- **저장소 목록**은 GitHub에 표시된 이름, 설명, 링크, 주 언어, 스타 수, 포크 수를 담습니다. 최근 공개 저장소는 최대 5개까지 표시하고, 직접 고른 비공개 저장소를 최대 3개 추가할 수 있습니다. Brief, Profile, Insight 디자인은 같은 목록을 사용합니다.
 - **이력서 전용**은 `resume` 저장소 루트에 직접 작성한 `resume.yaml`을 문서로 만듭니다. [이력서 작성 방법](./docs/resume-template.md)을 참고하세요.
 - 두 모드 모두 한국어와 영어를 지원하며, PDF, Word, HTML로 저장할 수 있습니다.
 

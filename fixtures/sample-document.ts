@@ -21,6 +21,9 @@ export function buildSampleRepositoryDocument(locale: Locale) {
       description: locale === "en" ? descriptions[repo.name] ?? repo.description : repo.description,
       repoUrl: `https://github.com/example/${repo.name}`,
       visibility: repo.visibility,
+      language: repo.language,
+      stars: repo.stars,
+      forks: repo.forks,
     })),
   };
 }
