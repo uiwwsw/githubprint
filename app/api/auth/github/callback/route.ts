@@ -1,3 +1,4 @@
+import { getSiteUrl } from "@/lib/site-url";
 import { NextRequest, NextResponse } from "next/server";
 import {
   createGitHubSessionValue,
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   );
   const redirectUrl = new URL(
     sanitizeRedirectPath(savedState?.redirectTo),
-    request.url,
+    getSiteUrl(),
   );
   function redirect(
     outcome: "connected" | "cancelled" | "failed" | "expired" | "permission",

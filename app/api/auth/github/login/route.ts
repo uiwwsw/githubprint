@@ -1,3 +1,4 @@
+import { getSiteUrl } from "@/lib/site-url";
 import { NextRequest, NextResponse } from "next/server";
 import {
   buildGitHubAuthorizeUrl,
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (!hasGitHubOAuthConfig()) {
-    const url = new URL(redirectTo, request.url);
+    const url = new URL(redirectTo, getSiteUrl());
     url.searchParams.set("github_auth", "failed");
     return NextResponse.redirect(url);
   }
