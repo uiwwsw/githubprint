@@ -92,7 +92,9 @@ async function checkExports(
     const data =
       format === "html"
         ? buffer.toString()
-        : await (await JSZip.loadAsync(buffer))
+        : await (
+            await JSZip.loadAsync(buffer)
+          )
             .file("word/document.xml")!
             .async("string");
     expect(data).not.toContain("UNSELECTED_SENTINEL");
@@ -164,9 +166,6 @@ for (const locale of ["ko", "en"] as const) {
         name: getDictionary(locale).home.submit,
       }),
     ).toBeDisabled();
-    await expect(
-      generator.locator('input[name="resume-source"]').first(),
-    ).toBeChecked();
     await page.setViewportSize({ width: 390, height: 844 });
     await expect
       .poll(() =>
@@ -207,7 +206,6 @@ for (const locale of ["ko", "en"] as const) {
         })
         .click();
       if (resume) {
-        await generator.locator('input[name="resume-source"]').nth(1).check();
         if (variant === "resume-enriched") {
           await generator.locator(".generator-extra summary").click();
           await generator.getByRole("checkbox").check();
@@ -268,7 +266,7 @@ for (const locale of ["ko", "en"] as const) {
 }
 
 for (const locale of ["ko", "en"] as const) {
-  test(`${locale}: resume readiness replaces the reconnect loop and restores OAuth selections`, async ({
+  test(`${locale}: resume readiness detects a private source without asking and restores OAuth selections`, async ({
     page,
     context,
   }) => {
@@ -277,19 +275,6 @@ for (const locale of ["ko", "en"] as const) {
     await page.goto(home);
     const generator = page.locator("#generator");
     await generator.getByRole("button", { name: /^Resume/ }).click();
-    await expect(
-      generator.getByText(
-        locale === "ko"
-          ? "공개 이력서를 찾지 못했습니다."
-          : "No public resume was found.",
-        { exact: false },
-      ),
-    ).toBeVisible();
-    await expect(
-      generator.getByRole("button", {
-        name: getDictionary(locale).home.submit,
-      }),
-    ).toBeDisabled();
     await page.evaluate(() =>
       sessionStorage.setItem(
         "githubprint:pending-configuration:privacy-fixture",
@@ -306,9 +291,6 @@ for (const locale of ["ko", "en"] as const) {
       ),
     );
     await page.goto(`${home}?github_auth=connected#generator`);
-    await expect(
-      generator.locator('input[name="resume-source"]').nth(1),
-    ).toBeChecked();
     await expect(
       generator.getByText(
         locale === "ko" ? "이력서 원본 확인 완료" : "Resume source verified",
@@ -408,42 +390,6 @@ test("revoked sign-in offers an appropriate reconnect action, and cancellation i
   ).toBeDisabled();
 });
 
-test("a stale source response cannot overwrite a newly selected private source", async ({
-  page,
-  context,
-}) => {
-  await signIn(context);
-  let release: (() => void) | undefined;
-  let received: (() => void) | undefined;
-  const publicRequest = new Promise<void>((resolve) => {
-    received = resolve;
-  });
-  await page.route("**/api/resume-readiness", async (route) => {
-    if (route.request().postDataJSON().source === "public") {
-      received!();
-      await new Promise<void>((resolve) => {
-        release = resolve;
-      });
-      await route.fulfill({ json: { state: "missing_repo" } }).catch(() => {});
-    } else
-      await route.fulfill({
-        json: { state: "ready", repoVisibility: "private" },
-      });
-  });
-  await page.goto("/");
-  const generator = page.locator("#generator");
-  await generator.getByRole("button", { name: /^Resume/ }).click();
-  await publicRequest;
-  await generator.locator('input[name="resume-source"]').nth(1).check();
-  await expect(
-    generator.getByText("이력서 원본 확인 완료", { exact: true }),
-  ).toBeVisible();
-  release!();
-  await expect(
-    generator.getByRole("button", { name: "문서 생성" }),
-  ).toBeEnabled();
-});
-
 for (const locale of ["ko", "en"] as const) {
   test(`${locale}: an existing result recovers a private resume inline after explicit source selection`, async ({
     page,
@@ -469,14 +415,10 @@ for (const locale of ["ko", "en"] as const) {
     expect(configuration.ok()).toBe(true);
     await page.goto((await configuration.json()).url);
     const generator = page.locator("#generator");
-    await expect(
-      generator.locator('input[name="resume-source"]').first(),
-    ).toBeChecked();
     const generate = generator.getByRole("button", {
       name: locale === "ko" ? "이력서 다시 불러오기" : "Load resume again",
     });
     await expect(generate).toBeDisabled();
-    await generator.locator('input[name="resume-source"]').nth(1).check();
     await expect(
       generator.getByText(
         locale === "ko" ? "이력서 원본 확인 완료" : "Resume source verified",
@@ -503,7 +445,6 @@ for (const locale of ["ko", "en"] as const) {
     await generator.getByRole("button", { name: /^Resume/ }).click();
     const extra = generator.locator(".generator-extra");
     await expect(extra).not.toHaveAttribute("open");
-    await generator.locator('input[name="resume-source"]').nth(1).check();
     await expect(
       generator.getByRole("button", {
         name: getDictionary(locale).home.submit,

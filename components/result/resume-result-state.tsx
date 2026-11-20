@@ -42,7 +42,15 @@ export function ResumeResultState({
       accent={
         <MetaRibbon
           label={dict.result.stateStatusLabel}
-          value={locale === "ko" ? "Resume 차단" : "Resume blocked"}
+          value={
+            availability.state === "locked_invalid_schema"
+              ? locale === "ko"
+                ? "원본 수정 필요"
+                : "Source needs a fix"
+              : locale === "ko"
+                ? "이력서 없음"
+                : "No resume yet"
+          }
         />
       }
     >
@@ -70,10 +78,7 @@ export function ResumeResultState({
         )}
 
         <div className="screen-only flex gap-3">
-          <Link
-className="gp-button gp-button-quiet"
-            href={homeHref}
-          >
+          <Link className="gp-button gp-button-quiet" href={homeHref}>
             {dict.result.backHome}
           </Link>
         </div>
