@@ -1,3 +1,4 @@
+import { isSameSiteOrigin } from "@/lib/site-url";
 import { NextRequest, NextResponse } from "next/server";
 import { getGitHubSession } from "@/lib/auth";
 import { createDocumentConfiguration } from "@/lib/document-configuration";
@@ -13,7 +14,7 @@ const headers = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== request.nextUrl.origin)
+  if (!isSameSiteOrigin(request.headers))
     return NextResponse.json({ error: "origin" }, { status: 403, headers });
   const session = await getGitHubSession();
   if (!session)

@@ -26,3 +26,17 @@ export function getSiteUrl(
 }
 
 export { DEFAULT_SITE_URL };
+
+// Behind Docker/Caddy/Vercel the server sees 0.0.0.0:3000, so compare the
+// browser's Origin with the public site URL or the forwarded host instead.
+export function isSameSiteOrigin(headers: Headers) {
+  const origin = headers.get("origin");
+  if (!origin) return false;
+  if (origin === getSiteUrl()) return true;
+  const host = headers.get("x-forwarded-host") ?? headers.get("host");
+  try {
+    return Boolean(host) && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+}
