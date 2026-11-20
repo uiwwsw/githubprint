@@ -459,24 +459,15 @@
   display: block;
   font-size: 1.25em;
 }
-.gp-mini-feature {
-  padding: 0.9em;
+.gp-mini-repos-profile .gp-mini-project:first-child {
+  padding: 6px;
+  border-top: 2px solid #365c82;
   background: #f1f5f9;
-  border-top: 0.25em solid var(--mini-accent);
 }
-.gp-mini-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.8em;
-}
-.gp-mini-grid > div {
-  padding: 0.7em;
+.gp-mini-repos-insight .gp-mini-project {
+  padding: 5px;
+  border-inline-start: 1px solid #866b39;
   background: #f8f6f0;
-  border-top: 1px solid #b6a789;
-}
-.gp-mini-grid b {
-  display: block;
-  color: var(--mini-accent);
 }
 .gp-mini-chips {
   display: flex;
@@ -704,9 +695,15 @@
 }
 .gp-template-picker {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+}
+.gp-mode-picker {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 24px;
+}
+.gp-style-picker {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 10px;
 }
 .gp-template-picker button {
   padding: 16px 16px 18px;
@@ -729,6 +726,8 @@
   font-size: 18px;
   font-weight: 800;
 }
+.gp-style-picker button { padding: 12px; }
+.gp-style-picker strong { font-size: 15px; }
 .gp-template-picker span {
   display: block;
   margin-top: 6px;
@@ -809,43 +808,6 @@
   font-size: 13px;
   line-height: 1.7;
 }
-.generator-extra {
-  border-block: 1px solid var(--rule);
-  padding: 16px 0;
-}
-.generator-extra summary {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  list-style: none;
-}
-.generator-extra summary::-webkit-details-marker {
-  display: none;
-}
-.generator-extra summary::after {
-  content: "+";
-}
-.generator-extra[open] summary::after {
-  content: "−";
-}
-.generator-extra summary span:first-child {
-  flex: 1;
-}
-.generator-extra summary span:nth-child(2) {
-  color: var(--ink-soft);
-  font-size: 12px;
-  font-weight: 500;
-}
-.generator-extra p {
-  margin: 12px 0;
-  color: var(--ink-soft);
-  font-size: 13px;
-  line-height: 1.75;
-}
-
 /* Preview, result and showcase pages */
 .gp-page-head {
   padding: 28px 0 24px;
@@ -1337,9 +1299,6 @@ body:has(.export-dialog[open]) {
   }
   .gp-generator {
     padding: 22px 16px;
-  }
-  .gp-template-picker {
-    grid-template-columns: 1fr 1fr;
   }
   .source-options {
     grid-template-columns: 1fr;

@@ -10,8 +10,7 @@ import {
   buildGitHubLogoutPath,
   getGitHubSession,
 } from "@/lib/auth";
-import { analyzeGitHubSource } from "@/lib/analyze";
-import { GitHubFetchError, getGitHubSource } from "@/lib/github";
+import { GitHubFetchError, getRepositoryDocumentEntries } from "@/lib/github";
 import { readEnv } from "@/lib/env";
 import { getDictionary, getLocalizedPathname } from "@/lib/i18n";
 import {
@@ -24,7 +23,6 @@ import { buildResultMetadata } from "@/lib/seo";
 import {
   resultSearchParamsSchema,
   type Locale,
-  type PrivateExposureMode,
   type TemplateId,
 } from "@/lib/schemas";
 import { ResultActions } from "@/components/result/result-actions";
@@ -181,10 +179,6 @@ export async function ResultPageContent({
           "GITHUBPRINT_ALLOW_RESULT_REFRESH",
           "GITFOLIO_ALLOW_RESULT_REFRESH",
         ) === "1");
-    const privateExposureMode: PrivateExposureMode =
-      configuration.analysisScope === "private-details"
-        ? "include"
-        : "aggregate";
     const authContext = {
       accessToken: session.accessToken,
       scopes: session.scopes,
@@ -286,17 +280,12 @@ export async function ResultPageContent({
       );
     }
 
-    const source = await getGitHubSource(session.user.login, {
+    const repositories = await getRepositoryDocumentEntries(
+      session.user.login,
       authContext,
-      forceFresh,
-      locale,
-      privateExposureMode,
-      privateRepoNames: configuration.privateRepos,
-    });
-    const analysisResult = await analyzeGitHubSource(source, {
-      forceFresh,
-      locale,
-    });
+      configuration.privateRepos,
+    );
+    const privateCount = repositories.filter((repo) => repo.visibility === "private").length;
 
     return (
       <main className="min-h-screen pb-16">
@@ -307,7 +296,7 @@ export async function ResultPageContent({
           </SiteHeader>
           <ResultActions
             backHref={homeHref}
-            dataMode={source.dataMode}
+            dataMode={privateCount ? "private_enriched" : "public"}
             downloadFileName={{
               generatedAt,
               template,
@@ -315,26 +304,22 @@ export async function ResultPageContent({
             }}
             locale={locale}
             logoutHref={logoutHref}
-            mode={analysisResult.mode}
-            privateExposureMode={source.privateExposureMode}
+            mode="fallback"
+            privateExposureMode={privateCount ? "include" : "aggregate"}
             template={template}
           />
           <DataUseReceipt
             locale={locale}
             options={configuration}
-            privateCount={
-              source.authorizedPrivateInsights?.privateRepoCount ?? 0
-            }
+            privateCount={privateCount}
           />
           <RenderTemplate
-            analysisResult={analysisResult}
-            authorizedPrivateInsights={source.authorizedPrivateInsights}
-            contributionSummary={source.activity.contributionSummary}
-            dataMode={source.dataMode}
+            avatarUrl={session.user.avatarUrl}
             generatedAt={generatedAt}
             locale={locale}
-            privateExposureMode={source.privateExposureMode}
+            name={session.user.name || session.user.login}
             profileUrl={session.user.profileUrl}
+            repositories={repositories}
             template={template}
           />
         </div>

@@ -222,9 +222,9 @@ const dictionaries: Record<Locale, Dictionary> = {
     },
     metadata: {
       homeTitle:
-        "깃헙프린트 — GitHub 이력서 자동 생성·PDF·Word",
+        "깃헙프린트 — GitHub 저장소 목록과 이력서",
       homeDescription:
-        "GitHub 기록으로 개발자 이력서와 포트폴리오를 자동으로 정리하세요. 직접 쓴 resume 저장소의 경력도 연결할 수 있습니다. 한국어·영어 이력서를 PDF, Word, HTML로 저장하는 GitHubPrint(깃헙프린트)입니다.",
+        "GitHub 저장소를 목록으로 만들거나 직접 쓴 resume.yaml로 이력서를 만드세요. 한국어와 영어 문서를 PDF, Word, HTML로 저장할 수 있습니다.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub 이력서",
@@ -254,7 +254,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "공개 GitHub 자료로 문서를 만듭니다. 비공개 작업이 필요하면 템플릿에 맞는 자료 범위를 선택하고 별도로 접근 권한을 연결하세요.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
-        "아래에서 템플릿과 비공개 포함 범위를 고른 뒤 본인 프로필 결과를 생성할 수 있습니다.",
+        "아래에서 저장소 목록이나 이력서를 만들 수 있습니다.",
       authSignIn: "GitHub로 로그인",
       authSignOut: "로그아웃",
       authSignedInAs: "로그인됨",
@@ -307,7 +307,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModePrivate: "로그인한 본인 계정",
       privateExposureLabel: "비공개 상세",
       privateExposureAggregate: "비공개 익명 요약",
-      privateExposureInclude: "비공개 상세 포함",
+      privateExposureInclude: "비공개 저장소 포함",
       modeAi: "AI 분석",
       modeFallback: "기본 요약 모드",
       downloadPdf: "PDF 다운로드",
@@ -383,23 +383,21 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "빠른 소개",
-        description: "첫 소개에 필요한 기술과 대표작을 짧게 담습니다.",
-        emphasis:
-          "메일 첨부나 짧은 자기소개에. 핵심 기술과 대표작부터 보여주세요.",
+        shortLabel: "간결한 목록",
+        description: "여백을 줄여 저장소를 한눈에 보여줍니다.",
+        emphasis: "저장소 이름과 설명을 줄마다 배치합니다.",
       },
       profile: {
         label: "Profile",
-        shortLabel: "포트폴리오",
-        description: "무엇을 만들었는지, 프로젝트로 보여주는 포트폴리오.",
-        emphasis: "프로젝트의 설명, 기술, 확인할 링크를 중심으로 구성합니다.",
+        shortLabel: "첫 항목 강조",
+        description: "첫 저장소를 파란색 카드로 강조합니다.",
+        emphasis: "프로젝트 목록의 첫 항목에 여백을 더 줍니다.",
       },
       insight: {
         label: "Insight",
-        shortLabel: "분석 리포트",
-        description: "반복되는 기술 선택과 작업 패턴을 읽는 리포트.",
-        emphasis:
-          "작업 패턴과 실제 자료를 살펴보고, 프로젝트 소개를 더 풍부하게 만들어 보세요.",
+        shortLabel: "카드 목록",
+        description: "각 저장소를 따뜻한 색의 카드로 보여줍니다.",
+        emphasis: "저장소별로 설명을 읽기 쉽게 구분합니다.",
       },
       resume: {
         label: "Resume",
@@ -483,9 +481,9 @@ const dictionaries: Record<Locale, Dictionary> = {
       en: "EN",
     },
     metadata: {
-      homeTitle: "GitHub Resume Builder — PDF, Word & CV | GitHubPrint",
+      homeTitle: "GitHub Repository Lists and Resumes | GitHubPrint",
       homeDescription:
-        "Automatically turn GitHub projects and your authored resume repository into a developer resume, CV or portfolio. Build in English or Korean and export PDF, Word or offline HTML with GitHubPrint.",
+        "Create a document from your GitHub repository list or a resume you wrote. Save in English or Korean as PDF, Word, or offline HTML.",
       homeKeywords: [
         "GitHubPrint",
         "GitHub resume",
@@ -498,7 +496,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       ],
       resultTitle: "GitHubPrint Result Document",
       resultDescription:
-        "Private preview of a developer document generated from your GitHub signals.",
+        "A private preview of your repository list or resume.",
     },
     home: {
       eyebrow: "GitHubPrint",
@@ -513,7 +511,7 @@ const dictionaries: Record<Locale, Dictionary> = {
         "Create documents from public GitHub sources. If private work is relevant, choose the sources for your template and connect private access separately.",
       authReadyEyebrow: "Signed-in self mode",
       authReadyMessage:
-        "Choose the template and private exposure below, then generate your own profile document.",
+        "Create a repository list or resume below.",
       authSignIn: "Sign in with GitHub",
       authSignOut: "Sign out",
       authSignedInAs: "Signed in as",
@@ -566,7 +564,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       dataModePrivate: "Signed-in self mode",
       privateExposureLabel: "Private detail",
       privateExposureAggregate: "Anonymous private summary",
-      privateExposureInclude: "Private details included",
+      privateExposureInclude: "Private repositories included",
       modeAi: "AI analysis",
       modeFallback: "Fallback summary",
       downloadPdf: "Download PDF",
@@ -648,26 +646,21 @@ const dictionaries: Record<Locale, Dictionary> = {
     templateMeta: {
       brief: {
         label: "Brief",
-        shortLabel: "Introduction",
-        description:
-          "Your stack and selected projects, ready for a first introduction.",
-        emphasis:
-          "A concise attachment for introductions, with projects and technologies first.",
+        shortLabel: "Compact list",
+        description: "A compact layout for scanning repositories.",
+        emphasis: "Names and descriptions sit in simple rows.",
       },
       profile: {
         label: "Profile",
-        shortLabel: "Portfolio",
-        description: "A portfolio that puts the projects you built first.",
-        emphasis:
-          "Project descriptions, technologies, and links give your work room to speak.",
+        shortLabel: "Featured first",
+        description: "A blue card highlights the first repository.",
+        emphasis: "The first entry has more room on the page.",
       },
       insight: {
         label: "Insight",
-        shortLabel: "Work report",
-        description:
-          "A report on recurring technical choices and work patterns.",
-        emphasis:
-          "Explore work patterns and source materials to give your projects more context.",
+        shortLabel: "Cards",
+        description: "A warm-toned card for each repository.",
+        emphasis: "Each repository has its own card and description.",
       },
       resume: {
         label: "Resume",

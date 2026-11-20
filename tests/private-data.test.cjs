@@ -62,6 +62,7 @@ const fixture = require("./helpers/github-fixture.cjs");
 globalThis.fetch = fixture.mockFetch;
 const {
   getGitHubSource,
+  getRepositoryDocumentEntries,
   getResumeRepoLookup,
   listPrivateRepositoryChoices,
 } = require("../lib/github.ts");
@@ -187,7 +188,7 @@ test("template choices normalize unrelated fields and require bounded explicit s
     assert.equal(
       documentOptionsSchema.safeParse({
         ...defaultDocumentOptions("profile"),
-        analysisScope: "private-summary",
+        analysisScope: "private-details",
         privateRepos: names,
       }).success,
       false,
@@ -209,6 +210,24 @@ test("a broad token does not trigger private reads in public mode", async () => 
         call.path !== "/user/repos" &&
         !call.body?.includes("contributionsCollection"),
     ),
+  );
+  assert.ok(fixture.calls.every((call) => call.cache === "no-store"));
+});
+
+test("repository documents expose only public and explicitly selected metadata", async () => {
+  const publicEntries = await getRepositoryDocumentEntries(fixture.username, auth, []);
+  assert.deepEqual(publicEntries.map((repo) => repo.name), ["public-project"]);
+  assert.deepEqual(fixture.calls.map((call) => call.path), [`/users/${fixture.username}/repos`]);
+
+  fixture.reset();
+  const entries = await getRepositoryDocumentEntries(fixture.username, auth, ["private-atlas"]);
+  assert.deepEqual(entries.map((repo) => [repo.name, repo.visibility]), [
+    ["public-project", "public"],
+    ["private-atlas", "private"],
+  ]);
+  assert.deepEqual(
+    fixture.calls.filter((call) => call.path.startsWith("/repos/")).map((call) => call.path),
+    [`/repos/${fixture.username}/private-atlas`],
   );
   assert.ok(fixture.calls.every((call) => call.cache === "no-store"));
 });

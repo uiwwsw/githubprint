@@ -137,7 +137,6 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
               "private",
             )}
             initialTemplate={storedTemplate ?? DEFAULT_SELF_GENERATOR_TEMPLATE}
-            autoPickResume={!storedTemplate}
             locale={locale}
             username={session.user.login}
           />
@@ -181,7 +180,6 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
                   </span>
                   <h3>{dict.templateMeta[id].label}</h3>
                   <p>{dict.templateMeta[id].description}</p>
-                  <p className="gp-shelf-for">{copy.templateFor[id]}</p>
                 </Link>
               ),
             )}
@@ -208,7 +206,6 @@ export async function HomePageContent({ locale }: { locale: Locale }) {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-              <p className="gp-ledger-note">{copy.ledgerNote}</p>
             </div>
           </div>
         </section>

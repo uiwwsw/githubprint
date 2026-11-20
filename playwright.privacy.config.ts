@@ -15,7 +15,7 @@ export default defineConfig({
       : {},
   },
   webServer: {
-    command: "npm run start -- --port 3111",
+    command: "npm run start -- --hostname localhost --port 3111",
     url: "http://localhost:3111/en",
     reuseExistingServer: false,
     timeout: 60_000,

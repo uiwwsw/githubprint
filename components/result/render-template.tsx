@@ -1,17 +1,10 @@
-import type { AnalysisResult } from "@/lib/analyze";
-import {
-  type AuthorizedPrivateInsights,
-  type ContributionSummary,
-  type DataMode,
-  type Locale,
-  type PrivateExposureMode,
-  type TemplateId,
-} from "@/lib/schemas";
-import { BriefTemplate } from "@/components/templates/brief";
-import { ProfileTemplate } from "@/components/templates/profile";
-import { InsightTemplate } from "@/components/templates/insight";
+import { SectionBlock } from "@/components/result/common";
+import { DocumentMasthead, DocumentShell } from "@/components/result/document-shell";
 import { ResumeTemplate } from "@/components/templates/resume";
+import type { RepositoryDocumentEntry } from "@/lib/github";
+import { getDictionary } from "@/lib/i18n";
 import type { ResumeDocumentData } from "@/lib/resume";
+import type { Locale, TemplateId } from "@/lib/schemas";
 
 type SharedTemplateProps = {
   avatarUrl?: string;
@@ -20,12 +13,9 @@ type SharedTemplateProps = {
   profileUrl: string;
 };
 
-type AnalysisTemplateProps = SharedTemplateProps & {
-  analysisResult: AnalysisResult;
-  authorizedPrivateInsights?: AuthorizedPrivateInsights | null;
-  contributionSummary?: ContributionSummary | null;
-  dataMode: DataMode;
-  privateExposureMode?: PrivateExposureMode;
+type RepositoryRenderProps = SharedTemplateProps & {
+  name: string;
+  repositories: RepositoryDocumentEntry[];
   template: Exclude<TemplateId, "resume">;
 };
 
@@ -34,12 +24,10 @@ type ResumeRenderProps = SharedTemplateProps & {
   template: "resume";
 };
 
-export function RenderTemplate(
-  props: AnalysisTemplateProps | ResumeRenderProps,
-) {
-  if (props.template === "resume") {
-    return (
-      <section id="result-preview">
+export function RenderTemplate(props: RepositoryRenderProps | ResumeRenderProps) {
+  return (
+    <section id="result-preview">
+      {props.template === "resume" ? (
         <ResumeTemplate
           avatarUrl={props.avatarUrl}
           generatedAt={props.generatedAt}
@@ -47,51 +35,72 @@ export function RenderTemplate(
           profileUrl={props.profileUrl}
           resume={props.resumeDocument}
         />
-      </section>
-    );
-  }
+      ) : (
+        <RepositoryDocument {...props} />
+      )}
+    </section>
+  );
+}
 
-  const templateNode =
-    props.template === "brief" ? (
-      <BriefTemplate
-        analysis={props.analysisResult.analysis}
-        authorizedPrivateInsights={props.authorizedPrivateInsights}
-        evidenceReview={props.analysisResult.evidenceReview}
-        contributionSummary={props.contributionSummary}
-        generatedAt={props.generatedAt}
-        locale={props.locale}
-        mode={props.analysisResult.mode}
-        dataMode={props.dataMode}
-        privateExposureMode={props.privateExposureMode}
-        profileUrl={props.profileUrl}
-      />
-    ) : props.template === "insight" ? (
-      <InsightTemplate
-        analysis={props.analysisResult.analysis}
-        authorizedPrivateInsights={props.authorizedPrivateInsights}
-        evidenceReview={props.analysisResult.evidenceReview}
-        contributionSummary={props.contributionSummary}
-        generatedAt={props.generatedAt}
-        locale={props.locale}
-        mode={props.analysisResult.mode}
-        dataMode={props.dataMode}
-        privateExposureMode={props.privateExposureMode}
-        profileUrl={props.profileUrl}
-      />
-    ) : (
-      <ProfileTemplate
-        analysis={props.analysisResult.analysis}
-        authorizedPrivateInsights={props.authorizedPrivateInsights}
-        evidenceReview={props.analysisResult.evidenceReview}
-        contributionSummary={props.contributionSummary}
-        generatedAt={props.generatedAt}
-        locale={props.locale}
-        mode={props.analysisResult.mode}
-        dataMode={props.dataMode}
-        privateExposureMode={props.privateExposureMode}
-        profileUrl={props.profileUrl}
-      />
-    );
+function RepositoryDocument({
+  avatarUrl,
+  generatedAt,
+  locale,
+  name,
+  profileUrl,
+  repositories,
+  template,
+}: RepositoryRenderProps) {
+  const ko = locale === "ko";
+  const dict = getDictionary(locale);
 
-  return <section id="result-preview">{templateNode}</section>;
+  return (
+    <DocumentShell
+      template={template}
+      accent={
+        <DocumentMasthead
+          template={dict.templateMeta[template].label}
+          generatedAt={generatedAt}
+          locale={locale}
+        />
+      }
+    >
+      <header className="document-identity">
+        <div className="document-identity-top">
+          {avatarUrl ? (
+            <img className="document-avatar float-right" alt="" src={avatarUrl} />
+          ) : null}
+          <h1 className="break-words">{name}</h1>
+          <a className="identity-link" href={profileUrl} rel="noreferrer" target="_blank">
+            {profileUrl.replace(/^https?:\/\//, "")}
+          </a>
+        </div>
+      </header>
+      <SectionBlock title={ko ? "저장소 목록" : "Repositories"}>
+        {repositories.length ? (
+          <div className="repository-entries">
+            {repositories.map((repo) => (
+              <article className="document-project" key={repo.repoUrl}>
+                <div className="flex flex-wrap items-baseline gap-x-3">
+                  <h3 className="min-w-0 break-all font-semibold">
+                    <a href={repo.repoUrl} rel="noreferrer" target="_blank">
+                      {repo.name}
+                    </a>
+                  </h3>
+                  {repo.visibility === "private" ? (
+                    <p className="text-xs text-neutral-600">{ko ? "비공개" : "Private"}</p>
+                  ) : null}
+                </div>
+                {repo.description?.trim() ? (
+                  <p className="mt-1 break-words">{repo.description.trim()}</p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p>{ko ? "표시할 저장소가 없습니다." : "There are no repositories to show."}</p>
+        )}
+      </SectionBlock>
+    </DocumentShell>
+  );
 }

@@ -12,10 +12,15 @@ import {
   type DocumentOptions,
 } from "@/lib/document-options";
 import { getDictionary } from "@/lib/i18n";
-import { SELF_GENERATOR_TEMPLATE_KEY } from "@/lib/self-generator-preferences";
+import {
+  DEFAULT_SELF_GENERATOR_TEMPLATE,
+  SELF_GENERATOR_TEMPLATE_KEY,
+} from "@/lib/self-generator-preferences";
 import { getTemplateMeta } from "@/lib/templates";
 import type { Locale, TemplateId } from "@/lib/schemas";
 import type { ResumeReadiness } from "@/lib/resume-readiness";
+
+const repositoryStyles = ["brief", "profile", "insight"] as const;
 
 type RepoChoice = { name: string; archived: boolean };
 
@@ -23,7 +28,6 @@ export function SelfGenerator({
   canReadPrivate,
   initialTemplate,
   initialOptions,
-  autoPickResume = false,
   resumeOnly = false,
   locale,
   privateLoginHref,
@@ -33,8 +37,6 @@ export function SelfGenerator({
   canReadPrivate: boolean;
   initialTemplate: TemplateId;
   initialOptions?: DocumentOptions;
-  /** No saved template choice: open Resume when a resume repository is ready. */
-  autoPickResume?: boolean;
   resumeOnly?: boolean;
   locale: Locale;
   privateLoginHref: string;
@@ -43,14 +45,19 @@ export function SelfGenerator({
 }) {
   const router = useRouter();
   const dict = getDictionary(locale);
+  const templateMeta = getTemplateMeta(locale);
   const ko = locale === "ko";
   const t = (kr: string, en: string) => (ko ? kr : en);
   const submitLabel = resumeOnly
     ? t("이력서 다시 불러오기", "Load resume again")
     : dict.home.submit;
-  const [options, setOptions] = useState<DocumentOptions>(
-    initialOptions ??
-      defaultDocumentOptions(resumeOnly ? "resume" : initialTemplate),
+  const [repositoryStyle, setRepositoryStyle] = useState(
+    initialTemplate === "resume"
+      ? DEFAULT_SELF_GENERATOR_TEMPLATE
+      : initialTemplate,
+  );
+  const [options, setOptions] = useState<DocumentOptions>(() =>
+    initialOptions ?? defaultDocumentOptions(resumeOnly ? "resume" : repositoryStyle),
   );
   const [repositories, setRepositories] = useState<RepoChoice[] | null>(null);
   const [repoError, setRepoError] = useState(false);
@@ -74,7 +81,7 @@ export function SelfGenerator({
         : { ...current, resumeSource: autoResumeSource },
     );
   }, [autoResumeSource]);
-  const privateAnalysis = !resume && options.analysisScope !== "public";
+  const includePrivate = !resume && options.analysisScope === "private-details";
   const needsPermission = needsPrivatePermission(options);
   const storageKey = `githubprint:pending-configuration:${username.toLowerCase()}`;
 
@@ -92,10 +99,15 @@ export function SelfGenerator({
             value.options?.template,
           )
         ) {
+          const savedTemplate = value.options.template as TemplateId;
+          const savedPrivate = value.options.analysisScope === "private-details";
           setOptions({
-            ...defaultDocumentOptions(value.options.template),
+            ...defaultDocumentOptions(savedTemplate),
             ...value.options,
+            analysisScope: savedPrivate ? "private-details" : "public",
+            privateRepos: savedPrivate ? value.options.privateRepos : [],
           });
+          if (savedTemplate !== "resume") setRepositoryStyle(savedTemplate);
         }
       }
     } catch {
@@ -146,34 +158,6 @@ export function SelfGenerator({
         ?.scrollIntoView({ block: "start", behavior: "smooth" });
   }, [showGuide, resume]);
 
-  useEffect(() => {
-    // The service's first choice is the user's own resume; other templates are the fallback.
-    if (!autoPickResume || resumeOnly) return;
-    const controller = new AbortController();
-    fetch("/api/resume-readiness", {
-      method: "POST",
-      cache: "no-store",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ source: autoResumeSource, locale }),
-      signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20_000)]),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        if (!controller.signal.aborted && result.state === "ready")
-          setOptions((current) =>
-            current.template === initialTemplate
-              ? { ...current, template: "resume" }
-              : current,
-          );
-      })
-      .catch(() => {
-        /* Keep the default template when the probe fails. */
-      });
-    return () => controller.abort();
-    // Run once per page load; later template changes are the user's choice.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   function rememberSelection() {
     try {
       sessionStorage.setItem(
@@ -191,7 +175,7 @@ export function SelfGenerator({
   }, [sourceState]);
 
   useEffect(() => {
-    if (!privateAnalysis || !canReadPrivate) return;
+    if (!includePrivate || !canReadPrivate) return;
     const controller = new AbortController();
     setRepoError(false);
     setRepositories(null);
@@ -217,16 +201,26 @@ export function SelfGenerator({
         if (!controller.signal.aborted) setRepoError(true);
       });
     return () => controller.abort();
-  }, [privateAnalysis, canReadPrivate, retry]);
+  }, [includePrivate, canReadPrivate, retry]);
 
-  function selectTemplate(template: TemplateId) {
+  function selectMode(nextResume: boolean) {
+    if (nextResume === resume) return;
     setShowGuide(false);
+    setError("");
+    setOptions({
+      ...defaultDocumentOptions(nextResume ? "resume" : repositoryStyle),
+      resumeSource: autoResumeSource,
+    });
+  }
+
+  function selectStyle(template: (typeof repositoryStyles)[number]) {
+    setRepositoryStyle(template);
     setOptions((current) => ({ ...current, template }));
     setError("");
     try {
       document.cookie = `${SELF_GENERATOR_TEMPLATE_KEY}=${template}; Max-Age=31536000; Path=/; SameSite=Lax`;
     } catch {
-      /* optional preference */
+      /* The current session still uses the selected design. */
     }
   }
 
@@ -265,47 +259,18 @@ export function SelfGenerator({
   const choices = [
     {
       value: "public" as const,
-      title: t("공개 자료만", "Public only"),
-      text: t(
-        "공개 포트폴리오와 외부 공유에 적합합니다. 비공개 저장소는 읽지 않습니다.",
-        "For a public portfolio or external sharing. Private repositories are not read.",
-      ),
-    },
-    {
-      value: "private-summary" as const,
-      title: t("비공개 작업 익명 요약", "Summarize private work"),
-      text: t(
-        "공개 활동이 적을 때 선택한 작업의 기술·문서·테스트·자동화 흔적을 보완합니다. 이름·링크·설명은 제외합니다.",
-        "Fill gaps in public activity with technology, documentation, testing, and automation signals from selected work. Names, links, and descriptions are excluded.",
-      ),
+      title: t("공개 저장소만", "Public repositories only"),
+      text: t("공개 저장소를 최대 5개 담습니다.", "Include up to five public repositories."),
     },
     {
       value: "private-details" as const,
-      title: t("비공개 프로젝트 상세 포함", "Include private project details"),
+      title: t("비공개 저장소도 포함", "Include private repositories"),
       text: t(
-        "내부 검토나 공개 가능한 프로젝트 소개에 적합합니다. 선택한 저장소의 이름·설명·링크가 파일에 들어갑니다.",
-        "For internal reviews or work you may disclose. Selected repository names, descriptions, and links appear in the files.",
+        "고른 비공개 저장소의 이름, 설명, 링크도 파일에 들어갑니다.",
+        "Files also include the names, descriptions, and links of the private repositories you choose.",
       ),
     },
   ];
-  const purpose = {
-    brief: t(
-      "첫 소개에 필요한 기술과 대표작을 간결하게.",
-      "A concise introduction through your stack and selected work.",
-    ),
-    profile: t(
-      "무엇을 만들었는지, 프로젝트로 보여주는 포트폴리오.",
-      "A portfolio that puts the projects you built first.",
-    ),
-    insight: t(
-      "프로젝트에서 반복되는 기술 선택과 작업 패턴을 살펴보세요.",
-      "Explore the technical choices and patterns across your projects.",
-    ),
-    resume: t(
-      "작성해 둔 이력서를 읽기 좋은 문서로 정리합니다.",
-      "Turn your authored resume into a well-formatted document.",
-    ),
-  };
 
   return (
     <section
@@ -319,31 +284,23 @@ export function SelfGenerator({
           ? t("기존 이력서 연결", "Connect your existing resume")
           : t("어떤 문서를 만들까요?", "What would you like to make?")}
       </h2>
-      {!resumeOnly && (
+      {!resumeOnly ? (
         <div
-          className="gp-template-picker"
+          className="gp-template-picker gp-mode-picker"
           role="group"
-          aria-label={t("문서 템플릿", "Document template")}
+          aria-label={t("문서 종류", "Document type")}
         >
-          {(["brief", "profile", "insight", "resume"] as TemplateId[]).map(
-            (id) => (
-              <button
-                type="button"
-                key={id}
-                aria-pressed={options.template === id}
-                onClick={() => selectTemplate(id)}
-              >
-                <strong>{getTemplateMeta(locale)[id].label}</strong>
-                <span>{getTemplateMeta(locale)[id].shortLabel}</span>
-              </button>
-            ),
-          )}
+          <button type="button" aria-pressed={!resume} onClick={() => selectMode(false)}>
+            <strong>{t("저장소 목록", "Repository list")}</strong>
+            <span>{t("이름, 설명, GitHub 링크", "Names, descriptions, and GitHub links")}</span>
+          </button>
+          <button type="button" aria-pressed={resume} onClick={() => selectMode(true)}>
+            <strong>{t("이력서 전용", "Resume only")}</strong>
+            <span>{t("직접 작성한 resume.yaml 필요", "Requires your own resume.yaml")}</span>
+          </button>
         </div>
-      )}
-      <p className="my-6 text-[15px] leading-7 text-ink-soft">
-        {purpose[options.template]}
-      </p>
-      <div className="grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
+      ) : null}
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className="space-y-5">
           {resume ? (
             <>
@@ -352,61 +309,20 @@ export function SelfGenerator({
                   {t("이력서가 있는 저장소", "Your resume repository")}
                 </legend>
                 <p className="source-location">github.com/{username}/resume</p>
-                <p className="source-caption">
-                  {t(
-                    "공개·비공개 여부는 자동으로 확인합니다. 작성한 경력·프로젝트·연락처를 그대로 담습니다.",
-                    "Public or private is detected automatically. Your experience, projects, and contact details stay as written.",
-                  )}
-                </p>
-              </fieldset>
-              <details className="generator-extra">
-                <summary>
-                  <span>{t("프로젝트 정보 추가", "Add project details")}</span>
-                  <span>
-                    {options.resumeProjects === "authorized"
-                      ? t("사용 중", "On")
-                      : t("선택 사항", "Optional")}
-                  </span>
-                </summary>
-                <p>
-                  {t(
-                    "기본으로 작성한 내용과 공개 프로젝트 정보를 사용합니다. 비공개 프로젝트의 기술·설명도 가져오려면 켜세요.",
-                    "Your own text and public project details are included by default. Turn this on to also add details from private projects.",
-                  )}
-                </p>
-                <label className="flex cursor-pointer items-start gap-3 text-sm">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={options.resumeProjects === "authorized"}
-                    onChange={(event) =>
-                      setOptions({
-                        ...options,
-                        resumeProjects: event.target.checked
-                          ? "authorized"
-                          : "public",
-                      })
-                    }
-                  />
-                  <span>
+                {sourceState !== "ready" ? (
+                  <p className="source-caption">
                     {t(
-                      "연결한 비공개 프로젝트 정보도 가져오기",
-                      "Include linked private project details",
+                      "이력서를 만들려면 GitHub에 resume 저장소를 만들고 루트에 resume.yaml을 작성해 주세요.",
+                      "To make a resume, create a GitHub repository named resume and add your own resume.yaml at its root.",
                     )}
-                  </span>
-                </label>
-                <p className="text-xs">
-                  {t(
-                    "이력서에 직접 연결한 프로젝트만 읽습니다. 해당 프로젝트의 이름·설명·링크가 저장 파일에 포함됩니다.",
-                    "Only projects linked in your resume are read. Their names, descriptions, and links will appear in saved files.",
-                  )}
-                </p>
-              </details>
+                  </p>
+                ) : null}
+              </fieldset>
             </>
           ) : (
             <fieldset className="space-y-3">
               <legend className="mb-3 text-[15px] font-bold">
-                {t("사용할 자료 범위", "Sources to use")}
+                {t("저장소 공개 범위", "Repository visibility")}
               </legend>
               {choices.map((choice) => (
                 <label
@@ -420,7 +336,11 @@ export function SelfGenerator({
                     className="mt-1"
                     checked={options.analysisScope === choice.value}
                     onChange={() =>
-                      setOptions({ ...options, analysisScope: choice.value })
+                      setOptions((current) => ({
+                        ...current,
+                        analysisScope: choice.value,
+                        privateRepos: choice.value === "public" ? [] : current.privateRepos,
+                      }))
                     }
                   />
                   <span>
@@ -451,16 +371,7 @@ export function SelfGenerator({
               </p>
               <a
                 href={privateLoginHref}
-                onClick={() => {
-                  try {
-                    sessionStorage.setItem(
-                      storageKey,
-                      JSON.stringify({ options, savedAt: Date.now() }),
-                    );
-                  } catch {
-                    /* optional draft */
-                  }
-                }}
+                onClick={rememberSelection}
                 className="gp-button gp-button-small mt-4"
               >
                 {t("GitHub에서 권한 연결", "Connect access on GitHub")}
@@ -494,19 +405,14 @@ export function SelfGenerator({
                       "Ready. Open your document to review it.",
                     )
                   : sourceState === "missing_repo"
-                    ? canReadPrivate
-                      ? t(
-                          "resume 저장소가 없습니다. 이력서 없이 공개 활동으로 간단한 소개 문서를 만들 수 있습니다.",
-                          "No resume repository was found. You can make a simple introduction from your public activity instead.",
-                        )
-                      : t(
-                          "공개 resume 저장소가 없습니다. 비공개 저장소라면 접근을 연결하고, 없다면 공개 활동으로 간단히 만들 수 있습니다.",
-                          "No public resume repository was found. Connect access if it is private, or make a simple document from your public activity.",
-                        )
+                    ? t(
+                        "읽을 수 있는 resume 저장소를 찾지 못했습니다.",
+                        "We couldn’t find a resume repository we can open.",
+                      )
                     : sourceState === "invalid_schema"
                       ? t(
-                          "저장소에 접근했습니다. resume.yaml 파일이나 그 내용을 수정해야 합니다. 권한을 다시 연결할 필요는 없습니다.",
-                          "Repository access works. Fix resume.yaml or its contents; reconnecting permissions will not fix this.",
+                          "resume.yaml이 저장소 루트에 있는지와 파일 내용을 확인해 주세요.",
+                          "Check that resume.yaml is at the repository root and that its contents are valid.",
                         )
                       : sourceState === "authentication"
                         ? t(
@@ -520,8 +426,8 @@ export function SelfGenerator({
                             )
                           : sourceState === "rate_limited"
                             ? t(
-                                "GitHub 요청 한도에 도달했습니다. 잠시 기다렸다가 다시 확인하세요. 재연결은 필요하지 않습니다.",
-                                "GitHub’s request limit was reached. Wait before checking again; reconnecting is unnecessary.",
+                                "GitHub 요청 한도에 도달했습니다. 잠시 후 다시 확인해 주세요.",
+                                "GitHub’s request limit was reached. Try again in a moment.",
                               )
                             : sourceState === "unavailable"
                               ? t(
@@ -572,14 +478,13 @@ export function SelfGenerator({
                     type="button"
                     className="underline underline-offset-4"
                     onClick={() => {
-                      if (!resumeOnly) return selectTemplate("brief");
-                      selectTemplate("brief");
+                      if (!resumeOnly) return selectMode(false);
                       window.location.assign(`${ko ? "" : "/en"}/#generator`);
                     }}
                   >
                     {t(
-                      "이력서 없이 간단히 만들기",
-                      "Make one without a resume",
+                      "저장소 목록 만들기",
+                      "Make a repository list",
                     )}
                   </button>
                 ) : null}
@@ -607,12 +512,12 @@ export function SelfGenerator({
               </div>
             </div>
           ) : null}
-          {privateAnalysis && canReadPrivate ? (
+          {includePrivate && canReadPrivate ? (
             <div className="gp-status">
               <h3 className="font-bold">
                 {t(
-                  "분석할 비공개 저장소 선택",
-                  "Select private repositories to analyze",
+                  "문서에 넣을 비공개 저장소",
+                  "Private repositories to include",
                 )}{" "}
                 <span className="font-medium text-ink-soft">
                   {options.privateRepos.length}/{MAX_PRIVATE_REPOS}
@@ -620,8 +525,8 @@ export function SelfGenerator({
               </h3>
               <p className="mt-2 text-[13px] leading-6 text-ink-soft">
                 {t(
-                  "선택을 위해 본인 소유 비공개 저장소 이름 목록을 불러옵니다. 내용은 선택한 저장소만 읽습니다.",
-                  "Load names of your owned private repositories for selection. Only selected repositories have their contents read.",
+                  "내 비공개 저장소에서 최대 3개까지 고를 수 있습니다.",
+                  "Choose up to three of your private repositories.",
                 )}
               </p>
               {repoError ? (
@@ -723,6 +628,27 @@ export function SelfGenerator({
               )}
             </div>
           ) : null}
+          {!resume ? (
+            <fieldset>
+              <legend className="text-[15px] font-bold">{t("문서 디자인", "Document design")}</legend>
+              <div className="gp-template-picker gp-style-picker">
+                {repositoryStyles.map((id) => {
+                  const meta = templateMeta[id];
+                  return (
+                    <button
+                      type="button"
+                      key={id}
+                      aria-pressed={options.template === id}
+                      onClick={() => selectStyle(id)}
+                    >
+                      <strong>{meta.label}</strong>
+                      <span>{meta.shortLabel}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          ) : null}
           <Button
             size="lg"
             className="w-full"
@@ -730,7 +656,7 @@ export function SelfGenerator({
               pending ||
               (resume && sourceState !== "ready") ||
               (needsPermission && !canReadPrivate) ||
-              (privateAnalysis &&
+              (includePrivate &&
                 (!options.privateRepos.length ||
                   repositories === null ||
                   repoError))
@@ -753,24 +679,15 @@ export function SelfGenerator({
           <TemplatePreview locale={locale} template={options.template} />
           <div>
             <p>
-              <strong>{getTemplateMeta(locale)[options.template].label}</strong>
+              <strong>{templateMeta[options.template].label}</strong>
               {t(
-                "미리보기에서 확인하고, 원하는 형식으로 저장하세요.",
-                "Review your document, then save it in the format you need.",
+                " 디자인 예시",
+                " design example",
               )}
             </p>
           </div>
         </aside>
       </div>
-      {needsPermission ? (
-        <p className="mt-4 text-[13px] leading-6 text-ink-soft">
-          {t(
-            "선택한 자료만 읽으며, 비공개 내용은 외부 AI로 보내지 않습니다. 결과 페이지는 나만 볼 수 있습니다.",
-            "Only selected sources are read. Private content is not sent to external AI. Your results page is visible only to you.",
-          )}
-        </p>
-      ) : null}
-
       {showGuide && resume ? (
         <div id="resume-setup-guide" className="mt-6 scroll-mt-5">
           <ResumeActivationPanel
