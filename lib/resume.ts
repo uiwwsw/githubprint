@@ -242,7 +242,12 @@ const resumeItemSchema = z.object({
   title: localizedTextSchema,
 });
 
+const resumeExperienceSchema = resumeItemSchema.extend({
+  id: nonEmptyStringSchema.optional(),
+});
+
 const resumeProjectSchema = resumeItemSchema.extend({
+  experienceId: nonEmptyStringSchema.optional(),
   id: nonEmptyStringSchema.optional(),
   liveUrl: z.url().optional(),
   repo: nonEmptyStringSchema.optional(),
@@ -313,7 +318,7 @@ const rawResumeDocumentSchema = z.object({
   basics: basicsSchema,
   customSections: z.array(customSectionSchema).optional(),
   education: z.array(resumeEducationSchema).optional(),
-  experience: z.array(resumeItemSchema).optional(),
+  experience: z.array(resumeExperienceSchema).optional(),
   featuredProjects: z.array(featuredProjectReferenceSchema).optional(),
   projects: z.array(resumeProjectSchema).optional(),
   skills: z.array(resumeSkillSchema).optional(),
@@ -344,8 +349,8 @@ export type ResumeEntry = {
 };
 
 export type ResumeProject = ResumeEntry & {
+  experienceId?: string;
   id?: string;
-  linkedExperienceTitle?: string;
   liveUrl?: string;
   repoCreatedAt?: string;
   repoDescription?: string;
@@ -357,6 +362,8 @@ export type ResumeProject = ResumeEntry & {
   repoVisibility?: ResumeRepoVisibility;
   tech: string[];
 };
+
+export type ResumeExperience = ResumeEntry & { id?: string };
 
 export type ResumeSkillGroup = {
   items: string[];
@@ -384,7 +391,7 @@ export type ResumeDocumentData = {
   };
   customSections: ResumeCustomSection[];
   education: ResumeEntry[];
-  experience: ResumeEntry[];
+  experience: ResumeExperience[];
   allProjects: ResumeProject[];
   projects: ResumeProject[];
   skills: ResumeSkillGroup[];
@@ -652,6 +659,12 @@ function sanitizeResumeProject(
 
   const project: z.infer<typeof resumeProjectSchema> = {
     ...baseItem,
+    experienceId: parseOptionalField(
+      nonEmptyStringSchema,
+      value.experienceId,
+      `${path}.experienceId`,
+      warnings,
+    ),
   };
   const id = parseOptionalField(
     nonEmptyStringSchema,
@@ -1566,8 +1579,8 @@ function normalizeProject(
 
   return {
     ...entry,
+    experienceId: item.experienceId?.trim(),
     id: item.id?.trim() || undefined,
-    linkedExperienceTitle: undefined,
     links: dedupeProjectLinks(projectLinks),
     liveUrl: item.liveUrl,
     repoCreatedAt,
@@ -1620,7 +1633,6 @@ function buildRepoBackedProject(
     bullets: [],
     current: false,
     id: resolvedRepo.normalizedSlug,
-    linkedExperienceTitle: undefined,
     links: dedupeProjectLinks(links),
     liveUrl,
     projectLabels: ownedRepo?.projectLabels ?? [],
@@ -1707,52 +1719,23 @@ export function isResumeHighlightSectionId(id: string) {
   );
 }
 
-function experienceContainsDate(entry: ResumeEntry, target: number) {
-  const start = getComparableDate(entry.start);
-  const end = entry.current
-    ? Date.now()
-    : getComparableDate(entry.end ?? entry.sortDate);
+export function groupResumeProjects(resume: ResumeDocumentData) {
+  const byExperience = new Map<string, ResumeProject[]>();
+  const experienceIds = new Set(resume.experience.flatMap((entry) => entry.id ? [entry.id] : []));
 
-  if (start === null) {
-    return false;
+  for (const project of resume.allProjects) {
+    if (!project.experienceId || !experienceIds.has(project.experienceId)) continue;
+    const projects = byExperience.get(project.experienceId) ?? [];
+    projects.push(project);
+    byExperience.set(project.experienceId, projects);
   }
 
-  if (target < start) {
-    return false;
-  }
-
-  if (end !== null && target > end) {
-    return false;
-  }
-
-  return true;
-}
-
-function linkProjectsToExperience(
-  projects: ResumeProject[],
-  experience: ResumeEntry[],
-) {
-  return projects.map((project) => {
-    const projectDate = getComparableDate(
-      project.start ??
-        project.repoCreatedAt ??
-        project.repoUpdatedAt ??
-        project.end,
-    );
-
-    if (projectDate === null) {
-      return project;
-    }
-
-    const matchingExperience = sortResumeEntries(
-      experience.filter((entry) => experienceContainsDate(entry, projectDate)),
-    )[0];
-
-    return {
-      ...project,
-      linkedExperienceTitle: matchingExperience?.title,
-    };
-  });
+  return {
+    byExperience,
+    standalone: resume.projects.filter(
+      (project) => !project.experienceId || !byExperience.has(project.experienceId),
+    ),
+  };
 }
 
 function findExplicitProjectByReference(
@@ -1923,7 +1906,14 @@ export function parseResumeYamlDocument(source: string) {
             `experience[${index}]`,
             warnings,
           );
-          return sanitized ? [sanitized] : [];
+          if (!sanitized || !isRecord(item)) return [];
+          const id = parseOptionalField(
+            nonEmptyStringSchema,
+            item.id,
+            `experience[${index}].id`,
+            warnings,
+          );
+          return [{ ...sanitized, id }];
         })
       : parsed.experience === undefined
         ? undefined
@@ -2174,15 +2164,16 @@ export function buildResumeDocument(
       ),
     ),
     experience: sortResumeEntries(
-      (raw.experience ?? []).map((item, index) =>
-        normalizeEntry(
+      (raw.experience ?? []).map((item, index) => ({
+        ...normalizeEntry(
           item,
           options.locale,
           options.contentFiles,
           warnings,
           `experience[${index}]`,
         ),
-      ),
+        id: item.id?.trim(),
+      })),
     ),
     allProjects: [],
     projects: [],
@@ -2203,36 +2194,42 @@ export function buildResumeDocument(
     warnings,
   };
 
-  const explicitProjects = linkProjectsToExperience(
-    sortResumeEntries(
-      (raw.projects ?? []).map((item, index) =>
-        normalizeProject(
-          item,
-          options.locale,
-          options.contentFiles,
-          options.username,
-          repoCatalog,
-          warnings,
-          `projects[${index}]`,
-        ),
-      ),
-    ),
-    resumeDocument.experience,
-  );
-  const featuredProjects = linkProjectsToExperience(
-    resolveFeaturedProjects(
-      raw.featuredProjects,
-      explicitProjects,
-      options.locale,
-      options.username,
-      repoCatalog,
-      warnings,
-    ),
-    resumeDocument.experience,
-  );
+  const experienceIdCounts = new Map<string, number>();
+  for (const entry of resumeDocument.experience) {
+    if (!entry.id) continue;
+    experienceIdCounts.set(entry.id, (experienceIdCounts.get(entry.id) ?? 0) + 1);
+  }
 
-  resumeDocument.allProjects = explicitProjects;
-  resumeDocument.projects = featuredProjects;
+  resumeDocument.allProjects = sortResumeEntries(
+    (raw.projects ?? []).map((item, index) => {
+      const path = `projects[${index}]`;
+      const project = normalizeProject(
+        item,
+        options.locale,
+        options.contentFiles,
+        options.username,
+        repoCatalog,
+        warnings,
+        path,
+      );
+      if (project.experienceId && experienceIdCounts.get(project.experienceId) !== 1) {
+        pushResumeWarning(
+          warnings,
+          `${path}.experienceId: Expected one experience with id "${project.experienceId}".`,
+        );
+        delete project.experienceId;
+      }
+      return project;
+    }),
+  );
+  resumeDocument.projects = resolveFeaturedProjects(
+    raw.featuredProjects,
+    resumeDocument.allProjects,
+    options.locale,
+    options.username,
+    repoCatalog,
+    warnings,
+  );
 
   return resumeDocument;
 }

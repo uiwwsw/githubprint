@@ -4,6 +4,7 @@ import {
   buildResumeProjectEvidenceSummary,
   buildResumeDocument,
   collectResumeMarkdownPaths,
+  groupResumeProjects,
   isResumeHighlightSectionId,
   parseResumeYamlDocument,
   pickResumeManifestFile,
@@ -20,6 +21,36 @@ test("prefers locale-specific manifests and falls back to resume.yaml", () => {
   );
   assert.equal(pickResumeManifestFile(["resume.yaml"], "en"), "resume.yaml");
   assert.equal(pickResumeManifestFile(["resume.yaml"], "ko"), "resume.yaml");
+});
+
+test("groups only explicitly linked projects under an unambiguous experience", () => {
+  const parsed = parseResumeYamlDocument(`
+basics: { name: Example }
+experience:
+  - { id: editor, title: Acme, start: "2024-01", current: true }
+  - { id: duplicate, title: Acme, start: "2022-01", end: "2023-12" }
+  - { id: duplicate, title: Another company, start: "2020-01", end: "2021-12" }
+projects:
+  - { id: linked, title: Company project, experienceId: editor }
+  - { id: legacy, title: Personal project, start: "2025-01" }
+  - { id: ambiguous, title: Project with ambiguous link, experienceId: duplicate }
+  - { id: missing, title: Project with missing link, experienceId: missing }
+featuredProjects: [missing, linked, legacy, ambiguous]
+`);
+  assert.ok(parsed.success);
+  const document = buildResumeDocument(parsed.data, {
+    contentFiles: {},
+    locale: "en",
+    repoCatalog: [],
+    repoUrl: "https://github.com/example/resume",
+    username: "example",
+    visibility: "public",
+  });
+  const { byExperience, standalone } = groupResumeProjects(document);
+  assert.deepEqual([...byExperience.keys()], ["editor"]);
+  assert.deepEqual(byExperience.get("editor")?.map((project) => project.id), ["linked"]);
+  assert.deepEqual(standalone.map((project) => project.id), ["missing", "legacy", "ambiguous"]);
+  assert.equal(document.warnings.filter((warning) => warning.includes(".experienceId")).length, 2);
 });
 
 test("parses valid single-locale resume.yaml and collects markdown references", () => {
@@ -79,6 +110,7 @@ summary:
 projects:
   - title: "GitHubPrint"
     id: "githubprint-product"
+    experienceId: "acme"
     repo: "githubprint"
     start: "2025-02-01"
     liveUrl: "https://githubprint.vercel.app"
@@ -87,6 +119,7 @@ featuredProjects:
   - "githubprint-product"
 experience:
   - title: "Acme"
+    id: "acme"
     start: "2024-01-01"
     current: true
 skills:
@@ -139,7 +172,7 @@ skills:
     "Turns GitHub into a shareable document",
   );
   assert.deepEqual(document.projects[0]?.projectLabels, ["AI", "frontend"]);
-  assert.equal(document.projects[0]?.linkedExperienceTitle, "Acme");
+  assert.equal(document.projects[0]?.experienceId, "acme");
   assert.equal(document.projects[0]?.sortDate, "2025-02-01");
   assert.equal(
     document.projects[0]?.subtitle,
@@ -206,7 +239,7 @@ featuredProjects:
   });
 
   assert.equal(document.allProjects.length, 1);
-  assert.equal(document.allProjects[0]?.linkedExperienceTitle, "Semits");
+  assert.equal(document.allProjects[0]?.experienceId, undefined);
   assert.equal(document.projects.length, 2);
   assert.deepEqual(
     document.projects.map((project) => project.title),

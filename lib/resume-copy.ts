@@ -46,18 +46,15 @@ type ResumeCopy = {
   };
   shared: {
     githubStart: string;
-    independent: string;
     current: string;
     private: string;
     public: string;
     present: string;
-    whileAt: string;
   };
   template: {
       emptyState: string;
       noSummary: string;
       projectProfile: string;
-      projectContext: string;
       repoVerified: string;
     ribbonGenerated: string;
     ribbonSource: string;
@@ -65,6 +62,7 @@ type ResumeCopy = {
     ribbonVisibility: string;
     sections: {
       basics: string;
+      companyProjects: string;
       education: string;
       experience: string;
       links: string;
@@ -148,18 +146,15 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     },
     shared: {
       githubStart: "GitHub 시작 시점",
-      independent: "독립 프로젝트",
       current: "현재",
       private: "비공개",
       public: "공개",
       present: "현재",
-      whileAt: "재직 시기",
     },
     template: {
       emptyState: "이 섹션에 아직 항목이 없습니다.",
       noSummary: "짧은 자기소개가 아직 없습니다.",
       projectProfile: "프로젝트 성격",
-      projectContext: "연결된 경력 구간",
       repoVerified: "GitHub 레포 검증됨",
       ribbonGenerated: "생성일",
       ribbonSource: "소스",
@@ -169,6 +164,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         basics: "기본 정보",
         education: "학력",
         experience: "경력",
+        companyProjects: "담당 프로젝트",
         links: "링크",
         projects: "대표 프로젝트",
         skills: "기술 스택",
@@ -248,18 +244,15 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
     },
     shared: {
       githubStart: "GitHub start",
-      independent: "Independent project",
       current: "Current",
       private: "Private",
       public: "Public",
       present: "Present",
-      whileAt: "While at",
     },
     template: {
       emptyState: "No items have been added to this section yet.",
       noSummary: "A short summary has not been added yet.",
       projectProfile: "Project profile",
-      projectContext: "Linked experience context",
       repoVerified: "Verified GitHub repo",
       ribbonGenerated: "Generated",
       ribbonSource: "Source",
@@ -269,6 +262,7 @@ const resumeCopy: Record<Locale, ResumeCopy> = {
         basics: "Basics",
         education: "Education",
         experience: "Experience",
+        companyProjects: "Projects at this company",
         links: "Links",
         projects: "Selected Projects",
         skills: "Technical Skills",

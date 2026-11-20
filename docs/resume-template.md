@@ -250,14 +250,30 @@ I prefer fast build-and-validate loops in small product teams.
 I am especially interested in GitHub-based products, document interfaces, and developer tooling.
 ```
 
-## 시간축 연결 규칙
+## 회사에 프로젝트 연결하기
 
-- `projects[].start`가 있으면 그 날짜를 기준으로 프로젝트를 정렬합니다.
-- `projects[].start`가 없고 `repo`가 현재 계정의 GitHub repo와 매칭되면 repo 생성일을 보조 날짜로 사용합니다.
-- 이렇게 얻은 날짜를 바탕으로 어떤 `experience` 구간과 겹치는지 연결해서 보여줍니다.
-- 연결되지 않으면 독립 프로젝트로 표시합니다.
-- `featuredProjects`가 있으면 하단 프로젝트 섹션에는 선택한 항목만 노출합니다.
-- `featuredProjects`가 없으면 `projects` 전체를 하단 프로젝트 섹션에 사용합니다.
+`experience[].id`를 경력마다 다르게 정하고, 그 회사에서 진행한 프로젝트의 `projects[].experienceId`에 같은 값을 적습니다.
+
+```yaml
+experience:
+  - id: acme-frontend
+    title: "Acme"
+    subtitle: "프론트엔드 개발자"
+    start: "2024-01"
+    current: true
+
+projects:
+  - title: "업무용 관리 화면"
+    experienceId: acme-frontend
+    bullets: ["검색과 필터를 구현했습니다."]
+  - title: "개인 컴포넌트 모음"
+    start: "2025-03"
+```
+
+- 회사에 연결한 프로젝트는 해당 경력 아래에 한 번 표시합니다.
+- 기존 YAML은 그대로 읽습니다. `experienceId`가 없거나 일치하는 경력을 하나로 확인할 수 없으면 회사에 연결하지 않습니다.
+- 날짜는 정렬에 사용합니다. 회사 연결은 `experienceId`로 지정합니다.
+- `featuredProjects`는 별도 프로젝트 섹션에 표시할 항목과 순서를 지정합니다. 회사에 연결한 프로젝트는 해당 경력에서 계속 확인할 수 있습니다.
 
 ## `featuredProjects` 작성 방식
 

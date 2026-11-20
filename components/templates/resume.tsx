@@ -8,6 +8,7 @@ import {
   buildResumeProjectEvidenceSummary,
   formatResumeProjectLabel,
   formatResumeDateRange,
+  groupResumeProjects,
   isResumeHighlightSectionId,
   parseResumeMarkdown,
   type ResumeCustomSection,
@@ -316,15 +317,16 @@ function LinkRow({
 }
 
 function ResumeEntryBlock({
+  children,
   entry,
+  experience = false,
   locale,
-  relatedProjects,
 }: {
+  children?: ReactNode;
   entry: ResumeEntry;
+  experience?: boolean;
   locale: Locale;
-  relatedProjects?: ResumeProject[];
 }) {
-  const copy = getResumeCopy(locale);
   const dateRange = formatResumeDateRange(
     entry.start,
     entry.end,
@@ -333,7 +335,12 @@ function ResumeEntryBlock({
   );
 
   return (
-    <article className="resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
+    <article
+      className={cn(
+        "resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5",
+        experience && "resume-company",
+      )}
+    >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
@@ -377,23 +384,7 @@ function ResumeEntryBlock({
         </div>
       ) : null}
 
-      {relatedProjects && relatedProjects.length > 0 ? (
-        <div className="mt-4 rounded-[1rem] bg-black/[0.025] p-4">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-neutral-500">
-            {copy.template.sections.projects}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {relatedProjects.map((project) => (
-              <span
-                className="rounded-full border border-black/[0.08] bg-white px-3 py-1.5 text-xs text-neutral-700"
-                key={`${entry.title}-${project.title}`}
-              >
-                {project.title}
-              </span>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      {children}
     </article>
   );
 }
@@ -401,16 +392,16 @@ function ResumeEntryBlock({
 function ResumeProjectBlock({
   authoredOnly = false,
   locale,
+  nested = false,
   project,
 }: {
   authoredOnly?: boolean;
   locale: Locale;
+  nested?: boolean;
   project: ResumeProject;
 }) {
   const copy = getResumeCopy(locale);
-  const projectContext = project.linkedExperienceTitle
-    ? `${copy.shared.whileAt}: ${project.linkedExperienceTitle}`
-    : copy.shared.independent;
+  const Title = nested ? "h4" : "h3";
   const dateRange = formatResumeDateRange(
     project.start,
     project.end,
@@ -433,9 +424,9 @@ function ResumeProjectBlock({
     <article className="resume-entry rounded-[1.2rem] border border-black/[0.08] bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
-          <h3 className="break-words text-xl font-semibold tracking-[-0.01em] text-neutral-950">
+          <Title className="break-words text-base font-semibold tracking-[-0.01em] text-neutral-950">
             {project.title}
-          </h3>
+          </Title>
           {project.subtitle ? (
             <p className="text-sm font-medium text-neutral-700">
               {project.subtitle}
@@ -452,11 +443,8 @@ function ResumeProjectBlock({
         ) : null}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {(!authoredOnly || project.linkedExperienceTitle) && <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-900">
-          {projectContext}
-        </span>}
-        {!authoredOnly && project.repoCreatedAt ? (
+      {!authoredOnly && project.repoCreatedAt ? (
+        <div className="mt-4 flex flex-wrap gap-2">
           <span className="rounded-full border border-black/[0.08] bg-black/[0.025] px-3 py-1.5 text-xs text-neutral-600">
             {copy.shared.githubStart}:{" "}
             {formatResumeDateRange(
@@ -466,8 +454,8 @@ function ResumeProjectBlock({
               locale,
             )}
           </span>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {!authoredOnly && localizedProjectLabels.length > 0 ? (
         <div className="mt-4 rounded-[1rem] bg-black/[0.025] p-4">
@@ -600,24 +588,13 @@ export function ResumeTemplate({
   const topLinks = resume.basics.links.filter(
     (link) => link.kind !== "contact",
   );
-  const projectsByExperience = new Map<string, ResumeProject[]>();
+  const { byExperience, standalone } = groupResumeProjects(resume);
   const highlightSection = resume.customSections.find((section) =>
     isResumeHighlightSectionId(section.id),
   );
   const trailingSections = resume.customSections.filter(
     (section) => !isResumeHighlightSectionId(section.id),
   );
-
-  resume.allProjects.forEach((project) => {
-    if (!project.linkedExperienceTitle) {
-      return;
-    }
-
-    const bucket =
-      projectsByExperience.get(project.linkedExperienceTitle) ?? [];
-    bucket.push(project);
-    projectsByExperience.set(project.linkedExperienceTitle, bucket);
-  });
 
   if (resume.basics.website) {
     topLinks.unshift({
@@ -710,25 +687,45 @@ export function ResumeTemplate({
         {resume.experience.length > 0 ? (
           <ResumeSection title={copy.template.sections.experience}>
             <div className="space-y-4">
-              {resume.experience.map((entry) => (
-                <ResumeEntryBlock
-                  entry={entry}
-                  key={entry.title}
-                  locale={locale}
-                  relatedProjects={projectsByExperience.get(entry.title)}
-                />
-              ))}
+              {resume.experience.map((entry, index) => {
+                const projects = entry.id ? byExperience.get(entry.id) : undefined;
+                return (
+                  <ResumeEntryBlock
+                    entry={entry}
+                    experience
+                    key={`${entry.id ?? entry.title}-${index}`}
+                    locale={locale}
+                  >
+                    {projects?.length ? (
+                      <div className="resume-company-projects space-y-3">
+                        <p className="resume-company-projects-label font-semibold">
+                          {copy.template.sections.companyProjects}
+                        </p>
+                        {projects.map((project, projectIndex) => (
+                          <ResumeProjectBlock
+                            authoredOnly={authoredOnly}
+                            key={`${project.id ?? project.title}-${projectIndex}`}
+                            locale={locale}
+                            nested
+                            project={project}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
+                  </ResumeEntryBlock>
+                );
+              })}
             </div>
           </ResumeSection>
         ) : null}
 
-        {resume.projects.length > 0 ? (
+        {standalone.length > 0 ? (
           <ResumeSection title={copy.template.sections.projects}>
             <div className="space-y-4">
-              {resume.projects.map((project) => (
+              {standalone.map((project, index) => (
                 <ResumeProjectBlock
                   authoredOnly={authoredOnly}
-                  key={project.title}
+                  key={`${project.id ?? project.title}-${index}`}
                   locale={locale}
                   project={project}
                 />

@@ -597,6 +597,13 @@ select {
 .document-page[data-template="resume"] .resume-section h2 { padding-bottom: 10px; border-bottom: 1px solid #ccd7ce; font-size: 19px; }
 .document-page[data-template="resume"] .resume-entry > div:first-child { display: flex; flex-direction: row; justify-content: space-between; gap: 20px; }
 .document-page[data-template="resume"] .resume-entry > div:first-child > p { border: 0; border-radius: 0; padding: 0; background: transparent; color: #7a857d; }
+.document-page[data-template="resume"] .resume-company > div:first-child h3 { font-size: 22px; font-weight: 700; }
+.resume-company-projects {
+  margin-top: 20px;
+  padding-inline-start: 16px;
+  border-inline-start: 2px solid #ccd7ce;
+}
+.resume-company-projects-label { color: #27674c; font-size: 12px; }
 .resume-markdown-section { padding: 4px 0 0; }
 .resume-markdown-subsection { padding: 8px 0 0 14px; border-left: 1px solid #dce3df; }
 .resume-highlight { padding: 14px 0; border-top: 2px solid #dce3df; }
@@ -643,6 +650,8 @@ select {
   .document-page[data-template="brief"] .document-project .mt-3 { margin-top: 4pt; }
   .brief-stack { margin: 0 0 10pt; }
   .document-page[data-template="resume"] .resume-header { padding-bottom: 14pt; }
+  .document-page[data-template="resume"] .resume-company { break-inside: auto; }
+  .resume-company-projects { margin-top: 12pt; padding-inline-start: 11pt; }
   .document-page[data-template="resume"] .resume-section h2 { padding-bottom: 6pt; }
   .document-page[data-template="insight"] .evidence-review-items { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10pt; }
   .document-page[data-template="insight"] .evidence-review-items > div { padding: 8pt; }

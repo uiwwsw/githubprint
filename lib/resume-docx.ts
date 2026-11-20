@@ -2,7 +2,6 @@ import "server-only";
 
 import {
   AlignmentType,
-  BorderStyle,
   ExternalHyperlink,
   HeadingLevel,
   ImageRun,
@@ -17,6 +16,7 @@ import {
   buildResumeProjectEvidenceSummary,
   formatResumeProjectLabel,
   formatResumeDateRange,
+  groupResumeProjects,
   isResumeHighlightSectionId,
   parseResumeMarkdown,
   type ResumeCustomSection,
@@ -149,11 +149,12 @@ function createAvatarParagraphFromBuffer(data: Buffer, contentType?: string) {
   });
 }
 
-function createMarkdownParagraphs(markdown: string) {
+function createMarkdownParagraphs(markdown: string, indent?: { left: number }) {
   return parseResumeMarkdown(markdown).flatMap((block) => {
     if (block.type === "heading") {
       return [
         new Paragraph({
+          indent,
           spacing: {
             after: block.level >= 3 ? 60 : 80,
             before: block.level >= 3 ? 100 : 120,
@@ -172,6 +173,7 @@ function createMarkdownParagraphs(markdown: string) {
       return block.items.map(
         (item) =>
           new Paragraph({
+            indent,
             bullet: { level: 0 },
             spacing: {
               after: 40,
@@ -183,6 +185,7 @@ function createMarkdownParagraphs(markdown: string) {
 
     return [
       new Paragraph({
+        indent,
         spacing: {
           after: 120,
         },
@@ -196,6 +199,7 @@ function buildEntryParagraphs(
   entry: ResumeEntry,
   locale: Locale,
   linkLabel: string,
+  indent?: { left: number },
 ) {
   const paragraphs: Paragraph[] = [];
   const dateRange = formatResumeDateRange(
@@ -207,7 +211,8 @@ function buildEntryParagraphs(
 
   paragraphs.push(
     new Paragraph({
-      heading: HeadingLevel.HEADING_2,
+      indent,
+      heading: indent ? HeadingLevel.HEADING_3 : HeadingLevel.HEADING_2,
       keepNext: true,
       spacing: {
         after: 40,
@@ -225,6 +230,7 @@ function buildEntryParagraphs(
   if (dateRange || entry.location) {
     paragraphs.push(
       new Paragraph({
+        indent,
         spacing: {
           after: 80,
         },
@@ -242,6 +248,7 @@ function buildEntryParagraphs(
       ...entry.bullets.map(
         (bullet) =>
           new Paragraph({
+            indent,
             bullet: { level: 0 },
             spacing: {
               after: 40,
@@ -253,7 +260,7 @@ function buildEntryParagraphs(
   }
 
   if (entry.detailsMarkdown) {
-    paragraphs.push(...createMarkdownParagraphs(entry.detailsMarkdown));
+    paragraphs.push(...createMarkdownParagraphs(entry.detailsMarkdown, indent));
   }
 
   if (entry.links.length > 0) {
@@ -269,6 +276,7 @@ function buildEntryParagraphs(
 
     paragraphs.push(
       new Paragraph({
+        indent,
         spacing: {
           after: 120,
         },
@@ -283,57 +291,12 @@ function buildEntryParagraphs(
 function buildProjectParagraphs(
   project: ResumeProject,
   locale: Locale,
-  linkLabel: string,
-  verifiedLabel: string,
-  contextLabel: string,
-  projectProfileLabel: string,
-  githubStartLabel: string,
-  independentLabel: string,
-  whileAtLabel: string,
+  nested = false,
 ) {
-  const paragraphs = buildEntryParagraphs(project, locale, linkLabel);
-  const projectContext = project.linkedExperienceTitle
-    ? `${whileAtLabel}: ${project.linkedExperienceTitle}`
-    : independentLabel;
-  const insertedParagraphs: Paragraph[] = [
-    new Paragraph({
-      spacing: {
-        before: 120,
-        after: 60,
-      },
-      indent: {
-        left: 240,
-      },
-      border: {
-        left: {
-          color: "D97706",
-          size: 14,
-          space: 10,
-          style: BorderStyle.SINGLE,
-        },
-      },
-      children: [
-        createText(locale === "ko" ? "대표 프로젝트" : "Selected Project", {
-          bold: true,
-          allCaps: true,
-          color: "B45309",
-          size: 18,
-        }),
-      ],
-    }),
-    new Paragraph({
-      spacing: {
-        after: 80,
-      },
-      indent: {
-        left: 240,
-      },
-      children: [
-        createText(`${contextLabel}: `, { bold: true }),
-        createText(projectContext),
-      ],
-    }),
-  ];
+  const copy = getResumeCopy(locale);
+  const indent = nested ? { left: 320 } : undefined;
+  const paragraphs = buildEntryParagraphs(project, locale, copy.template.sections.links, indent);
+  const insertedParagraphs: Paragraph[] = [];
 
   if (project.projectLabels.length > 0) {
     insertedParagraphs.push(
@@ -341,11 +304,9 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
+        indent,
         children: [
-          createText(`${projectProfileLabel}: `, { bold: true }),
+          createText(`${copy.template.projectProfile}: `, { bold: true }),
           createText(
             project.projectLabels
               .map((label) => formatResumeProjectLabel(label, locale))
@@ -362,9 +323,7 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
+        indent,
         children: [
           createText(locale === "ko" ? "기술: " : "Tech: ", { bold: true }),
           createText(project.tech.join(", ")),
@@ -379,9 +338,7 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
+        indent,
         children: [createText(project.repoDescription)],
       }),
     );
@@ -398,9 +355,7 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
+        indent,
         children: [createText(projectEvidenceSummary)],
       }),
     );
@@ -412,10 +367,8 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
-        children: [createText(verifiedLabel, { bold: true })],
+        indent,
+        children: [createText(copy.template.repoVerified, { bold: true })],
       }),
     );
   }
@@ -426,11 +379,9 @@ function buildProjectParagraphs(
         spacing: {
           after: 80,
         },
-        indent: {
-          left: 240,
-        },
+        indent,
         children: [
-          createText(`${githubStartLabel}: `, { bold: true }),
+          createText(`${copy.shared.githubStart}: `, { bold: true }),
           createText(
             formatResumeDateRange(
               project.repoCreatedAt,
@@ -574,32 +525,29 @@ export async function buildResumeDocx(
     children.push(...createMarkdownParagraphs(documentData.summary));
   }
 
+  const { byExperience, standalone } = groupResumeProjects(documentData);
   if (documentData.experience.length > 0) {
     children.push(createSectionHeading(copy.template.sections.experience));
-    documentData.experience.forEach((entry) => {
-      children.push(
-        ...buildEntryParagraphs(entry, locale, copy.template.sections.links),
-      );
-    });
+    for (const entry of documentData.experience) {
+      children.push(...buildEntryParagraphs(entry, locale, copy.template.sections.links));
+      const projects = entry.id ? byExperience.get(entry.id) : undefined;
+      if (projects?.length) {
+        children.push(
+          new Paragraph({
+            indent: { left: 320 },
+            keepNext: true,
+            spacing: { before: 120, after: 40 },
+            children: [createText(copy.template.sections.companyProjects, { bold: true })],
+          }),
+          ...projects.flatMap((project) => buildProjectParagraphs(project, locale, true)),
+        );
+      }
+    }
   }
 
-  if (documentData.projects.length > 0) {
+  if (standalone.length > 0) {
     children.push(createSectionHeading(copy.template.sections.projects));
-    documentData.projects.forEach((project) => {
-      children.push(
-        ...buildProjectParagraphs(
-          project,
-          locale,
-          copy.template.sections.links,
-          copy.template.repoVerified,
-          copy.template.projectContext,
-          copy.template.projectProfile,
-          copy.shared.githubStart,
-          copy.shared.independent,
-          copy.shared.whileAt,
-        ),
-      );
-    });
+    children.push(...standalone.flatMap((project) => buildProjectParagraphs(project, locale)));
   }
 
   if (documentData.education.length > 0) {

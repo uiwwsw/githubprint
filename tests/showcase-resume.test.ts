@@ -29,7 +29,7 @@ function buildProject(overrides: Partial<ResumeProject> = {}): ResumeProject {
 
 function buildDocument(): ResumeDocumentData {
   const project = buildProject({
-    linkedExperienceTitle: "SECRET_COMPANY",
+    experienceId: "private-employer",
   });
 
   return {
@@ -138,7 +138,7 @@ test("masks employment history while keeping public resume sections", () => {
   assert.deepEqual(result.customSections, buildDocument().customSections);
   assert.equal(result.projects[0]?.title, "Public project");
   assert.equal(result.projects[0]?.bullets[0], "PUBLIC_PROJECT_DETAIL");
-  assert.equal(result.projects[0]?.linkedExperienceTitle, undefined);
+  assert.equal(result.projects[0]?.experienceId, undefined);
   assert.equal(result.basics.website, "https://example.com");
   assert.deepEqual(result.basics.links.map((link) => link.kind), ["live"]);
   assert.equal(
