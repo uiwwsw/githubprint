@@ -14,7 +14,7 @@ const headers = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 export async function POST(request: NextRequest) {
-  if (!isSameSiteOrigin(request.headers))
+  if (!isSameSiteOrigin(request.headers, request.nextUrl.origin))
     return NextResponse.json({ error: "origin" }, { status: 403, headers });
   const session = await getGitHubSession();
   if (!session)

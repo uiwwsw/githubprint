@@ -41,18 +41,8 @@ test("missing resume offers inline recovery without opting into private access",
           html,
           /aria-label="(?:문서 템플릿|Document template)"/,
         );
-        const sourceInputs = html.match(
-          /<input[^>]*name="resume-source"[^>]*>/g,
-        );
-        assert.equal(sourceInputs.length, 2);
-        assert.equal(
-          sourceInputs[0].includes('checked=""'),
-          resumeSource === "public",
-        );
-        assert.equal(
-          sourceInputs[1].includes('checked=""'),
-          resumeSource === "authorized",
-        );
+        // Visibility is detected automatically; no source picker is rendered.
+        assert.doesNotMatch(html, /name="resume-source"/);
         assert.equal(
           html.includes('href="/api/auth/github/login?access=private"'),
           resumeSource === "authorized" && !canReadPrivate,
@@ -515,7 +505,7 @@ test("declining an optional OAuth upgrade preserves the existing session", async
   );
   assert.equal(
     response.headers.get("location"),
-    "http://localhost/en/?github_auth=cancelled#generator",
+    `${require("../lib/site-url.ts").getSiteUrl()}/en/?github_auth=cancelled#generator`,
   );
   assert.ok(!response.cookies.get("githubprint-github-session"));
 });
