@@ -266,8 +266,8 @@ export function SelfGenerator({
       value: "private-details" as const,
       title: t("비공개 저장소도 포함", "Include private repositories"),
       text: t(
-        "고른 비공개 저장소의 이름, 설명, 링크도 파일에 들어갑니다.",
-        "Files also include the names, descriptions, and links of the private repositories you choose.",
+        "고른 비공개 저장소의 이름, 설명, 링크, 언어, 스타 수, 포크 수도 파일에 들어갑니다.",
+        "Files also include the names, descriptions, links, languages, and star and fork counts of the private repositories you choose.",
       ),
     },
   ];

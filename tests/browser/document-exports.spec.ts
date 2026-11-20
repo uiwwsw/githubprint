@@ -36,6 +36,9 @@ for (const locale of ["ko", "en"] as const) {
         const repositories = page.locator(".repository-entries a");
         await expect(repositories).toHaveText(["githubprint-web", "proto-kit", "doc-polish"]);
         await expect(repositories.first()).toHaveAttribute("href", "https://github.com/example/githubprint-web");
+        await expect(page.locator(".document-project").first()).toContainText(
+          locale === "ko" ? "주 언어 TypeScript · 스타 42 · 포크 2" : "Primary language TypeScript · Stars 42 · Forks 2",
+        );
       }
       const expectedText = await page
         .locator("[data-document]")

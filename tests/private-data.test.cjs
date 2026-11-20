@@ -221,9 +221,9 @@ test("repository documents expose only public and explicitly selected metadata",
 
   fixture.reset();
   const entries = await getRepositoryDocumentEntries(fixture.username, auth, ["private-atlas"]);
-  assert.deepEqual(entries.map((repo) => [repo.name, repo.visibility]), [
-    ["public-project", "public"],
-    ["private-atlas", "private"],
+  assert.deepEqual(entries.map((repo) => [repo.name, repo.visibility, repo.language, repo.stars, repo.forks]), [
+    ["public-project", "public", "TypeScript", 20, 0],
+    ["private-atlas", "private", "TypeScript", 0, 0],
   ]);
   assert.deepEqual(
     fixture.calls.filter((call) => call.path.startsWith("/repos/")).map((call) => call.path),

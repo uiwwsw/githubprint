@@ -34,7 +34,7 @@ function repositoryGuide(id: Exclude<TemplateId, "resume">, locale: Locale): Gui
       sections: [
         { title: "GitHub 프로필", body: "계정 이름과 GitHub 프로필 링크가 상단에 들어갑니다." },
         { title: shortLabel, body: description },
-        { title: "저장소 정보", body: "각 저장소의 이름, GitHub에 등록한 설명, 링크를 표시합니다." },
+        { title: "저장소 정보", body: "GitHub에서 읽은 이름, 설명, 링크, 주 언어, 스타 수, 포크 수를 표시합니다." },
       ],
       preparation: "GitHub로 로그인한 뒤 저장소 목록을 고르세요. 공개 범위와 디자인을 선택하고 미리보기를 엽니다.",
     };
@@ -48,7 +48,7 @@ function repositoryGuide(id: Exclude<TemplateId, "resume">, locale: Locale): Gui
     sections: [
       { title: "GitHub profile", body: "Your account name and a link to your GitHub profile appear at the top." },
       { title: shortLabel, body: description },
-      { title: "Repository details", body: "Each repository shows its name, GitHub description, and link." },
+      { title: "Repository details", body: "Each repository shows its name, description, link, primary language, star count, and fork count from GitHub." },
     ],
     preparation: "Sign in with GitHub, choose Repository list, then select the visibility and design.",
   };
